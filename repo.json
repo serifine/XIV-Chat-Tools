@@ -4,7 +4,7 @@
     "Name": "Chat Scanner",
     "Description": "Easily check chat messages for RP",
     "InternalName": "ChatScanner",
-    "AssemblyVersion": "0.0.4",
+    "AssemblyVersion": "0.0.5",
     "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
     "ApplicableVersion": "any",
     "Tags": [
@@ -15,8 +15,8 @@
     "IsTestingExclusive": "False",
     "LastUpdated": 1619865003,
     "DownloadCount": 420,
-    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.4/ChatScanner.zip",
-    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.4/ChatScanner.zip",
-    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.4/ChatScanner.zip"
+    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.5/ChatScanner.zip",
+    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.5/ChatScanner.zip",
+    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/0.0.5/ChatScanner.zip"
   }
 ]
