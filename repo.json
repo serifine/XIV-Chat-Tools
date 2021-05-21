@@ -4,7 +4,7 @@
     "Name": "Chat Scanner",
     "Description": "Easily check chat messages  for RP",
     "InternalName": "ChatScanner",
-    "AssemblyVersion": "0.0.1",
+    "AssemblyVersion": "0.0.2",
     "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
     "ApplicableVersion": "any",
     "Tags": [
