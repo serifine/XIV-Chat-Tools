@@ -59,7 +59,8 @@ namespace ChatScanner
       _allowedChannels = configuration.AllowedChannels;
 
       _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
-      // _pluginInterface.Framework.Gui.HoveredItemChanged += 
+      this._pluginInterface.ClientState.OnLogout += this.OnLogout;
+      // this._pluginInterface.ClientState.OnLogin += this.OnLogin;
 
       this._pluginInterface.UiBuilder.OnBuildUi += DrawUI;
       this._pluginInterface.UiBuilder.OnOpenConfigUi += (sender, args) => DrawConfigUI();
@@ -70,6 +71,8 @@ namespace ChatScanner
       this.ui.Dispose();
 
       this._pluginInterface.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
+      this._pluginInterface.ClientState.OnLogout -= this.OnLogout;
+      // this.Interface.ClientState.OnLogin -= this.OnLogin;
 
       this._pluginInterface.CommandManager.RemoveHandler("/chatScanner");
       this._pluginInterface.CommandManager.RemoveHandler("/cScanner");
@@ -95,22 +98,27 @@ namespace ChatScanner
       this.ui.SettingsVisible = true;
     }
 
-    private int GetActorId(string nameInput)
+
+    // private int GetActorId(string nameInput)
+    // {
+    //   foreach (var t in _pluginInterface.ClientState.Actors)
+    //   {
+    //     if (!(t is PlayerCharacter pc)) continue;
+    //     if (pc.Name == nameInput) return pc.ActorId;
+    //   }
+
+    //   return 0;
+    // }
+
+    // private string getSelectedTarget()
+    // {
+    //   return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
+    // }
+
+    private void OnLogout(object sender, EventArgs args)
     {
-      foreach (var t in _pluginInterface.ClientState.Actors)
-      {
-        if (!(t is PlayerCharacter pc)) continue;
-        if (pc.Name == nameInput) return pc.ActorId;
-      }
-
-      return 0;
+      this.ui.Visible = false;
     }
-
-    private string getSelectedTarget()
-    {
-      return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
-    }
-
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
@@ -119,27 +127,27 @@ namespace ChatScanner
         return;
       }
 
-      PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
-      PluginLog.LogDebug("=======================================================");
-      PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
-      PluginLog.LogDebug("originalParser:" + OldParseName(type, sender));
-      PluginLog.LogDebug("alternateParser:" + ParseName(type, sender));
-      PluginLog.LogDebug("");
-      // PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
-      PluginLog.LogDebug("SenderPayloads");
-      foreach (var payload in sender.Payloads)
-      {
-        PluginLog.LogDebug("Type" + payload.Type.ToString());
-        PluginLog.LogDebug(payload.ToString());
-      }
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("type:" + type);
-      PluginLog.LogDebug("sender:" + ParseName(type, sender));
-      PluginLog.LogDebug("message:" + cmessage.TextValue);
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("");
+      // PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
+      // PluginLog.LogDebug("=======================================================");
+      // PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
+      // PluginLog.LogDebug("originalParser:" + OldParseName(type, sender));
+      // PluginLog.LogDebug("alternateParser:" + ParseName(type, sender));
+      // PluginLog.LogDebug("");
+      // // PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
+      // PluginLog.LogDebug("SenderPayloads");
+      // foreach (var payload in sender.Payloads)
+      // {
+      //   PluginLog.LogDebug("Type" + payload.Type.ToString());
+      //   PluginLog.LogDebug(payload.ToString());
+      // }
+      // PluginLog.LogDebug("");
+      // PluginLog.LogDebug("type:" + type);
+      // PluginLog.LogDebug("sender:" + ParseName(type, sender));
+      // PluginLog.LogDebug("message:" + cmessage.TextValue);
+      // PluginLog.LogDebug("");
+      // PluginLog.LogDebug("");
+      // PluginLog.LogDebug("");
+      // PluginLog.LogDebug("");
 
       stateRepository.addChatLog(new Models.ChatEntry()
       {
