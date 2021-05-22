@@ -18,9 +18,8 @@ namespace ChatScanner
 
     private const string commandName = "/cScan";
 
-    private ChatRepository chatRepository;
-    private FocusRepository focusRepository;
-    private DalamudPluginInterface pi;
+    private StateManagementRepository stateRepository;
+    private DalamudPluginInterface _pluginInterface;
     private Configuration configuration;
     private PluginUI ui;
 
@@ -32,38 +31,35 @@ namespace ChatScanner
 
     public void Initialize(DalamudPluginInterface pluginInterface)
     {
-      this.pi = pluginInterface;
+      this._pluginInterface = pluginInterface;
 
-      ChatRepository.Init(this.pi);
-      FocusRepository.Init(this.pi);
+      StateManagementRepository.Init(this._pluginInterface);
+      this.stateRepository = StateManagementRepository.Instance;
 
-      this.chatRepository = ChatRepository.Instance;
-      this.focusRepository = FocusRepository.Instance;
-
-      pi.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
-      // pi.Framework.Gui.HoveredItem 
-
-      this.configuration = this.pi.GetPluginConfig() as Configuration ?? new Configuration();
-      this.configuration.Initialize(this.pi);
+      this.configuration = this._pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+      this.configuration.Initialize(this._pluginInterface);
 
       this.ui = new PluginUI(this.configuration);
 
-      this.pi.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
+      this._pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
       {
         HelpMessage = "Opens the Chat Scanner window."
       });
 
-      this.pi.UiBuilder.OnBuildUi += DrawUI;
-      this.pi.UiBuilder.OnOpenConfigUi += (sender, args) => DrawConfigUI();
+      _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
+
+      this._pluginInterface.UiBuilder.OnBuildUi += DrawUI;
+      this._pluginInterface.UiBuilder.OnOpenConfigUi += (sender, args) => DrawConfigUI();
     }
 
     public void Dispose()
     {
       this.ui.Dispose();
 
-      this.pi.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
-      this.pi.CommandManager.RemoveHandler(commandName);
-      this.pi.Dispose();
+      this._pluginInterface.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
+      this._pluginInterface.CommandManager.RemoveHandler(commandName);
+      this._pluginInterface.Dispose();
+      this.stateRepository.Dispose();
     }
 
     private void OnCommand(string command, string args)
@@ -84,7 +80,7 @@ namespace ChatScanner
 
     private int GetActorId(string nameInput)
     {
-      foreach (var t in pi.ClientState.Actors)
+      foreach (var t in _pluginInterface.ClientState.Actors)
       {
         if (!(t is PlayerCharacter pc)) continue;
         if (pc.Name == nameInput) return pc.ActorId;
@@ -93,8 +89,9 @@ namespace ChatScanner
       return 0;
     }
 
-    private string getSelectedTarget() {
-      return pi.ClientState.Targets.CurrentTarget?.Name;
+    private string getSelectedTarget()
+    {
+      return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
     }
 
 
@@ -113,29 +110,71 @@ namespace ChatScanner
       var senderName = "";
       var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
-      if (playerPayload != null) {
+      if (playerPayload != null)
+      {
         senderName = (playerPayload as PlayerPayload).PlayerName;
-      } 
-      
-      if (playerPayload == null || type == XivChatType.TellOutgoing) {
-        senderName = chatRepository.getPlayerName();
+      }
+
+      if (playerPayload == null || type == XivChatType.TellOutgoing)
+      {
+        senderName = stateRepository.getPlayerName();
       }
 
       // foreach( var payload in sender.Payloads) {
       //   PluginLog.Log(payload.ToString() + "|" + payload.Type);
       // }
-      PluginLog.Log("type:"+type);
-      PluginLog.Log("senderValue:"+sender.TextValue);
-      PluginLog.Log("senderParsedValue:"+senderName);
-      PluginLog.Log("SenderToJson:"+sender.ToJson());
+      PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("type:" + type);
+      PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
+      PluginLog.LogDebug("senderParsedValue:" + senderName);
+      PluginLog.LogDebug("alternateParserResult:" + ParseName(type, sender, cmessage));
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("");
 
-      chatRepository.addChatLog(new Models.ChatEntry()
+      stateRepository.addChatLog(new Models.ChatEntry()
       {
         ChatType = type,
         Message = cmessage.TextValue,
         SenderId = senderId,
         SenderName = senderName
       });
+    }
+
+    private string ParseName(XivChatType type, SeString sender, SeString cmessage)
+    {
+      var skip = 0;
+      if (cmessage.Payloads[0].Type == PayloadType.UIForeground && cmessage.Payloads[1].Type == PayloadType.UIForeground)
+      {
+        skip += 2;
+      }
+      var pName = _pluginInterface.ClientState.LocalPlayer.Name;
+
+      if (sender.Payloads[0 + skip].Type == PayloadType.Player)
+      {
+        var pPayload = (PlayerPayload)sender.Payloads[0 + skip];
+        pName = pPayload.PlayerName;
+      }
+
+      if (sender.Payloads[0 + skip].Type == PayloadType.Icon && sender.Payloads[1].Type == PayloadType.Player)
+      {
+        var pPayload = (PlayerPayload)sender.Payloads[1];
+        pName = pPayload.PlayerName;
+      }
+
+      if (type == XivChatType.StandardEmote || type == XivChatType.CustomEmote)
+      {
+        if (cmessage.Payloads[0 + skip].Type == PayloadType.Player)
+        {
+          var pPayload = (PlayerPayload)cmessage.Payloads[0 + skip];
+          pName = pPayload.PlayerName;
+        }
+      }
+
+      return pName;
     }
   }
 }

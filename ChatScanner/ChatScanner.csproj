@@ -54,8 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChatRepository.cs" />
-    <Compile Include="FocusRepository.cs" />
+    <Compile Include="StateManagementRepository.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="PluginUI.cs" />

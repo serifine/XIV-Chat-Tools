@@ -2,6 +2,7 @@
 using System;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Linq;
 using ChatScanner.Models;
 
 namespace ChatScanner
@@ -11,8 +12,7 @@ namespace ChatScanner
   class PluginUI : IDisposable
   {
     private Configuration configuration;
-    private FocusRepository focusRepository;
-    private ChatRepository chatRepository;
+    private StateManagementRepository stateRepository;
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
@@ -33,8 +33,7 @@ namespace ChatScanner
     public PluginUI(Configuration configuration)
     {
       this.configuration = configuration;
-      this.chatRepository = ChatRepository.Instance;
-      this.focusRepository = FocusRepository.Instance;
+      this.stateRepository = StateManagementRepository.Instance;
     }
 
     public void Dispose()
@@ -87,7 +86,7 @@ namespace ChatScanner
       {
         if (ImGui.Button("Add Focus Target"))
         {
-          focusRepository.addFocusTab();
+          stateRepository.addFocusTabFromTarget();
         }
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (190 * scale));
         ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
@@ -98,8 +97,8 @@ namespace ChatScanner
 
         if (ImGui.BeginTabItem("Selected Target"))
         {
-          if (focusRepository.getCurrentFocusTargetName() != null) {
-            MessagePanel(chatRepository.getByName(focusRepository.getCurrentFocusTargetName()));
+          if (stateRepository.getFocusTargetName() != null) {
+            MessagePanel(stateRepository.getMessagesForFocusTarget());
           } else {
             ImGui.Text("No target selected.");
           }
@@ -109,7 +108,7 @@ namespace ChatScanner
 
         if (ImGui.BeginTabItem("All Messages"))
         {
-          MessagePanel(chatRepository.getAllLogs());
+          MessagePanel(stateRepository.getAllMessages());
           ImGui.EndTabItem();
         }
 
@@ -119,15 +118,15 @@ namespace ChatScanner
         //   ImGui.EndTabItem();
         // }
 
-        foreach(var focusTarget in focusRepository.getFocusTargets()) {
-          if (ImGui.BeginTabItem(focusTarget.Name))
+        foreach(var focusTab in stateRepository.getFocusTabs()) {
+          if (ImGui.BeginTabItem(focusTab.Name))
           {
             // if (ImGui.Button("Remove Focus"))
             // {
             //   focusRepository.removeFocusTab(focusTarget.Id);
             // }
 
-            MessagePanel(chatRepository.getByName(focusTarget.Name));
+            MessagePanel(stateRepository.getMessagesByPlayerNames(focusTab.getFocusTargetNames()));
 
             ImGui.EndTabItem();
           }
@@ -146,7 +145,7 @@ namespace ChatScanner
 
       foreach (var chatItem in messages)
       {
-        if (chatItem.SenderName == chatRepository.getPlayerName() || chatItem.SenderId == chatRepository.getPlayerId())
+        if (chatItem.SenderName == stateRepository.getPlayerName() || chatItem.SenderId == stateRepository.getPlayerId())
         {
           ImGui.TextColored(ORANGE_COLOR, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
           ImGui.SameLine();
