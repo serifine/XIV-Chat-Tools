@@ -20,7 +20,4 @@ If the current behavior is a bug, please provide the steps to reproduce.
 **Expected/desired behavior:**
 
 
-* **What is the expected behavior?**
-
-
-* **What is the motivation for changing the behavior?**
+**What is the motivation for changing the behavior?**
