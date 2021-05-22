@@ -1,0 +1,11 @@
+{
+  "Author": "Serifine",
+  "Name": "Chat Scanner",
+  "Description": "A simple description that shows up in /xlplugins.  List any major slash-command(s).",
+  "InternalName": "ChatScanner",
+  "AssemblyVersion": "0.0.7",
+  "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
+  "ApplicableVersion": "any",
+  "Tags": ["sample", "plugin", "goats"],
+  "DalamudApiLevel": 3
+}
