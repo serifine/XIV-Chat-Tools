@@ -145,7 +145,7 @@ namespace ChatScanner
 
       foreach (var chatItem in messages)
       {
-        if (chatItem.SenderName == stateRepository.getPlayerName() || chatItem.SenderId == stateRepository.getPlayerId())
+        if (chatItem.SenderName == stateRepository.getPlayerName())
         {
           ImGui.TextColored(ORANGE_COLOR, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
           ImGui.SameLine();

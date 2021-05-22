@@ -18,8 +18,10 @@ namespace ChatScanner
 
     private const string commandName = "/cScan";
 
+
     private StateManagementRepository stateRepository;
     private DalamudPluginInterface _pluginInterface;
+    private List<XivChatType> _allowedChannels;
     private Configuration configuration;
     private PluginUI ui;
 
@@ -54,7 +56,10 @@ namespace ChatScanner
         HelpMessage = "Alias for /chatScanner."
       });
 
+      _allowedChannels = configuration.AllowedChannels;
+
       _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
+      // _pluginInterface.Framework.Gui.HoveredItemChanged += 
 
       this._pluginInterface.UiBuilder.OnBuildUi += DrawUI;
       this._pluginInterface.UiBuilder.OnOpenConfigUi += (sender, args) => DrawConfigUI();
@@ -65,7 +70,7 @@ namespace ChatScanner
       this.ui.Dispose();
 
       this._pluginInterface.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
-      
+
       this._pluginInterface.CommandManager.RemoveHandler("/chatScanner");
       this._pluginInterface.CommandManager.RemoveHandler("/cScanner");
       this._pluginInterface.CommandManager.RemoveHandler("/cscan");
@@ -109,17 +114,49 @@ namespace ChatScanner
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
-      if (isHandled)
+      if (isHandled || !_allowedChannels.Any(t => t == type))
       {
         return;
       }
 
-      if (type != XivChatType.StandardEmote && type != XivChatType.CustomEmote && type != XivChatType.Party && type != XivChatType.Say && type != XivChatType.TellIncoming && type != XivChatType.TellOutgoing)
+      PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
+      PluginLog.LogDebug("=======================================================");
+      PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
+      PluginLog.LogDebug("originalParser:" + OldParseName(type, sender));
+      PluginLog.LogDebug("alternateParser:" + ParseName(type, sender));
+      PluginLog.LogDebug("");
+      // PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
+      PluginLog.LogDebug("SenderPayloads");
+      foreach (var payload in sender.Payloads)
       {
-        return;
+        PluginLog.LogDebug("Type" + payload.Type.ToString());
+        PluginLog.LogDebug(payload.ToString());
       }
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("type:" + type);
+      PluginLog.LogDebug("sender:" + ParseName(type, sender));
+      PluginLog.LogDebug("message:" + cmessage.TextValue);
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("");
+      PluginLog.LogDebug("");
+
+      stateRepository.addChatLog(new Models.ChatEntry()
+      {
+        ChatType = type,
+        Message = cmessage.TextValue,
+        SenderId = senderId,
+        SenderName = ParseName(type, sender)
+      });
+    }
+
+    private string OldParseName(XivChatType type, SeString sender)
+    {
 
       var senderName = "";
+
+
+      // XivChatType.Party || XivChatType.Say
       var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
       if (playerPayload != null)
@@ -132,61 +169,53 @@ namespace ChatScanner
         senderName = stateRepository.getPlayerName();
       }
 
-      // foreach( var payload in sender.Payloads) {
-      //   PluginLog.Log(payload.ToString() + "|" + payload.Type);
-      // }
-      PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("type:" + type);
-      PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
-      PluginLog.LogDebug("senderParsedValue:" + senderName);
-      PluginLog.LogDebug("alternateParserResult:" + ParseName(type, sender, cmessage));
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("");
-      PluginLog.LogDebug("");
-
-      stateRepository.addChatLog(new Models.ChatEntry()
-      {
-        ChatType = type,
-        Message = cmessage.TextValue,
-        SenderId = senderId,
-        SenderName = senderName
-      });
+      return senderName;
     }
 
-    private string ParseName(XivChatType type, SeString sender, SeString cmessage)
+    private string ParseName(XivChatType type, SeString sender)
     {
-      var skip = 0;
-      if (cmessage.Payloads[0].Type == PayloadType.UIForeground && cmessage.Payloads[1].Type == PayloadType.UIForeground)
+      if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
       {
-        skip += 2;
-      }
-      var pName = _pluginInterface.ClientState.LocalPlayer.Name;
+        // enable if custom emotes become hard
+        // var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
-      if (sender.Payloads[0 + skip].Type == PayloadType.Player)
-      {
-        var pPayload = (PlayerPayload)sender.Payloads[0 + skip];
-        pName = pPayload.PlayerName;
-      }
+        // if (playerPayload != null)
+        // {
+        //   return (playerPayload as PlayerPayload).PlayerName;
+        // }
 
-      if (sender.Payloads[0 + skip].Type == PayloadType.Icon && sender.Payloads[1].Type == PayloadType.Player)
-      {
-        var pPayload = (PlayerPayload)sender.Payloads[1];
-        pName = pPayload.PlayerName;
+        var textPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
+
+        return (textPayload as TextPayload).Text;
       }
 
-      if (type == XivChatType.StandardEmote || type == XivChatType.CustomEmote)
+      if (type == XivChatType.Party || type == XivChatType.Say)
       {
-        if (cmessage.Payloads[0 + skip].Type == PayloadType.Player)
+        var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+
+        if (playerPayload != null)
         {
-          var pPayload = (PlayerPayload)cmessage.Payloads[0 + skip];
-          pName = pPayload.PlayerName;
+          return (playerPayload as PlayerPayload).PlayerName;
+        }
+        else
+        {
+          return stateRepository.getPlayerName();
         }
       }
 
-      return pName;
+      if (type == XivChatType.TellIncoming)
+      {
+        var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+
+        return (playerPayload as PlayerPayload).PlayerName;
+      }
+
+      if (type == XivChatType.TellOutgoing)
+      {
+        return stateRepository.getPlayerName();
+      }
+
+      return "N/A|BadType";
     }
   }
 }
