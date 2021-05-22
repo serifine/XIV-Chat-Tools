@@ -97,9 +97,23 @@ namespace ChatScanner
 
         if (ImGui.BeginTabItem("Selected Target"))
         {
-          if (stateRepository.getFocusTargetName() != null) {
-            MessagePanel(stateRepository.getMessagesForFocusTarget());
-          } else {
+          var focusTarget = stateRepository.getFocusTargetName();
+
+          if (focusTarget != null)
+          {
+            var messages = stateRepository.getMessagesForFocusTarget();
+
+            if (messages != null && messages.Count() > 0)
+            {
+              MessagePanel(messages);
+            }
+            else
+            {
+              ImGui.Text("No messages found for " + focusTarget + ".");
+            }
+          }
+          else
+          {
             ImGui.Text("No target selected.");
           }
 
@@ -118,7 +132,8 @@ namespace ChatScanner
         //   ImGui.EndTabItem();
         // }
 
-        foreach(var focusTab in stateRepository.getFocusTabs()) {
+        foreach (var focusTab in stateRepository.getFocusTabs())
+        {
           if (ImGui.BeginTabItem(focusTab.Name))
           {
             // if (ImGui.Button("Remove Focus"))
