@@ -50,7 +50,12 @@ namespace ChatScanner
 
     public string getFocusTargetName()
     {
-      return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
+      if (_pluginInterface.ClientState.Targets.CurrentTarget != null)
+      {
+        return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
+      }
+
+      return _pluginInterface.ClientState.Targets.MouseOverTarget?.Name;
     }
 
     public int? getFocusTargetId()
