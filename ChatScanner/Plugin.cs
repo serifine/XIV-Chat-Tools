@@ -41,9 +41,17 @@ namespace ChatScanner
 
       this.ui = new PluginUI(this.configuration);
 
-      this._pluginInterface.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
+      this._pluginInterface.CommandManager.AddHandler("/chatScanner", new CommandInfo(OnCommand)
       {
         HelpMessage = "Opens the Chat Scanner window."
+      });
+      this._pluginInterface.CommandManager.AddHandler("/cScanner", new CommandInfo(OnCommand)
+      {
+        HelpMessage = "Alias for /chatScanner."
+      });
+      this._pluginInterface.CommandManager.AddHandler("/cscan", new CommandInfo(OnCommand)
+      {
+        HelpMessage = "Alias for /chatScanner."
       });
 
       _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
@@ -57,7 +65,11 @@ namespace ChatScanner
       this.ui.Dispose();
 
       this._pluginInterface.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
-      this._pluginInterface.CommandManager.RemoveHandler(commandName);
+      
+      this._pluginInterface.CommandManager.RemoveHandler("/chatScanner");
+      this._pluginInterface.CommandManager.RemoveHandler("/cScanner");
+      this._pluginInterface.CommandManager.RemoveHandler("/cscan");
+
       this._pluginInterface.Dispose();
       this.stateRepository.Dispose();
     }
@@ -102,7 +114,7 @@ namespace ChatScanner
         return;
       }
 
-      if (type != XivChatType.CustomEmote && type != XivChatType.Party && type != XivChatType.Say && type != XivChatType.TellIncoming && type != XivChatType.TellOutgoing)
+      if (type != XivChatType.StandardEmote && type != XivChatType.CustomEmote && type != XivChatType.Party && type != XivChatType.Say && type != XivChatType.TellIncoming && type != XivChatType.TellOutgoing)
       {
         return;
       }
