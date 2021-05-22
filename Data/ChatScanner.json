@@ -3,7 +3,7 @@
   "Name": "Chat Scanner",
   "Description": "A simple description that shows up in /xlplugins.  List any major slash-command(s).",
   "InternalName": "ChatScanner",
-  "AssemblyVersion": "0.1.0",
+  "AssemblyVersion": "0.1.1",
   "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
   "ApplicableVersion": "any",
   "Tags": ["sample", "plugin", "goats"],
