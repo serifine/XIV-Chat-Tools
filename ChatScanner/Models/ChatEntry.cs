@@ -11,6 +11,7 @@ namespace ChatScanner.Models
     {
       public DateTime DateSent = DateTime.Now;
       public XivChatType ChatType;
+      public string OwnerId;
       public uint SenderId;
       public string SenderName;
       public string Message;

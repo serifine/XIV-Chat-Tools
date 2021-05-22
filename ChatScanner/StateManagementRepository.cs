@@ -13,8 +13,9 @@ namespace ChatScanner
 {
   public class StateManagementRepository : IDisposable
   {
-    private List<ChatEntry> chatEntries;
-    private List<FocusTab> focusTabs;
+    private List<FocusTab> FocusTabs;
+    private List<ChatEntry> ChatEntries;
+
     private DalamudPluginInterface _pluginInterface;
 
     public static StateManagementRepository Instance { get; private set; }
@@ -23,8 +24,8 @@ namespace ChatScanner
     {
       try
       {
-        this.chatEntries = new List<ChatEntry>();
-        this.focusTabs = new List<FocusTab>();
+        this.ChatEntries = new List<ChatEntry>();
+        this.FocusTabs = new List<FocusTab>();
         this._pluginInterface = pi;
       }
       catch (Exception e)
@@ -65,7 +66,8 @@ namespace ChatScanner
 
     public void addChatLog(ChatEntry chatEntry)
     {
-      this.chatEntries.Add(chatEntry);
+      chatEntry.OwnerId = getPlayerName();
+      this.ChatEntries.Add(chatEntry);
 
       // PluginLog.Log("Adding chat message to repository");
       // PluginLog.Log("---------------------------------");
@@ -76,21 +78,25 @@ namespace ChatScanner
 
     public List<ChatEntry> getAllMessages()
     {
-      return this.chatEntries.ToList();
+      return this.ChatEntries
+        .Where(t => t.OwnerId == getPlayerName())
+        .ToList();
     }
 
     public List<ChatEntry> getMessagesForFocusTarget()
     {
       var name = this.getFocusTargetName();
 
-      return this.chatEntries
+      return this.ChatEntries
+        .Where(t => t.OwnerId == getPlayerName())
         .Where(t => t.SenderName == name || t.SenderName.StartsWith(name))
         .ToList();
     }
 
     public List<ChatEntry> getMessagesByPlayerNames(List<string> names)
     {
-      return this.chatEntries
+      return this.ChatEntries
+        .Where(t => t.OwnerId == getPlayerName())
         .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
         .ToList();
     }
@@ -101,19 +107,19 @@ namespace ChatScanner
       {
         var focusTab = new FocusTab(this._pluginInterface.ClientState.Targets.CurrentTarget.Name, this._pluginInterface.ClientState.Targets.CurrentTarget.TargetActorID);
 
-        this.focusTabs.Add(focusTab);
+        this.FocusTabs.Add(focusTab);
       }
     }
 
     public void removeFocusTab(Guid Id)
     {
-      var target = this.focusTabs.Find(t => t.FocusTabId == Id);
-      this.focusTabs.Remove(target);
+      var target = this.FocusTabs.Find(t => t.FocusTabId == Id);
+      this.FocusTabs.Remove(target);
     }
 
     public List<FocusTab> getFocusTabs()
     {
-      return this.focusTabs;
+      return this.FocusTabs;
     }
   }
 }
