@@ -44,6 +44,10 @@ namespace ChatScanner.Models
         this.focusTargets.Remove(name);
       }
     }
+
+    public bool IsPlayerAdded(string name) {
+      return this.focusTargets.Any(t => t == name);
+    }
   }
 
   public class FocusTarget

@@ -7,6 +7,7 @@ using Dalamud.Plugin;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.Sanitizer;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.ClientState.Actors.Types;
 using ChatScanner.Models;
 
 namespace ChatScanner
@@ -49,14 +50,14 @@ namespace ChatScanner
       return _pluginInterface.ClientState.LocalPlayer?.Name;
     }
 
-    public string GetFocusTargetName()
+    public Actor GetFocusTarget()
     {
       if (_pluginInterface.ClientState.Targets.CurrentTarget != null)
       {
-        return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
+        return _pluginInterface.ClientState.Targets.CurrentTarget;
       }
 
-      return _pluginInterface.ClientState.Targets.MouseOverTarget?.Name;
+      return _pluginInterface.ClientState.Targets.MouseOverTarget;
     }
 
     public int? GetFocusTargetId()
@@ -85,11 +86,11 @@ namespace ChatScanner
 
     public List<ChatEntry> GetMessagesForFocusTarget()
     {
-      var name = this.GetFocusTargetName();
+      var focusTarget = this.GetFocusTarget();
 
       return this.ChatEntries
         .Where(t => t.OwnerId == GetPlayerName())
-        .Where(t => t.SenderName == name || t.SenderName.StartsWith(name))
+        .Where(t => t.SenderName == focusTarget?.Name || t.SenderName.StartsWith(focusTarget?.Name))
         .ToList();
     }
 
@@ -103,9 +104,12 @@ namespace ChatScanner
 
     public void AddFocusTabFromTarget()
     {
-      if (this._pluginInterface.ClientState.Targets.CurrentTarget != null)
+      var focusTarget = GetFocusTarget();
+
+      if (focusTarget != null)
       {
-        var focusTab = new FocusTab(this._pluginInterface.ClientState.Targets.CurrentTarget.Name, this._pluginInterface.ClientState.Targets.CurrentTarget.TargetActorID);
+        
+        var focusTab = new FocusTab(focusTarget.Name, 0);
 
         this.FocusTabs.Add(focusTab);
       }

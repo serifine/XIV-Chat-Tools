@@ -84,66 +84,108 @@ namespace ChatScanner
 
       if (ImGui.Begin("Chat Scanner", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
       {
+        ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
+        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (190 * scale));
         if (ImGui.Button("Add Focus Target"))
         {
           StateRepository.AddFocusTabFromTarget();
         }
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (190 * scale));
-        ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
 
+        ImGui.Separator();
 
-        ImGui.BeginTabBar("MainTabs", ImGuiTabBarFlags.Reorderable);
-
-
-        if (ImGui.BeginTabItem("Selected Target"))
+        if (ImGui.BeginTabBar("MainTabs", ImGuiTabBarFlags.Reorderable))
         {
-          var focusTarget = StateRepository.GetFocusTargetName();
-
-          if (focusTarget != null)
+          if (ImGui.BeginTabItem("Selected Target"))
           {
-            var messages = StateRepository.GetMessagesForFocusTarget();
+            var focusTarget = StateRepository.GetFocusTarget();
 
-            if (messages != null && messages.Count() > 0)
+            if (focusTarget != null)
             {
-              MessagePanel(messages);
+              var messages = StateRepository.GetMessagesForFocusTarget();
+
+              if (messages != null && messages.Count() > 0)
+              {
+                MessagePanel(messages);
+              }
+              else
+              {
+                ImGui.Text("No messages found for " + focusTarget.Name + ".");
+              }
             }
             else
             {
-              ImGui.Text("No messages found for " + focusTarget + ".");
+              ImGui.Text("No target selected.");
             }
-          }
-          else
-          {
-            ImGui.Text("No target selected.");
-          }
 
-          ImGui.EndTabItem();
-        }
-
-        if (ImGui.BeginTabItem("All Messages"))
-        {
-          MessagePanel(StateRepository.GetAllMessages());
-          ImGui.EndTabItem();
-        }
-
-        // if (ImGui.BeginTabItem("Keyword Scan"))
-        // {
-        //   MessagePanel();
-        //   ImGui.EndTabItem();
-        // }
-
-        foreach (var focusTab in StateRepository.GetFocusTabs())
-        {
-          if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
-          {
-            MessagePanel(StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets()));
             ImGui.EndTabItem();
           }
+
+          if (ImGui.BeginTabItem("All Messages"))
+          {
+            var tabMessages = StateRepository.GetAllMessages();
+
+            if (tabMessages.Count() > 0)
+            {
+              MessagePanel(tabMessages);
+            }
+            else
+            {
+              ImGui.Text("No messages to display.");
+            }
+
+            ImGui.EndTabItem();
+          }
+
+          // if (ImGui.BeginTabItem("Keyword Scan"))
+          // {
+          //   MessagePanel();
+          //   ImGui.EndTabItem();
+          // }
+
+          foreach (var focusTab in StateRepository.GetFocusTabs())
+          {
+            if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
+            {
+              ImGui.Text("Watching:");
+
+              ImGui.Text(focusTab.focusTargets.First());
+
+              foreach (var focusTarget in focusTab.GetFocusTargets())
+              {
+                ImGui.Text(focusTarget);
+              }
+
+              if (ImGui.Button("Add Focus Target"))
+              {
+                var focusTarget = StateRepository.GetFocusTarget();
+
+                if (focusTarget != null)
+                {
+                  focusTab.AddFocusTarget(focusTarget.Name);
+                }
+              }
+
+              ImGui.Separator();
+
+              var tabMessages = StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+
+              if (tabMessages.Count() > 0)
+              {
+                MessagePanel(tabMessages);
+              }
+              else
+              {
+                ImGui.Text("No messages to display.");
+              }
+
+              ImGui.EndTabItem();
+            }
+          }
+
+          StateRepository.RemoveClosedFocusTabs();
+
+          ImGui.EndTabBar();
         }
-
-        StateRepository.RemoveClosedFocusTabs();
-
-        ImGui.EndTabBar();
       }
       ImGui.End();
     }
