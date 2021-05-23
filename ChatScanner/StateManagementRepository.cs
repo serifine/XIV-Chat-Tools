@@ -55,6 +55,7 @@ namespace ChatScanner
     {
       return _pluginInterface.ClientState.Actors
         .Where(t => t.Name != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
+        .OrderBy(t => t.Name)
         .ToList();
     }
 
