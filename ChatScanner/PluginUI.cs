@@ -29,6 +29,11 @@ namespace ChatScanner
       set { this.settingsVisible = value; }
     }
 
+    private FocusTab customWindowFocusTab = new FocusTab("Private Window")
+    {
+      focusTargets = new List<string>()
+    };
+
     // passing in the image here just for simplicity
     public PluginUI(Configuration configuration)
     {
@@ -86,7 +91,7 @@ namespace ChatScanner
       if (ImGui.Begin("Chat Scanner", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
       {
         ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (190 * scale));
+        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (100 * scale));
         if (ImGui.Button("Add Focus Target"))
         {
           StateRepository.AddFocusTabFromTarget();
@@ -137,102 +142,95 @@ namespace ChatScanner
             ImGui.EndTabItem();
           }
 
-          // if (ImGui.BeginTabItem("Keyword Scan"))
-          // {
-          //   MessagePanel();
-          //   ImGui.EndTabItem();
-          // }
+          if (ImGui.BeginTabItem("Custom Window"))
+          {
+            if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
+            {
+              ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+              ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+              foreach (var name in customWindowFocusTab.GetFocusTargets())
+              {
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+
+                if (ImGui.SmallButton("Remove##" + name))
+                {
+                  customWindowFocusTab.RemoveFocusTarget(name);
+                }
+
+                ImGui.TableSetColumnIndex(1);
+                ImGui.Text(name);
+              }
+              ImGui.EndTable();
+            }
+
+
+            ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
+            ImGui.SetNextItemWidth(200);
+            if (ImGui.BeginCombo(" ", comboCurrentValue))
+            {
+              if (ImGui.Selectable("Focus Target"))
+              {
+                comboCurrentValue = "Focus Target";
+              }
+
+              if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
+              {
+                // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
+                comboCurrentValue = StateRepository.GetPlayerName();
+              }
+
+              ImGui.Separator();
+
+              foreach (var actor in StateRepository.GetActorList())
+              {
+                if (ImGui.Selectable(actor.Name))
+                {
+                  comboCurrentValue = actor.Name;
+                }
+              }
+
+              ImGui.EndCombo();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Add To Group"))
+            {
+              if (comboCurrentValue == "Focus Target")
+              {
+                var focusTarget = StateRepository.GetFocusTarget();
+
+                if (focusTarget != null)
+                {
+                  customWindowFocusTab.AddFocusTarget(focusTarget.Name);
+                }
+              }
+              else
+              {
+                customWindowFocusTab.AddFocusTarget(comboCurrentValue);
+              }
+
+              comboCurrentValue = "Focus Target";
+            }
+
+            ImGui.Separator();
+
+            var tabMessages = StateRepository.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
+
+            if (tabMessages.Count() > 0)
+            {
+              MessagePanel(tabMessages);
+            }
+            else
+            {
+              ImGui.Text("No messages to display.");
+            }
+            ImGui.EndTabItem();
+          }
 
           foreach (var focusTab in StateRepository.GetFocusTabs())
           {
             if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
             {
-              var focusNames = focusTab.GetFocusTargets();
-              // var comboItems = new List<string>() { "Focus Target", "Saya Naeuri (you)" };
-              // comboItems.AddRange(focusNames);
-
-              if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
-              {
-                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-                foreach (var name in focusNames)
-                {
-                  ImGui.TableNextRow();
-
-                  ImGui.TableSetColumnIndex(0);
-                  // if (names.Count() > 0)
-                  // {
-                  ImGui.PushID("Button" + name);
-                  if (ImGui.SmallButton("Remove"))
-                  {
-                    focusTab.RemoveFocusTarget(name);
-                  }
-                  // } else {
-                  //   ImGui.Text("Cant Remove");
-                  // }
-
-                  ImGui.TableSetColumnIndex(1);
-                  ImGui.Text(name);
-                }
-              }
-              ImGui.EndTable();
-
-              ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
-
-              // ImGui.BeginGroup();
-
-
-              ImGui.SetNextItemWidth(200);
-              // ImGui.Combo(" ", ref this.comboCurrentItem, comboItems.ToArray(), comboItems.Count());
-              if (ImGui.BeginCombo(" ", comboCurrentValue))
-              {
-                if (ImGui.Selectable("Focus Target"))
-                {
-                  comboCurrentValue = "Focus Target";
-                }
-
-                if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
-                {
-                  // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
-                  comboCurrentValue = StateRepository.GetPlayerName();
-                }
-
-                ImGui.Separator();
-
-                foreach (var actor in StateRepository.GetActorList())
-                {
-                  if (ImGui.Selectable(actor.Name))
-                  {
-                    comboCurrentValue = actor.Name;
-                    // focusTab.AddFocusTarget(actor.Name);
-                  }
-
-                }
-
-                ImGui.EndCombo();
-              }
-              ImGui.SameLine();
-              if (ImGui.Button("Add To Group"))
-              {
-                if (comboCurrentValue == "Focus Target")
-                {
-                  var focusTarget = StateRepository.GetFocusTarget();
-
-                  if (focusTarget != null)
-                  {
-                    focusTab.AddFocusTarget(focusTarget.Name);
-                  }
-                }
-                else
-                {
-                  focusTab.AddFocusTarget(comboCurrentValue);
-                }
-                comboCurrentValue = "Focus Target";
-              }
-              // ImGui.EndGroup();
-
-              ImGui.Separator();
-
               var tabMessages = StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
 
               if (tabMessages.Count() > 0)
