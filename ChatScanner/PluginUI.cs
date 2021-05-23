@@ -162,6 +162,7 @@ namespace ChatScanner
                   ImGui.TableSetColumnIndex(0);
                   // if (names.Count() > 0)
                   // {
+                  ImGui.PushID("Button" + name);
                   if (ImGui.SmallButton("Remove"))
                   {
                     focusTab.RemoveFocusTarget(name);
@@ -205,7 +206,7 @@ namespace ChatScanner
                     comboCurrentValue = actor.Name;
                     // focusTab.AddFocusTarget(actor.Name);
                   }
-                  
+
                 }
 
                 ImGui.EndCombo();
