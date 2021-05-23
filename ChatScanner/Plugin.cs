@@ -149,7 +149,7 @@ namespace ChatScanner
       // PluginLog.LogDebug("");
       // PluginLog.LogDebug("");
 
-      stateRepository.addChatLog(new Models.ChatEntry()
+      stateRepository.AddChatLog(new Models.ChatEntry()
       {
         ChatType = type,
         Message = cmessage.TextValue,
@@ -174,7 +174,7 @@ namespace ChatScanner
 
       if (playerPayload == null || type == XivChatType.TellOutgoing)
       {
-        senderName = stateRepository.getPlayerName();
+        senderName = stateRepository.GetPlayerName();
       }
 
       return senderName;
@@ -207,7 +207,7 @@ namespace ChatScanner
         }
         else
         {
-          return stateRepository.getPlayerName();
+          return stateRepository.GetPlayerName();
         }
       }
 
@@ -220,7 +220,7 @@ namespace ChatScanner
 
       if (type == XivChatType.TellOutgoing)
       {
-        return stateRepository.getPlayerName();
+        return stateRepository.GetPlayerName();
       }
 
       return "N/A|BadType";

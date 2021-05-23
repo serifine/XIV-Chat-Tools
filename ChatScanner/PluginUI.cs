@@ -86,7 +86,7 @@ namespace ChatScanner
       {
         if (ImGui.Button("Add Focus Target"))
         {
-          stateRepository.addFocusTabFromTarget();
+          stateRepository.AddFocusTabFromTarget();
         }
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (190 * scale));
         ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
@@ -97,11 +97,11 @@ namespace ChatScanner
 
         if (ImGui.BeginTabItem("Selected Target"))
         {
-          var focusTarget = stateRepository.getFocusTargetName();
+          var focusTarget = stateRepository.GetFocusTargetName();
 
           if (focusTarget != null)
           {
-            var messages = stateRepository.getMessagesForFocusTarget();
+            var messages = stateRepository.GetMessagesForFocusTarget();
 
             if (messages != null && messages.Count() > 0)
             {
@@ -122,7 +122,7 @@ namespace ChatScanner
 
         if (ImGui.BeginTabItem("All Messages"))
         {
-          MessagePanel(stateRepository.getAllMessages());
+          MessagePanel(stateRepository.GetAllMessages());
           ImGui.EndTabItem();
         }
 
@@ -132,7 +132,7 @@ namespace ChatScanner
         //   ImGui.EndTabItem();
         // }
 
-        foreach (var focusTab in stateRepository.getFocusTabs())
+        foreach (var focusTab in stateRepository.GetFocusTabs())
         {
           if (ImGui.BeginTabItem(focusTab.Name))
           {
@@ -141,7 +141,7 @@ namespace ChatScanner
             //   focusRepository.removeFocusTab(focusTarget.Id);
             // }
 
-            MessagePanel(stateRepository.getMessagesByPlayerNames(focusTab.getFocusTargetNames()));
+            MessagePanel(stateRepository.GetMessagesByPlayerNames(focusTab.getFocusTargetNames()));
 
             ImGui.EndTabItem();
           }
@@ -160,7 +160,7 @@ namespace ChatScanner
 
       foreach (var chatItem in messages)
       {
-        if (chatItem.SenderName == stateRepository.getPlayerName())
+        if (chatItem.SenderName == stateRepository.GetPlayerName())
         {
           ImGui.TextColored(ORANGE_COLOR, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
           ImGui.SameLine();

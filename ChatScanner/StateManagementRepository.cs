@@ -44,12 +44,12 @@ namespace ChatScanner
 
     }
 
-    public string getPlayerName()
+    public string GetPlayerName()
     {
       return _pluginInterface.ClientState.LocalPlayer?.Name;
     }
 
-    public string getFocusTargetName()
+    public string GetFocusTargetName()
     {
       if (_pluginInterface.ClientState.Targets.CurrentTarget != null)
       {
@@ -59,14 +59,14 @@ namespace ChatScanner
       return _pluginInterface.ClientState.Targets.MouseOverTarget?.Name;
     }
 
-    public int? getFocusTargetId()
+    public int? GetFocusTargetId()
     {
       return this._pluginInterface.ClientState.Targets.CurrentTarget?.ActorId;
     }
 
-    public void addChatLog(ChatEntry chatEntry)
+    public void AddChatLog(ChatEntry chatEntry)
     {
-      chatEntry.OwnerId = getPlayerName();
+      chatEntry.OwnerId = GetPlayerName();
       this.ChatEntries.Add(chatEntry);
 
       // PluginLog.Log("Adding chat message to repository");
@@ -76,32 +76,32 @@ namespace ChatScanner
       // PluginLog.Log("message:" + chatEntry.Message);
     }
 
-    public List<ChatEntry> getAllMessages()
+    public List<ChatEntry> GetAllMessages()
     {
       return this.ChatEntries
-        .Where(t => t.OwnerId == getPlayerName())
+        .Where(t => t.OwnerId == GetPlayerName())
         .ToList();
     }
 
-    public List<ChatEntry> getMessagesForFocusTarget()
+    public List<ChatEntry> GetMessagesForFocusTarget()
     {
-      var name = this.getFocusTargetName();
+      var name = this.GetFocusTargetName();
 
       return this.ChatEntries
-        .Where(t => t.OwnerId == getPlayerName())
+        .Where(t => t.OwnerId == GetPlayerName())
         .Where(t => t.SenderName == name || t.SenderName.StartsWith(name))
         .ToList();
     }
 
-    public List<ChatEntry> getMessagesByPlayerNames(List<string> names)
+    public List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
     {
       return this.ChatEntries
-        .Where(t => t.OwnerId == getPlayerName())
+        .Where(t => t.OwnerId == GetPlayerName())
         .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
         .ToList();
     }
 
-    public void addFocusTabFromTarget()
+    public void AddFocusTabFromTarget()
     {
       if (this._pluginInterface.ClientState.Targets.CurrentTarget != null)
       {
@@ -111,13 +111,7 @@ namespace ChatScanner
       }
     }
 
-    public void removeFocusTab(Guid Id)
-    {
-      var target = this.FocusTabs.Find(t => t.FocusTabId == Id);
-      this.FocusTabs.Remove(target);
-    }
-
-    public List<FocusTab> getFocusTabs()
+    public List<FocusTab> GetFocusTabs()
     {
       return this.FocusTabs;
     }
