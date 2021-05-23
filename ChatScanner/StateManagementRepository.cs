@@ -7,6 +7,7 @@ using Dalamud.Plugin;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.Sanitizer;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.ClientState.Actors;
 using Dalamud.Game.ClientState.Actors.Types;
 using ChatScanner.Models;
 
@@ -50,15 +51,24 @@ namespace ChatScanner
       return _pluginInterface.ClientState.LocalPlayer?.Name;
     }
 
+    public List<Actor> GetActorList()
+    {
+      return _pluginInterface.ClientState.Actors
+        .Where(t => t.Name != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
+        .ToList();
+    }
+
     public Actor GetFocusTarget()
     {
       var focusTarget = _pluginInterface.ClientState.Targets.CurrentTarget;
 
-      if (focusTarget == null) {
+      if (focusTarget == null)
+      {
         focusTarget = _pluginInterface.ClientState.Targets.MouseOverTarget;
       }
 
-      if (focusTarget != null && focusTarget.ObjectKind != Dalamud.Game.ClientState.Actors.ObjectKind.Player) {
+      if (focusTarget != null && focusTarget.ObjectKind != ObjectKind.Player)
+      {
         focusTarget = null;
       }
 

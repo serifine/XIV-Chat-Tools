@@ -195,6 +195,19 @@ namespace ChatScanner
                   // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
                   comboCurrentValue = StateRepository.GetPlayerName();
                 }
+
+                ImGui.Separator();
+
+                foreach (var actor in StateRepository.GetActorList())
+                {
+                  if (ImGui.Selectable(actor.Name))
+                  {
+                    comboCurrentValue = actor.Name;
+                    // focusTab.AddFocusTarget(actor.Name);
+                  }
+                  
+                }
+
                 ImGui.EndCombo();
               }
               ImGui.SameLine();
