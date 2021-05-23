@@ -76,6 +76,7 @@
     <Compile Include="Framework\UIBootstrap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UITest.cs" />
+    <Compile Include="Models\FocusTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -86,10 +87,6 @@
       <Visible>false</Visible>
     </Content>
     <Content Include="..\Data\NotoSansCJKjp-Medium.otf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="..\Data\goat.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
