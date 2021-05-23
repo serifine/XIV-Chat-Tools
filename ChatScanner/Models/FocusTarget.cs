@@ -12,37 +12,28 @@ namespace ChatScanner.Models
     public Guid FocusTabId = new Guid();
     public string Name = "";
     public bool Open = true;
-    public List<FocusTarget> focusTargets = new List<FocusTarget>();
+    public List<string> focusTargets = new List<string>();
 
     public FocusTab(string name, int id)
     {
       this.Name = name;
-      if (this.focusTargets.Any(t => t.Name == name))
+
+      if (this.focusTargets.Any(t => t == name))
       {
-        this.focusTargets.Add(new FocusTarget()
-        {
-          Id = id,
-          Name = name
-        });
+        this.focusTargets.Add(name);
       }
     }
 
-    public List<string> GetFocusTargetNames()
+    public List<string> GetFocusTargets()
     {
-      return focusTargets
-        .Select(t => t.Name)
-        .ToList();
+      return focusTargets.ToList();
     }
 
-    public void AddFocusTarget(string name, int id)
+    public void AddFocusTarget(string name)
     {
-      if (this.focusTargets.Any(t => t.Name == name))
+      if (this.focusTargets.Any(t => t == name))
       {
-        this.focusTargets.Add(new FocusTarget()
-        {
-          Id = id,
-          Name = name
-        });
+        this.focusTargets.Add(name);
       }
     }
   }

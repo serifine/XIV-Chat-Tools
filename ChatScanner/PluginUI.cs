@@ -136,7 +136,7 @@ namespace ChatScanner
         {
           if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
           {
-            MessagePanel(StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargetNames()));
+            MessagePanel(StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets()));
             ImGui.EndTabItem();
           }
         }
