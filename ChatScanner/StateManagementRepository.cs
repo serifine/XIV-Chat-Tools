@@ -111,6 +111,11 @@ namespace ChatScanner
       }
     }
 
+    public void RemoveClosedFocusTabs()
+    {
+      this.FocusTabs.RemoveAll(t => t.Open == false);
+    }
+
     public List<FocusTab> GetFocusTabs()
     {
       return this.FocusTabs;

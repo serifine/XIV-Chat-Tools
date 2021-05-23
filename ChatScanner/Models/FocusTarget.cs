@@ -11,6 +11,7 @@ namespace ChatScanner.Models
   {
     public Guid FocusTabId = new Guid();
     public string Name = "";
+    public bool Open = true;
     public List<FocusTarget> focusTargets = new List<FocusTarget>();
 
     public FocusTab(string name, int id)
