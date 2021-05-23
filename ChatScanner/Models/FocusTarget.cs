@@ -14,11 +14,11 @@ namespace ChatScanner.Models
     public bool Open = true;
     public List<string> focusTargets = new List<string>();
 
-    public FocusTab(string name, int id)
+    public FocusTab(string name)
     {
       this.Name = name;
 
-      if (this.focusTargets.Any(t => t == name))
+      if (this.focusTargets.Any(t => t == name) == false)
       {
         this.focusTargets.Add(name);
       }
@@ -31,7 +31,7 @@ namespace ChatScanner.Models
 
     public void AddFocusTarget(string name)
     {
-      if (this.focusTargets.Any(t => t == name))
+      if (this.focusTargets.Any(t => t == name) == false)
       {
         this.focusTargets.Add(name);
       }

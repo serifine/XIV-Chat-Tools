@@ -52,12 +52,17 @@ namespace ChatScanner
 
     public Actor GetFocusTarget()
     {
-      if (_pluginInterface.ClientState.Targets.CurrentTarget != null)
-      {
-        return _pluginInterface.ClientState.Targets.CurrentTarget;
+      var focusTarget = _pluginInterface.ClientState.Targets.CurrentTarget;
+
+      if (focusTarget == null) {
+        focusTarget = _pluginInterface.ClientState.Targets.MouseOverTarget;
       }
 
-      return _pluginInterface.ClientState.Targets.MouseOverTarget;
+      if (focusTarget != null && focusTarget.ObjectKind != Dalamud.Game.ClientState.Actors.ObjectKind.Player) {
+        focusTarget = null;
+      }
+
+      return focusTarget;
     }
 
     public int? GetFocusTargetId()
@@ -108,8 +113,7 @@ namespace ChatScanner
 
       if (focusTarget != null)
       {
-        
-        var focusTab = new FocusTab(focusTarget.Name, 0);
+        var focusTab = new FocusTab(focusTarget.Name);
 
         this.FocusTabs.Add(focusTab);
       }

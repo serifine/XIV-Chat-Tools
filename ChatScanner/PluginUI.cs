@@ -63,6 +63,7 @@ namespace ChatScanner
     // this is where you'd have to start mocking objects if you really want to match
     // but for simple UI creation purposes, just hardcoding values works
     private bool fakeConfigBool = true;
+    private string comboCurrentValue = "Focus Target";
 
     private readonly Vector4 ORANGE_COLOR = new Vector4(0.950f, 0.500f, 0f, 1f);
     private readonly Vector4 LIGHT_ORANGE_COLOR = new Vector4(0.950f, 0.650f, 0f, 1f);
@@ -91,7 +92,7 @@ namespace ChatScanner
           StateRepository.AddFocusTabFromTarget();
         }
 
-        ImGui.Separator();
+        // ImGui.Separator();
 
         if (ImGui.BeginTabBar("MainTabs", ImGuiTabBarFlags.Reorderable))
         {
@@ -146,24 +147,75 @@ namespace ChatScanner
           {
             if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
             {
-              ImGui.Text("Watching:");
+              var focusNames = focusTab.GetFocusTargets();
+              // var comboItems = new List<string>() { "Focus Target", "Saya Naeuri (you)" };
+              // comboItems.AddRange(focusNames);
 
-              ImGui.Text(focusTab.focusTargets.First());
-
-              foreach (var focusTarget in focusTab.GetFocusTargets())
+              if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
               {
-                ImGui.Text(focusTarget);
-              }
-
-              if (ImGui.Button("Add Focus Target"))
-              {
-                var focusTarget = StateRepository.GetFocusTarget();
-
-                if (focusTarget != null)
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                foreach (var name in focusNames)
                 {
-                  focusTab.AddFocusTarget(focusTarget.Name);
+                  ImGui.TableNextRow();
+
+                  ImGui.TableSetColumnIndex(0);
+                  // if (names.Count() > 0)
+                  // {
+                  if (ImGui.SmallButton("Remove"))
+                  {
+                    focusTab.RemoveFocusTarget(name);
+                  }
+                  // } else {
+                  //   ImGui.Text("Cant Remove");
+                  // }
+
+                  ImGui.TableSetColumnIndex(1);
+                  ImGui.Text(name);
                 }
               }
+              ImGui.EndTable();
+
+              ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
+
+              // ImGui.BeginGroup();
+
+
+              ImGui.SetNextItemWidth(200);
+              // ImGui.Combo(" ", ref this.comboCurrentItem, comboItems.ToArray(), comboItems.Count());
+              if (ImGui.BeginCombo(" ", comboCurrentValue))
+              {
+                if (ImGui.Selectable("Focus Target"))
+                {
+                  comboCurrentValue = "Focus Target";
+                }
+
+                if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
+                {
+                  // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
+                  comboCurrentValue = StateRepository.GetPlayerName();
+                }
+                ImGui.EndCombo();
+              }
+              ImGui.SameLine();
+              if (ImGui.Button("Add To Group"))
+              {
+                if (comboCurrentValue == "Focus Target")
+                {
+                  var focusTarget = StateRepository.GetFocusTarget();
+
+                  if (focusTarget != null)
+                  {
+                    focusTab.AddFocusTarget(focusTarget.Name);
+                  }
+                }
+                else
+                {
+                  focusTab.AddFocusTarget(comboCurrentValue);
+                }
+                comboCurrentValue = "Focus Target";
+              }
+              // ImGui.EndGroup();
 
               ImGui.Separator();
 
