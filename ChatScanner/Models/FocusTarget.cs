@@ -27,14 +27,14 @@ namespace ChatScanner.Models
       }
     }
 
-    public List<string> getFocusTargetNames()
+    public List<string> GetFocusTargetNames()
     {
       return focusTargets
         .Select(t => t.Name)
         .ToList();
     }
 
-    public void addFocusTarget(string name, int id)
+    public void AddFocusTarget(string name, int id)
     {
       if (this.focusTargets.Any(t => t.Name == name))
       {
