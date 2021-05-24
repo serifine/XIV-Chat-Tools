@@ -15,9 +15,8 @@ namespace ChatScanner
 {
   public class StateManagementRepository : IDisposable
   {
-    private List<FocusTab> FocusTabs;
-    private List<ChatEntry> ChatEntries;
-
+    private List<FocusTab> _focusTabs;
+    private List<ChatEntry> _chatEntries;
     private DalamudPluginInterface _pluginInterface;
 
     public static StateManagementRepository Instance { get; private set; }
@@ -26,8 +25,8 @@ namespace ChatScanner
     {
       try
       {
-        this.ChatEntries = new List<ChatEntry>();
-        this.FocusTabs = new List<FocusTab>();
+        this._chatEntries = new List<ChatEntry>();
+        this._focusTabs = new List<FocusTab>();
         this._pluginInterface = pi;
       }
       catch (Exception e)
@@ -84,7 +83,7 @@ namespace ChatScanner
     public void AddChatLog(ChatEntry chatEntry)
     {
       chatEntry.OwnerId = GetPlayerName();
-      this.ChatEntries.Add(chatEntry);
+      this._chatEntries.Add(chatEntry);
 
       // PluginLog.Log("Adding chat message to repository");
       // PluginLog.Log("---------------------------------");
@@ -95,7 +94,7 @@ namespace ChatScanner
 
     public List<ChatEntry> GetAllMessages()
     {
-      return this.ChatEntries
+      return this._chatEntries
         .Where(t => t.OwnerId == GetPlayerName())
         .ToList();
     }
@@ -104,7 +103,7 @@ namespace ChatScanner
     {
       var focusTarget = this.GetFocusTarget();
 
-      return this.ChatEntries
+      return this._chatEntries
         .Where(t => t.OwnerId == GetPlayerName())
         .Where(t => t.SenderName == focusTarget?.Name || t.SenderName.StartsWith(focusTarget?.Name))
         .ToList();
@@ -112,7 +111,7 @@ namespace ChatScanner
 
     public List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
     {
-      return this.ChatEntries
+      return this._chatEntries
         .Where(t => t.OwnerId == GetPlayerName())
         .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
         .ToList();
@@ -126,18 +125,18 @@ namespace ChatScanner
       {
         var focusTab = new FocusTab(focusTarget.Name);
 
-        this.FocusTabs.Add(focusTab);
+        this._focusTabs.Add(focusTab);
       }
     }
 
     public void RemoveClosedFocusTabs()
     {
-      this.FocusTabs.RemoveAll(t => t.Open == false);
+      this._focusTabs.RemoveAll(t => t.Open == false);
     }
 
     public List<FocusTab> GetFocusTabs()
     {
-      return this.FocusTabs;
+      return this._focusTabs;
     }
   }
 }
