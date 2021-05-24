@@ -6,10 +6,6 @@ using System.Linq;
 using ChatScanner.Models;
 using Dalamud.Game.Text;
 
-
-
-using Dalamud.Plugin;
-
 namespace ChatScanner
 {
   // It is good to have this be disposable in general, in case you ever need it
