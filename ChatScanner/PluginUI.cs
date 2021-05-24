@@ -4,6 +4,11 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
 using ChatScanner.Models;
+using Dalamud.Game.Text;
+
+
+
+using Dalamud.Plugin;
 
 namespace ChatScanner
 {
@@ -311,8 +316,8 @@ namespace ChatScanner
       }
 
       ImGui.SetNextWindowSize(new Vector2(400, 250), ImGuiCond.Always);
-      if (ImGui.Begin("A Wonderful Configuration Window", ref this.settingsVisible,
-          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse ))
+      if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,
+          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
       {
         if (ImGui.Checkbox("Open On Login", ref this.configuration.OpenOnLogin))
         {
@@ -321,6 +326,88 @@ namespace ChatScanner
 
         if (ImGui.Checkbox("Preserve Message History on Logout", ref this.configuration.PreserveMessagesOnLogout))
         {
+          this.configuration.Save();
+        }
+
+        ImGui.Spacing();
+        ImGui.Text("Channels to Log");
+        ImGui.Separator();
+
+        var standardEmotes = this.configuration.AllowedChannels.Contains(XivChatType.StandardEmote);
+        var customEmotes = this.configuration.AllowedChannels.Contains(XivChatType.CustomEmote);
+        var party = this.configuration.AllowedChannels.Contains(XivChatType.Party);
+        var say = this.configuration.AllowedChannels.Contains(XivChatType.Say);
+        var whispers = this.configuration.AllowedChannels.Contains(XivChatType.TellOutgoing) && this.configuration.AllowedChannels.Contains(XivChatType.TellIncoming);
+
+        if (ImGui.Checkbox("Say", ref say))
+        {
+          if (say)
+          {
+            this.configuration.AllowedChannels.Add(XivChatType.Say);
+          }
+          else
+          {
+            this.configuration.AllowedChannels.Remove(XivChatType.Say);
+          }
+
+          this.configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Standard Emotes", ref standardEmotes))
+        {
+          if (standardEmotes)
+          {
+            this.configuration.AllowedChannels.Add(XivChatType.StandardEmote);
+          }
+          else
+          {
+            this.configuration.AllowedChannels.Remove(XivChatType.StandardEmote);
+          }
+
+          this.configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Custom Emotes", ref customEmotes))
+        {
+          if (customEmotes)
+          {
+            this.configuration.AllowedChannels.Add(XivChatType.CustomEmote);
+          }
+          else
+          {
+            this.configuration.AllowedChannels.Remove(XivChatType.CustomEmote);
+          }
+
+          this.configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Whispers", ref whispers))
+        {
+          if (whispers)
+          {
+            this.configuration.AllowedChannels.Add(XivChatType.TellIncoming);
+            this.configuration.AllowedChannels.Add(XivChatType.TellOutgoing);
+          }
+          else
+          {
+            this.configuration.AllowedChannels.Remove(XivChatType.TellIncoming);
+            this.configuration.AllowedChannels.Remove(XivChatType.TellOutgoing);
+          }
+
+          this.configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Party", ref party))
+        {
+          if (party)
+          {
+            this.configuration.AllowedChannels.Add(XivChatType.Party);
+          }
+          else
+          {
+            this.configuration.AllowedChannels.Remove(XivChatType.Party);
+          }
+
           this.configuration.Save();
         }
       }

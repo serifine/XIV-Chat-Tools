@@ -21,7 +21,6 @@ namespace ChatScanner
 
     private StateManagementRepository stateRepository;
     private DalamudPluginInterface _pluginInterface;
-    private List<XivChatType> _allowedChannels;
     private Configuration configuration;
     private PluginUI ui;
 
@@ -55,8 +54,6 @@ namespace ChatScanner
       {
         HelpMessage = "Alias for /chatScanner."
       });
-
-      _allowedChannels = configuration.AllowedChannels;
 
       _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
       this._pluginInterface.ClientState.OnLogout += this.OnLogout;
@@ -122,7 +119,15 @@ namespace ChatScanner
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
-      if (isHandled || !_allowedChannels.Any(t => t == type))
+      PluginLog.Log("Testing methods of checking for channel types");
+      PluginLog.Log("==========================");
+      PluginLog.Log("this.configuration.AllowedChannels.Any(t => t == type)");
+      PluginLog.Log(this.configuration.AllowedChannels.Any(t => t == type).ToString());
+      PluginLog.Log("this.configuration.AllowedChannels.Contains(type)");
+      PluginLog.Log(this.configuration.AllowedChannels.Contains(type).ToString());
+      
+
+      if (isHandled || !this.configuration.AllowedChannels.Any(t => t == type))
       {
         return;
       }
