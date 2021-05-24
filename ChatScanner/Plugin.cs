@@ -84,8 +84,6 @@ namespace ChatScanner
 
     private void OnCommand(string command, string args)
     {
-      PluginLog.Log("Command: " + command);
-      PluginLog.Log("Args: " + args);
       if (args.ToLower() == "config" || args.ToLower() == "settings")
       {
         this.ui.SettingsVisible = true;
