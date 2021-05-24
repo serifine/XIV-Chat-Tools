@@ -103,127 +103,22 @@ namespace ChatScanner
         {
           if (ImGui.BeginTabItem("Selected Target"))
           {
-            var focusTarget = StateRepository.GetFocusTarget();
-
-            if (focusTarget != null)
-            {
-              var messages = StateRepository.GetMessagesForFocusTarget();
-
-              if (messages != null && messages.Count() > 0)
-              {
-                MessagePanel(messages);
-              }
-              else
-              {
-                ImGui.Text("No messages found for " + focusTarget.Name + ".");
-              }
-            }
-            else
-            {
-              ImGui.Text("No target selected.");
-            }
+            SelectedTargetTab();
 
             ImGui.EndTabItem();
           }
 
           if (ImGui.BeginTabItem("All Messages"))
           {
-            var tabMessages = StateRepository.GetAllMessages();
-
-            if (tabMessages.Count() > 0)
-            {
-              MessagePanel(tabMessages);
-            }
-            else
-            {
-              ImGui.Text("No messages to display.");
-            }
+            AllMessagesTab();
 
             ImGui.EndTabItem();
           }
 
-          if (ImGui.BeginTabItem("Custom Window"))
+          if (ImGui.BeginTabItem("Custom Watch"))
           {
-            if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
-            {
-              ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-              ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-              foreach (var name in customWindowFocusTab.GetFocusTargets())
-              {
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
+            DrawCustomTab("DefaultCustom");
 
-                if (ImGui.SmallButton("Remove##" + name))
-                {
-                  customWindowFocusTab.RemoveFocusTarget(name);
-                }
-
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text(name);
-              }
-              ImGui.EndTable();
-            }
-
-
-            ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.BeginCombo(" ", comboCurrentValue))
-            {
-              if (ImGui.Selectable("Focus Target"))
-              {
-                comboCurrentValue = "Focus Target";
-              }
-
-              if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
-              {
-                // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
-                comboCurrentValue = StateRepository.GetPlayerName();
-              }
-
-              ImGui.Separator();
-
-              foreach (var actor in StateRepository.GetActorList())
-              {
-                if (ImGui.Selectable(actor.Name))
-                {
-                  comboCurrentValue = actor.Name;
-                }
-              }
-
-              ImGui.EndCombo();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("Add To Group"))
-            {
-              if (comboCurrentValue == "Focus Target")
-              {
-                var focusTarget = StateRepository.GetFocusTarget();
-
-                if (focusTarget != null)
-                {
-                  customWindowFocusTab.AddFocusTarget(focusTarget.Name);
-                }
-              }
-              else
-              {
-                customWindowFocusTab.AddFocusTarget(comboCurrentValue);
-              }
-
-              comboCurrentValue = "Focus Target";
-            }
-
-            ImGui.Separator();
-
-            var tabMessages = StateRepository.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
-
-            if (tabMessages.Count() > 0)
-            {
-              MessagePanel(tabMessages);
-            }
-            else
-            {
-              ImGui.Text("No messages to display.");
-            }
             ImGui.EndTabItem();
           }
 
@@ -231,16 +126,7 @@ namespace ChatScanner
           {
             if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
             {
-              var tabMessages = StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
-
-              if (tabMessages.Count() > 0)
-              {
-                MessagePanel(tabMessages);
-              }
-              else
-              {
-                ImGui.Text("No messages to display.");
-              }
+              DrawFocusTab(focusTab.FocusTabId.ToString(), focusTab);
 
               ImGui.EndTabItem();
             }
@@ -253,6 +139,147 @@ namespace ChatScanner
       }
       ImGui.End();
     }
+
+
+    public void SelectedTargetTab()
+    {
+      var focusTarget = StateRepository.GetFocusTarget();
+
+      if (focusTarget != null)
+      {
+        var messages = StateRepository.GetMessagesForFocusTarget();
+
+        if (messages != null && messages.Count() > 0)
+        {
+          MessagePanel(messages);
+        }
+        else
+        {
+          ImGui.Text("No messages found for " + focusTarget.Name + ".");
+        }
+      }
+      else
+      {
+        ImGui.Text("No target selected.");
+      }
+    }
+
+    public void AllMessagesTab()
+    {
+
+      var tabMessages = StateRepository.GetAllMessages();
+
+      if (tabMessages.Count() > 0)
+      {
+        MessagePanel(tabMessages);
+      }
+      else
+      {
+        ImGui.Text("No messages to display.");
+      }
+    }
+
+    public void DrawCustomTab(string tabId)
+    {
+      var scale = ImGui.GetIO().FontGlobalScale;
+
+      if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
+      {
+        ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+        ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+        foreach (var name in customWindowFocusTab.GetFocusTargets())
+        {
+          ImGui.TableNextRow();
+          ImGui.TableSetColumnIndex(0);
+
+          if (ImGui.SmallButton("Remove##" + tabId + name))
+          {
+            customWindowFocusTab.RemoveFocusTarget(name);
+          }
+
+          ImGui.TableSetColumnIndex(1);
+          ImGui.Text(name);
+        }
+        ImGui.EndTable();
+      }
+
+
+      ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
+      ImGui.SetNextItemWidth(200);
+      if (ImGui.BeginCombo(" ", comboCurrentValue))
+      {
+        if (ImGui.Selectable("Focus Target"))
+        {
+          comboCurrentValue = "Focus Target";
+        }
+
+        if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
+        {
+          // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
+          comboCurrentValue = StateRepository.GetPlayerName();
+        }
+
+        ImGui.Separator();
+
+        foreach (var actor in StateRepository.GetActorList())
+        {
+          if (ImGui.Selectable(actor.Name))
+          {
+            comboCurrentValue = actor.Name;
+          }
+        }
+
+        ImGui.EndCombo();
+      }
+      ImGui.SameLine();
+      if (ImGui.Button("Add To Group"))
+      {
+        if (comboCurrentValue == "Focus Target")
+        {
+          var focusTarget = StateRepository.GetFocusTarget();
+
+          if (focusTarget != null)
+          {
+            customWindowFocusTab.AddFocusTarget(focusTarget.Name);
+          }
+        }
+        else
+        {
+          customWindowFocusTab.AddFocusTarget(comboCurrentValue);
+        }
+
+        comboCurrentValue = "Focus Target";
+      }
+
+      ImGui.Separator();
+
+      var tabMessages = StateRepository.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
+
+      if (tabMessages.Count() > 0)
+      {
+        MessagePanel(tabMessages);
+      }
+      else
+      {
+        ImGui.Text("No messages to display.");
+      }
+    }
+
+    public void DrawFocusTab(string tabId, FocusTab focusTab)
+    {
+
+      var tabMessages = StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+
+      if (tabMessages.Count() > 0)
+      {
+        MessagePanel(tabMessages);
+      }
+      else
+      {
+        ImGui.Text("No messages to display.");
+      }
+    }
+
 
     public void MessagePanel(List<ChatEntry> messages)
     {
