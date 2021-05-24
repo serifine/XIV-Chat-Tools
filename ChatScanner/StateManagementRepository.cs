@@ -80,18 +80,6 @@ namespace ChatScanner
       return this._pluginInterface.ClientState.Targets.CurrentTarget?.ActorId;
     }
 
-    public void AddChatLog(ChatEntry chatEntry)
-    {
-      chatEntry.OwnerId = GetPlayerName();
-      this._chatEntries.Add(chatEntry);
-
-      // PluginLog.Log("Adding chat message to repository");
-      // PluginLog.Log("---------------------------------");
-      // PluginLog.Log("senderId:" + chatEntry.SenderId);
-      // PluginLog.Log("senderName:" + chatEntry.SenderName);
-      // PluginLog.Log("message:" + chatEntry.Message);
-    }
-
     public List<ChatEntry> GetAllMessages()
     {
       return this._chatEntries
@@ -117,6 +105,27 @@ namespace ChatScanner
         .ToList();
     }
 
+    public void AddChatMessage(ChatEntry chatEntry)
+    {
+      chatEntry.OwnerId = GetPlayerName();
+      this._chatEntries.Add(chatEntry);
+
+      // PluginLog.Log("Adding chat message to repository");
+      // PluginLog.Log("---------------------------------");
+      // PluginLog.Log("senderId:" + chatEntry.SenderId);
+      // PluginLog.Log("senderName:" + chatEntry.SenderName);
+      // PluginLog.Log("message:" + chatEntry.Message);
+    }
+
+    public void ClearMessageHistory() {
+      this._chatEntries.Clear();
+    }
+
+    public List<FocusTab> GetFocusTabs()
+    {
+      return this._focusTabs;
+    }
+
     public void AddFocusTabFromTarget()
     {
       var focusTarget = GetFocusTarget();
@@ -134,9 +143,8 @@ namespace ChatScanner
       this._focusTabs.RemoveAll(t => t.Open == false);
     }
 
-    public List<FocusTab> GetFocusTabs()
-    {
-      return this._focusTabs;
+    public void ClearAllFocusTabs() {
+      this._focusTabs.Clear();
     }
   }
 }

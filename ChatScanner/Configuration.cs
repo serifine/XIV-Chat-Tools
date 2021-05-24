@@ -12,6 +12,8 @@ namespace ChatScanner
   {
     public int Version { get; set; } = 0;
 
+    public bool OpenOnLogin = false;
+    public bool PreserveMessagesOnLogout = true;
     public List<XivChatType> AllowedChannels { get; set; } = new List<XivChatType>() {
       XivChatType.StandardEmote, XivChatType.CustomEmote, XivChatType.Party, XivChatType.Say, XivChatType.TellIncoming, XivChatType.TellOutgoing
     };

@@ -60,7 +60,7 @@ namespace ChatScanner
 
       _pluginInterface.Framework.Gui.Chat.OnChatMessage += Chat_OnChatMessage;
       this._pluginInterface.ClientState.OnLogout += this.OnLogout;
-      // this._pluginInterface.ClientState.OnLogin += this.OnLogin;
+      this._pluginInterface.ClientState.OnLogin += this.OnLogin;
 
       this._pluginInterface.UiBuilder.OnBuildUi += DrawUI;
       this._pluginInterface.UiBuilder.OnOpenConfigUi += (sender, args) => DrawConfigUI();
@@ -72,7 +72,7 @@ namespace ChatScanner
 
       this._pluginInterface.Framework.Gui.Chat.OnChatMessage -= Chat_OnChatMessage;
       this._pluginInterface.ClientState.OnLogout -= this.OnLogout;
-      // this.Interface.ClientState.OnLogin -= this.OnLogin;
+      this._pluginInterface.ClientState.OnLogin -= this.OnLogin;
 
       this._pluginInterface.CommandManager.RemoveHandler("/chatScanner");
       this._pluginInterface.CommandManager.RemoveHandler("/cScanner");
@@ -84,8 +84,16 @@ namespace ChatScanner
 
     private void OnCommand(string command, string args)
     {
-      // in response to the slash command, just display our main ui
-      this.ui.Visible = true;
+      PluginLog.Log("Command: " + command);
+      PluginLog.Log("Args: " + args);
+      if (args.ToLower() == "config" || args.ToLower() == "settings")
+      {
+        this.ui.SettingsVisible = true;
+      }
+      else
+      {
+        this.ui.Visible = true;
+      }
     }
 
     private void DrawUI()
@@ -98,26 +106,20 @@ namespace ChatScanner
       this.ui.SettingsVisible = true;
     }
 
-
-    // private int GetActorId(string nameInput)
-    // {
-    //   foreach (var t in _pluginInterface.ClientState.Actors)
-    //   {
-    //     if (!(t is PlayerCharacter pc)) continue;
-    //     if (pc.Name == nameInput) return pc.ActorId;
-    //   }
-
-    //   return 0;
-    // }
-
-    // private string getSelectedTarget()
-    // {
-    //   return _pluginInterface.ClientState.Targets.CurrentTarget?.Name;
-    // }
+    private void OnLogin(object sender, EventArgs args)
+    {
+      this.ui.Visible = configuration.OpenOnLogin;
+    }
 
     private void OnLogout(object sender, EventArgs args)
     {
       this.ui.Visible = false;
+      this.stateRepository.ClearAllFocusTabs();
+
+      if (this.configuration.PreserveMessagesOnLogout == false)
+      {
+        this.stateRepository.ClearMessageHistory();
+      }
     }
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
@@ -149,38 +151,16 @@ namespace ChatScanner
       // PluginLog.LogDebug("");
       // PluginLog.LogDebug("");
 
-      stateRepository.AddChatLog(new Models.ChatEntry()
+      stateRepository.AddChatMessage(new Models.ChatEntry()
       {
         ChatType = type,
         Message = cmessage.TextValue,
         SenderId = senderId,
-        SenderName = ParseName(type, sender)
+        SenderName = ParsePlayerName(type, sender)
       });
     }
 
-    private string OldParseName(XivChatType type, SeString sender)
-    {
-
-      var senderName = "";
-
-
-      // XivChatType.Party || XivChatType.Say
-      var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
-
-      if (playerPayload != null)
-      {
-        senderName = (playerPayload as PlayerPayload).PlayerName;
-      }
-
-      if (playerPayload == null || type == XivChatType.TellOutgoing)
-      {
-        senderName = stateRepository.GetPlayerName();
-      }
-
-      return senderName;
-    }
-
-    private string ParseName(XivChatType type, SeString sender)
+    private string ParsePlayerName(XivChatType type, SeString sender)
     {
       if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
       {

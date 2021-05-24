@@ -29,6 +29,19 @@ namespace ChatScanner
       set { this.settingsVisible = value; }
     }
 
+
+    private bool autoScrollToBottom = false;
+    public bool AutoScrollToBottom
+    {
+      get { return this.autoScrollToBottom; }
+      set { this.autoScrollToBottom = value; }
+    }
+
+    private string comboCurrentValue = "Focus Target";
+
+    private readonly Vector4 ORANGE_COLOR = new Vector4(0.950f, 0.500f, 0f, 1f);
+    private readonly Vector4 LIGHT_ORANGE_COLOR = new Vector4(0.950f, 0.650f, 0f, 1f);
+
     private FocusTab customWindowFocusTab = new FocusTab("Private Window")
     {
       focusTargets = new List<string>()
@@ -47,31 +60,9 @@ namespace ChatScanner
 
     public void Draw()
     {
-      // This is our only draw handler attached to UIBuilder, so it needs to be
-      // able to draw any windows we might have open.
-      // Each method checks its own visibility/state to ensure it only draws when
-      // it actually makes sense.
-      // There are other ways to do this, but it is generally best to keep the number of
-      // draw delegates as low as possible.
-
       DrawMainWindow();
       DrawSettingsWindow();
     }
-
-    private bool autoScrollToBottom = false;
-    public bool AutoScrollToBottom
-    {
-      get { return this.autoScrollToBottom; }
-      set { this.autoScrollToBottom = value; }
-    }
-
-    // this is where you'd have to start mocking objects if you really want to match
-    // but for simple UI creation purposes, just hardcoding values works
-    private bool fakeConfigBool = true;
-    private string comboCurrentValue = "Focus Target";
-
-    private readonly Vector4 ORANGE_COLOR = new Vector4(0.950f, 0.500f, 0f, 1f);
-    private readonly Vector4 LIGHT_ORANGE_COLOR = new Vector4(0.950f, 0.650f, 0f, 1f);
 
     public void DrawMainWindow()
     {
@@ -319,13 +310,18 @@ namespace ChatScanner
         return;
       }
 
-      ImGui.SetNextWindowSize(new Vector2(232, 75), ImGuiCond.Always);
+      ImGui.SetNextWindowSize(new Vector2(400, 250), ImGuiCond.Always);
       if (ImGui.Begin("A Wonderful Configuration Window", ref this.settingsVisible,
-          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse ))
       {
-        if (ImGui.Checkbox("Random Config Bool", ref this.fakeConfigBool))
+        if (ImGui.Checkbox("Open On Login", ref this.configuration.OpenOnLogin))
         {
-          // nothing to do in a fake ui!
+          this.configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.configuration.PreserveMessagesOnLogout))
+        {
+          this.configuration.Save();
         }
       }
       ImGui.End();
