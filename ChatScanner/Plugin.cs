@@ -162,19 +162,33 @@ namespace ChatScanner
 
     private string ParsePlayerName(XivChatType type, SeString sender)
     {
+      if (type == XivChatType.TellIncoming)
+      {
+        var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+
+        return (playerPayload as PlayerPayload).PlayerName;
+      }
+
+      if (type == XivChatType.TellOutgoing)
+      {
+        return stateRepository.GetPlayerName();
+      }
+
       if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
       {
-        // enable if custom emotes become hard
-        // var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+        var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
-        // if (playerPayload != null)
-        // {
-        //   return (playerPayload as PlayerPayload).PlayerName;
-        // }
+        if (playerPayload != null)
+        {
+          return (playerPayload as PlayerPayload).PlayerName;
+        }
 
         var textPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
 
-        return (textPayload as TextPayload).Text;
+        if (textPayload != null)
+        {
+          return (textPayload as TextPayload).Text;
+        }
       }
 
       if (type == XivChatType.Party || type == XivChatType.Say)
@@ -189,18 +203,6 @@ namespace ChatScanner
         {
           return stateRepository.GetPlayerName();
         }
-      }
-
-      if (type == XivChatType.TellIncoming)
-      {
-        var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
-
-        return (playerPayload as PlayerPayload).PlayerName;
-      }
-
-      if (type == XivChatType.TellOutgoing)
-      {
-        return stateRepository.GetPlayerName();
       }
 
       return "N/A|BadType";
