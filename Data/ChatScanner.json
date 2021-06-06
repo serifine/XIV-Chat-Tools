@@ -3,7 +3,7 @@
   "Name": "Chat Scanner",
   "Description": "Easily filter messages in crowded environments, bringings some sanity back to RP. \n \n Use /chatScanner settings to opent he settings window.",
   "InternalName": "ChatScanner",
-  "AssemblyVersion": "1.0.0",
+  "AssemblyVersion": "1.0.2",
   "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
   "ApplicableVersion": "any",
   "Tags": ["sample", "plugin", "goats"],

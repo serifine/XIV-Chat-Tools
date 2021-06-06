@@ -311,9 +311,9 @@ namespace ChatScanner
         return;
       }
 
-      ImGui.SetNextWindowSize(new Vector2(400, 250), ImGuiCond.Always);
+      ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.Always);
       if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,
-          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse))
       {
         if (ImGui.Checkbox("Open On Login", ref this.configuration.OpenOnLogin))
         {
