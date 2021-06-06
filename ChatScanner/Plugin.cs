@@ -10,6 +10,9 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace ChatScanner
 {
   public class Plugin : IDalamudPlugin
@@ -142,6 +145,32 @@ namespace ChatScanner
         {
           PluginLog.Log("");
           PluginLog.Log("Message: " + cmessage.TextValue);
+        }
+
+        if (_configuration.DebugLoggingMessageAsJson)
+        {
+          PluginLog.Log("");
+          PluginLog.Log("CMessage Json: ");
+          try
+          {
+            PluginLog.Log(JsonSerializer.Serialize(cmessage));
+          }
+          catch (Exception ex)
+          {
+            PluginLog.Log("An error occurred during serialization.");
+            PluginLog.Log(ex.Message);
+          }
+
+          PluginLog.Log("Sender Json: ");
+          try
+          {
+            PluginLog.Log(JsonSerializer.Serialize(sender));
+          }
+          catch (Exception ex)
+          {
+            PluginLog.Log("An error occurred during serialization.");
+            PluginLog.Log(ex.Message);
+          }
         }
       }
 

@@ -445,6 +445,13 @@ namespace ChatScanner
             {
               this.configuration.Save();
             }
+
+            ImGui.Text("--");
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Log Message As JSON", ref this.configuration.DebugLoggingMessageAsJson))
+            {
+              this.configuration.Save();
+            }
           }
         }
       }

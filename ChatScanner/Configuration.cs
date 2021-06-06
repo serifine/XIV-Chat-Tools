@@ -18,6 +18,7 @@ namespace ChatScanner
     public bool DebugLoggingMessagePayloads = true;
     public bool DebugLoggingCreatingTab = true;
     public bool DebugLoggingTargetChanging = true;
+    public bool DebugLoggingMessageAsJson = false;
     // public bool DebugLogging = false;
 
     public bool OpenOnLogin = false;
