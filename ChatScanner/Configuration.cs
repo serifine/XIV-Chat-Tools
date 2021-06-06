@@ -25,6 +25,9 @@ namespace ChatScanner
     public List<XivChatType> AllowedChannels { get; set; } = new List<XivChatType>() {
       XivChatType.StandardEmote, XivChatType.CustomEmote, XivChatType.Party, XivChatType.Say, XivChatType.TellIncoming, XivChatType.TellOutgoing
     };
+    public List<XivChatType> TrackableChannels { get; set; } = new List<XivChatType>() {
+      XivChatType.StandardEmote, XivChatType.CustomEmote, XivChatType.Party, XivChatType.Say, XivChatType.TellIncoming, XivChatType.TellOutgoing
+    };
     // the below exist just to make saving less cumbersome
 
     [NonSerialized]

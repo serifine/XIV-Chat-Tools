@@ -18,7 +18,6 @@ namespace ChatScanner
 
     private const string commandName = "/cScan";
 
-
     private StateManagementRepository stateRepository;
     private DalamudPluginInterface _pluginInterface;
     private Configuration _configuration;
@@ -119,36 +118,31 @@ namespace ChatScanner
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
-      if (_configuration.DebugLogging && _configuration.DebugLoggingMessages)
+      if (_configuration.DebugLogging && _configuration.DebugLoggingMessages && this._configuration.TrackableChannels.Any(t => t == type))
       {
-        PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
-        PluginLog.LogDebug("=======================================================");
-        PluginLog.LogDebug("     Message Type: " + type);
-        PluginLog.LogDebug("Is Marked Handled: " + isHandled.ToString());
-        PluginLog.LogDebug("       Raw Sender: " + sender.TextValue);
-        PluginLog.LogDebug("    Parsed Sender: " + ParsePlayerName(type, sender));
+        PluginLog.Log("NEW CHAT MESSAGE RECEIVED");
+        PluginLog.Log("=======================================================");
+        PluginLog.Log("Message Type: " + type.ToString());
+        PluginLog.Log("Is Marked Handled: " + isHandled.ToString());
+        PluginLog.Log("Raw Sender: " + sender.TextValue);
+        PluginLog.Log("Parsed Sender: " + ParsePlayerName(type, sender));
 
-        if (_configuration.DebugLoggingMessagePayloads)
+        if (_configuration.DebugLoggingMessagePayloads && sender.Payloads.Any())
         {
-          PluginLog.LogDebug("");
-          PluginLog.LogDebug("SenderPayloads");
+          PluginLog.Log("");
+          PluginLog.Log("SenderPayloads");
           foreach (var payload in sender.Payloads)
           {
-            PluginLog.LogDebug("Type" + payload.Type.ToString());
-            PluginLog.LogDebug(payload.ToString());
+            PluginLog.Log("Type: " + payload.Type.ToString());
+            PluginLog.Log(payload.ToString());
           }
         }
 
         if (_configuration.DebugLoggingMessageContents)
         {
-          PluginLog.LogDebug("");
-          PluginLog.LogDebug("message:" + cmessage.TextValue);
+          PluginLog.Log("");
+          PluginLog.Log("Message: " + cmessage.TextValue);
         }
-
-        PluginLog.LogDebug("");
-        PluginLog.LogDebug("");
-        PluginLog.LogDebug("");
-        PluginLog.LogDebug("");
       }
 
 

@@ -137,13 +137,13 @@ namespace ChatScanner
       {
         if (_configuration.DebugLogging && _configuration.DebugLoggingCreatingTab)
         {
-          PluginLog.LogDebug("CREATING FOCUS TAB");
-          PluginLog.LogDebug("=======================================================");
-          PluginLog.LogDebug("     Focus Target: " + focusTarget.Name);
-          PluginLog.LogDebug("");
-          PluginLog.LogDebug("");
-          PluginLog.LogDebug("");
-          PluginLog.LogDebug("");
+          PluginLog.Log("CREATING FOCUS TAB");
+          PluginLog.Log("=======================================================");
+          PluginLog.Log("     Focus Target: " + focusTarget.Name);
+          PluginLog.Log("");
+          PluginLog.Log("");
+          PluginLog.Log("");
+          PluginLog.Log("");
         }
 
         var focusTab = new FocusTab(focusTarget.Name);
