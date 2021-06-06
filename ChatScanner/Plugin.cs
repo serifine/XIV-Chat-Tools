@@ -21,7 +21,7 @@ namespace ChatScanner
 
     private StateManagementRepository stateRepository;
     private DalamudPluginInterface _pluginInterface;
-    private Configuration configuration;
+    private Configuration _configuration;
     private PluginUI ui;
 
     // When loaded by LivePluginLoader, the executing assembly will be wrong.
@@ -34,13 +34,13 @@ namespace ChatScanner
     {
       this._pluginInterface = pluginInterface;
 
-      StateManagementRepository.Init(this._pluginInterface);
+      this._configuration = this._pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+      this._configuration.Initialize(this._pluginInterface);
+
+      StateManagementRepository.Init(this._pluginInterface, this._configuration);
       this.stateRepository = StateManagementRepository.Instance;
 
-      this.configuration = this._pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-      this.configuration.Initialize(this._pluginInterface);
-
-      this.ui = new PluginUI(this.configuration);
+      this.ui = new PluginUI(this._configuration);
 
       this._pluginInterface.CommandManager.AddHandler("/chatScanner", new CommandInfo(OnCommand)
       {
@@ -103,7 +103,7 @@ namespace ChatScanner
 
     private void OnLogin(object sender, EventArgs args)
     {
-      this.ui.Visible = configuration.OpenOnLogin;
+      this.ui.Visible = _configuration.OpenOnLogin;
     }
 
     private void OnLogout(object sender, EventArgs args)
@@ -111,7 +111,7 @@ namespace ChatScanner
       this.ui.Visible = false;
       this.stateRepository.ClearAllFocusTabs();
 
-      if (this.configuration.PreserveMessagesOnLogout == false)
+      if (this._configuration.PreserveMessagesOnLogout == false)
       {
         this.stateRepository.ClearMessageHistory();
       }
@@ -119,40 +119,43 @@ namespace ChatScanner
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
-      PluginLog.Log("Testing methods of checking for channel types");
-      PluginLog.Log("==========================");
-      PluginLog.Log("this.configuration.AllowedChannels.Any(t => t == type)");
-      PluginLog.Log(this.configuration.AllowedChannels.Any(t => t == type).ToString());
-      PluginLog.Log("this.configuration.AllowedChannels.Contains(type)");
-      PluginLog.Log(this.configuration.AllowedChannels.Contains(type).ToString());
-      
+      if (_configuration.DebugLogging && _configuration.DebugLoggingMessages)
+      {
+        PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
+        PluginLog.LogDebug("=======================================================");
+        PluginLog.LogDebug("     Message Type: " + type);
+        PluginLog.LogDebug("Is Marked Handled: " + isHandled.ToString());
+        PluginLog.LogDebug("       Raw Sender: " + sender.TextValue);
+        PluginLog.LogDebug("    Parsed Sender: " + ParsePlayerName(type, sender));
 
-      if (isHandled || !this.configuration.AllowedChannels.Any(t => t == type))
+        if (_configuration.DebugLoggingMessagePayloads)
+        {
+          PluginLog.LogDebug("");
+          PluginLog.LogDebug("SenderPayloads");
+          foreach (var payload in sender.Payloads)
+          {
+            PluginLog.LogDebug("Type" + payload.Type.ToString());
+            PluginLog.LogDebug(payload.ToString());
+          }
+        }
+
+        if (_configuration.DebugLoggingMessageContents)
+        {
+          PluginLog.LogDebug("");
+          PluginLog.LogDebug("message:" + cmessage.TextValue);
+        }
+
+        PluginLog.LogDebug("");
+        PluginLog.LogDebug("");
+        PluginLog.LogDebug("");
+        PluginLog.LogDebug("");
+      }
+
+
+      if (isHandled || !this._configuration.AllowedChannels.Any(t => t == type))
       {
         return;
       }
-
-      // PluginLog.LogDebug("NEW CHAT MESSAGE RECEIVED");
-      // PluginLog.LogDebug("=======================================================");
-      // PluginLog.LogDebug("rawSenderValue:" + sender.TextValue);
-      // PluginLog.LogDebug("originalParser:" + OldParseName(type, sender));
-      // PluginLog.LogDebug("alternateParser:" + ParseName(type, sender));
-      // PluginLog.LogDebug("");
-      // // PluginLog.LogDebug("SenderToJson:" + sender.ToJson());
-      // PluginLog.LogDebug("SenderPayloads");
-      // foreach (var payload in sender.Payloads)
-      // {
-      //   PluginLog.LogDebug("Type" + payload.Type.ToString());
-      //   PluginLog.LogDebug(payload.ToString());
-      // }
-      // PluginLog.LogDebug("");
-      // PluginLog.LogDebug("type:" + type);
-      // PluginLog.LogDebug("sender:" + ParseName(type, sender));
-      // PluginLog.LogDebug("message:" + cmessage.TextValue);
-      // PluginLog.LogDebug("");
-      // PluginLog.LogDebug("");
-      // PluginLog.LogDebug("");
-      // PluginLog.LogDebug("");
 
       stateRepository.AddChatMessage(new Models.ChatEntry()
       {

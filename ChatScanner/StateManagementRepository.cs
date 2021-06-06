@@ -18,16 +18,18 @@ namespace ChatScanner
     private List<FocusTab> _focusTabs;
     private List<ChatEntry> _chatEntries;
     private DalamudPluginInterface _pluginInterface;
+    private Configuration _configuration;
 
     public static StateManagementRepository Instance { get; private set; }
 
-    private StateManagementRepository(DalamudPluginInterface pi)
+    private StateManagementRepository(DalamudPluginInterface pi, Configuration config)
     {
       try
       {
         this._chatEntries = new List<ChatEntry>();
         this._focusTabs = new List<FocusTab>();
         this._pluginInterface = pi;
+        this._configuration = config;
       }
       catch (Exception e)
       {
@@ -35,9 +37,9 @@ namespace ChatScanner
       }
     }
 
-    public static void Init(DalamudPluginInterface pi)
+    public static void Init(DalamudPluginInterface pi, Configuration config)
     {
-      Instance = new StateManagementRepository(pi);
+      Instance = new StateManagementRepository(pi, config);
     }
 
     public void Dispose()
@@ -117,7 +119,8 @@ namespace ChatScanner
       // PluginLog.Log("message:" + chatEntry.Message);
     }
 
-    public void ClearMessageHistory() {
+    public void ClearMessageHistory()
+    {
       this._chatEntries.Clear();
     }
 
@@ -132,6 +135,17 @@ namespace ChatScanner
 
       if (focusTarget != null)
       {
+        if (_configuration.DebugLogging && _configuration.DebugLoggingCreatingTab)
+        {
+          PluginLog.LogDebug("CREATING FOCUS TAB");
+          PluginLog.LogDebug("=======================================================");
+          PluginLog.LogDebug("     Focus Target: " + focusTarget.Name);
+          PluginLog.LogDebug("");
+          PluginLog.LogDebug("");
+          PluginLog.LogDebug("");
+          PluginLog.LogDebug("");
+        }
+
         var focusTab = new FocusTab(focusTarget.Name);
 
         this._focusTabs.Add(focusTab);
@@ -143,7 +157,8 @@ namespace ChatScanner
       this._focusTabs.RemoveAll(t => t.Open == false);
     }
 
-    public void ClearAllFocusTabs() {
+    public void ClearAllFocusTabs()
+    {
       this._focusTabs.Clear();
     }
   }

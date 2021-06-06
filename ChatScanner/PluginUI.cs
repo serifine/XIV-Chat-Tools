@@ -406,6 +406,47 @@ namespace ChatScanner
 
           this.configuration.Save();
         }
+
+        ImGui.Separator();
+
+        if (ImGui.Checkbox("Enable Debug Logging", ref this.configuration.DebugLogging))
+        {
+          this.configuration.Save();
+        }
+
+        if (configuration.DebugLogging)
+        {
+
+          if (ImGui.Checkbox("Track target tab creation", ref this.configuration.DebugLoggingCreatingTab))
+          {
+            this.configuration.Save();
+          }
+          // if (ImGui.Checkbox("Track target changing", ref this.configuration.DebugLoggingTargetChanging))
+          // {
+          //   this.configuration.Save();
+          // }
+          if (ImGui.Checkbox("Log Messages", ref this.configuration.DebugLoggingMessages))
+          {
+            this.configuration.Save();
+          }
+
+          if (configuration.DebugLoggingMessages)
+          {
+            ImGui.Text("--");
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Log Message Payloads", ref this.configuration.DebugLoggingMessagePayloads))
+            {
+              this.configuration.Save();
+            }
+
+            ImGui.Text("--");
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Log Message Contents", ref this.configuration.DebugLoggingMessageContents))
+            {
+              this.configuration.Save();
+            }
+          }
+        }
       }
       ImGui.End();
     }

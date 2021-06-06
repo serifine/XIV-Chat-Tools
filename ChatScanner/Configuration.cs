@@ -12,6 +12,14 @@ namespace ChatScanner
   {
     public int Version { get; set; } = 0;
 
+    public bool DebugLogging = false;
+    public bool DebugLoggingMessages = true;
+    public bool DebugLoggingMessageContents = true;
+    public bool DebugLoggingMessagePayloads = true;
+    public bool DebugLoggingCreatingTab = true;
+    public bool DebugLoggingTargetChanging = true;
+    // public bool DebugLogging = false;
+
     public bool OpenOnLogin = false;
     public bool PreserveMessagesOnLogout = true;
     public List<XivChatType> AllowedChannels { get; set; } = new List<XivChatType>() {
