@@ -22,7 +22,14 @@ namespace ChatScanner
     // public bool DebugLogging = false;
 
     public bool OpenOnLogin = false;
-    public bool PreserveMessagesOnLogout = true;
+
+    public bool   MessageLog_PreserveOnLogout = true;
+    public bool   MessageLog_ArchiveLogs = false;
+    public bool   MessageLog_DeleteOldMessages = true;
+    public int    MessageLog_DaysToKeepOldMessages = 7;
+    public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatScanner";
+    public string MessageLog_FileName = "ChatLogs.json";
+
     public List<XivChatType> AllowedChannels { get; set; } = new List<XivChatType>() {
       XivChatType.StandardEmote, XivChatType.CustomEmote, XivChatType.Party, XivChatType.Say, XivChatType.TellIncoming, XivChatType.TellOutgoing
     };

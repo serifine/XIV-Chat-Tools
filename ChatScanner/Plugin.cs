@@ -139,7 +139,7 @@ namespace ChatScanner
       PluginUI.Visible = false;
       PluginState.ClearAllFocusTabs();
 
-      if (Configuration.PreserveMessagesOnLogout == false)
+      if (Configuration.MessageLog_PreserveOnLogout == false)
       {
         PluginState.ClearMessageHistory();
       }

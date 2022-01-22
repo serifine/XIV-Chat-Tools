@@ -20,6 +20,10 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.Sanitizer;
 using Dalamud.Game.Text.SeStringHandling;
 using ChatScanner.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ChatScanner
 {
@@ -30,16 +34,16 @@ namespace ChatScanner
     private List<ChatEntry> _chatEntries { get; set; }
 
     private Configuration Configuration { get; set; }
-    
+
     [PluginService]
     internal DalamudPluginInterface PluginInterface { get; set; }
-    
+
     [PluginService]
     internal ClientState ClientState { get; set; }
-    
+
     [PluginService]
     internal ObjectTable ObjectTable { get; set; }
-    
+
     [PluginService]
     internal TargetManager TargetManager { get; init; }
 
@@ -47,33 +51,59 @@ namespace ChatScanner
 
     public PluginState(Configuration config)
     {
-      try
+      this.Configuration = config;
+      this._focusTabs = new List<FocusTab>();
+      if (Configuration.MessageLog_PreserveOnLogout && File.Exists($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}"))
+      {
+        try
+        {
+          var FileResult = File.ReadAllText($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}");
+          var options = new JsonSerializerOptions
+          {
+            IncludeFields = true
+          };
+          var ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options);
+
+
+          if (Configuration.MessageLog_DeleteOldMessages) {
+            ChatEntries = ChatEntries
+              .Where(t => (DateTime.Now - t.DateSent).TotalDays < Configuration.MessageLog_DaysToKeepOldMessages)
+              .ToList();
+          }
+
+          this._chatEntries = ChatEntries;
+        }
+        catch (Exception e)
+        {
+          PluginLog.Log(e, "Could not load Chat Logs!");
+          this._chatEntries = new List<ChatEntry>();
+        }
+      }
+      else
       {
         this._chatEntries = new List<ChatEntry>();
-        this._focusTabs = new List<FocusTab>();
-        this.Configuration = config;
-      }
-      catch (Exception e)
-      {
-        PluginLog.Log(e, "Could not load Chat Scanner!");
       }
     }
 
     public void Dispose()
     {
-      
+
     }
 
     public string GetPlayerName()
     {
-      return this.ClientState.LocalPlayer.Name.TextValue;
+      if (this.ClientState.LocalPlayer) {
+        return this.ClientState.LocalPlayer.Name.TextValue;
+      } else {
+        return "";
+      }
     }
 
     public List<GameObject> GetActorList()
     {
       return this.ObjectTable
         .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-        .OrderBy(t => t.Name)
+        .OrderBy(t => t.Name.TextValue)
         .ToList();
     }
 
@@ -129,11 +159,10 @@ namespace ChatScanner
       chatEntry.OwnerId = GetPlayerName();
       this._chatEntries.Add(chatEntry);
 
-      PluginLog.Log("Adding chat message to repository");
-      PluginLog.Log("---------------------------------");
-      PluginLog.Log("senderId:" + chatEntry.SenderId);
-      PluginLog.Log("senderName:" + chatEntry.SenderName);
-      PluginLog.Log("message:" + chatEntry.Message);
+      if (Configuration.MessageLog_PreserveOnLogout)
+      {
+        PersistMessages();
+      }
     }
 
     public void ClearMessageHistory()
@@ -177,6 +206,18 @@ namespace ChatScanner
     public void ClearAllFocusTabs()
     {
       this._focusTabs.Clear();
+    }
+
+    private async void PersistMessages()
+    {
+      var options = new JsonSerializerOptions
+      {
+        WriteIndented = true,
+        IncludeFields = true
+      };
+      var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
+
+      await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
     }
   }
 }

@@ -311,23 +311,36 @@ namespace ChatScanner
         return;
       }
 
-      ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.Always);
-      if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,
-          ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse))
+
+      var scale = ImGui.GetIO().FontGlobalScale;
+
+      ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.FirstUseEver);
+      ImGui.SetNextWindowSizeConstraints(new Vector2(400, 350), new Vector2(float.MaxValue, float.MaxValue));
+
+      if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible, ImGuiWindowFlags.None))
       {
         if (ImGui.Checkbox("Open On Login", ref this.Configuration.OpenOnLogin))
         {
           this.Configuration.Save();
         }
 
-        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.PreserveMessagesOnLogout))
+        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.MessageLog_PreserveOnLogout))
         {
           this.Configuration.Save();
         }
 
+
+
+        ImGui.Spacing();
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Text("Channels to Log");
-        ImGui.Separator();
+        ImGui.Spacing();
+        ImGui.Spacing();
+
+
 
         var standardEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.StandardEmote);
         var customEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.CustomEmote);
@@ -407,7 +420,54 @@ namespace ChatScanner
           this.Configuration.Save();
         }
 
+
+
+
+        ImGui.Spacing();
+        ImGui.Spacing();
         ImGui.Separator();
+        ImGui.Spacing();
+        ImGui.Spacing();
+        ImGui.Text("Message Saving");
+        ImGui.Spacing();
+        ImGui.Spacing();
+
+
+
+
+        if (ImGui.Checkbox("Preserve Messages on Logout", ref this.Configuration.MessageLog_PreserveOnLogout))
+        {
+          this.Configuration.Save();
+        }
+
+        if (ImGui.Checkbox("Delete Old Messages", ref this.Configuration.MessageLog_DeleteOldMessages))
+        {
+          this.Configuration.Save();
+        }
+
+        if (this.Configuration.MessageLog_DeleteOldMessages)
+        {
+
+          if (ImGui.InputInt("Delete After (days)", ref this.Configuration.MessageLog_DaysToKeepOldMessages))
+          {
+            this.Configuration.Save();
+          }
+        }
+
+        ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLog_FilePath, 2048);
+
+
+
+
+
+        ImGui.Spacing();
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
+        ImGui.Spacing();
+        ImGui.Text("Dev Logging");
+        ImGui.Spacing();
+        ImGui.Spacing();
 
         if (ImGui.Checkbox("Enable Debug Logging", ref this.Configuration.DebugLogging))
         {
