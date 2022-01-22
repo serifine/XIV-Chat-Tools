@@ -12,8 +12,8 @@ namespace ChatScanner
   // to do any cleanup
   class PluginUI : IDisposable
   {
-    private Configuration configuration;
-    private StateManagementRepository StateRepository;
+    private Configuration Configuration;
+    private PluginState PluginState;
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
@@ -49,10 +49,10 @@ namespace ChatScanner
     };
 
     // passing in the image here just for simplicity
-    public PluginUI(Configuration configuration)
+    public PluginUI(Configuration configuration, PluginState state)
     {
-      this.configuration = configuration;
-      this.StateRepository = StateManagementRepository.Instance;
+      this.Configuration = configuration;
+      this.PluginState = state;
     }
 
     public void Dispose()
@@ -86,7 +86,7 @@ namespace ChatScanner
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (100 * scale));
         if (ImGui.Button("Add Focus Target"))
         {
-          StateRepository.AddFocusTabFromTarget();
+          PluginState.AddFocusTabFromTarget();
         }
 
         // ImGui.Separator();
@@ -114,7 +114,7 @@ namespace ChatScanner
             ImGui.EndTabItem();
           }
 
-          foreach (var focusTab in StateRepository.GetFocusTabs())
+          foreach (var focusTab in PluginState.GetFocusTabs())
           {
             if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
             {
@@ -124,7 +124,7 @@ namespace ChatScanner
             }
           }
 
-          StateRepository.RemoveClosedFocusTabs();
+          PluginState.RemoveClosedFocusTabs();
 
           ImGui.EndTabBar();
         }
@@ -135,11 +135,11 @@ namespace ChatScanner
 
     public void SelectedTargetTab()
     {
-      var focusTarget = StateRepository.GetFocusTarget();
+      var focusTarget = PluginState.GetFocusTarget();
 
       if (focusTarget != null)
       {
-        var messages = StateRepository.GetMessagesForFocusTarget();
+        var messages = PluginState.GetMessagesForFocusTarget();
 
         if (messages != null && messages.Count() > 0)
         {
@@ -159,7 +159,7 @@ namespace ChatScanner
     public void AllMessagesTab()
     {
 
-      var tabMessages = StateRepository.GetAllMessages();
+      var tabMessages = PluginState.GetAllMessages();
 
       if (tabMessages.Count() > 0)
       {
@@ -205,19 +205,19 @@ namespace ChatScanner
           comboCurrentValue = "Focus Target";
         }
 
-        if (ImGui.Selectable(StateRepository.GetPlayerName() + " (you)"))
+        if (ImGui.Selectable(PluginState.GetPlayerName() + " (you)"))
         {
           // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
-          comboCurrentValue = StateRepository.GetPlayerName();
+          comboCurrentValue = PluginState.GetPlayerName();
         }
 
         ImGui.Separator();
 
-        foreach (var actor in StateRepository.GetActorList())
+        foreach (var actor in PluginState.GetActorList())
         {
-          if (ImGui.Selectable(actor.Name))
+          if (ImGui.Selectable(actor.Name.TextValue))
           {
-            comboCurrentValue = actor.Name;
+            comboCurrentValue = actor.Name.TextValue;
           }
         }
 
@@ -228,11 +228,11 @@ namespace ChatScanner
       {
         if (comboCurrentValue == "Focus Target")
         {
-          var focusTarget = StateRepository.GetFocusTarget();
+          var focusTarget = PluginState.GetFocusTarget();
 
           if (focusTarget != null)
           {
-            customWindowFocusTab.AddFocusTarget(focusTarget.Name);
+            customWindowFocusTab.AddFocusTarget(focusTarget.Name.TextValue);
           }
         }
         else
@@ -245,7 +245,7 @@ namespace ChatScanner
 
       ImGui.Separator();
 
-      var tabMessages = StateRepository.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
+      var tabMessages = PluginState.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
 
       if (tabMessages.Count() > 0)
       {
@@ -260,7 +260,7 @@ namespace ChatScanner
     public void DrawFocusTab(string tabId, FocusTab focusTab)
     {
 
-      var tabMessages = StateRepository.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+      var tabMessages = PluginState.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
 
       if (tabMessages.Count() > 0)
       {
@@ -281,7 +281,7 @@ namespace ChatScanner
 
       foreach (var chatItem in messages)
       {
-        if (chatItem.SenderName == StateRepository.GetPlayerName())
+        if (chatItem.SenderName == PluginState.GetPlayerName())
         {
           ImGui.TextColored(ORANGE_COLOR, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
           ImGui.SameLine();
@@ -315,142 +315,142 @@ namespace ChatScanner
       if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,
           ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse))
       {
-        if (ImGui.Checkbox("Open On Login", ref this.configuration.OpenOnLogin))
+        if (ImGui.Checkbox("Open On Login", ref this.Configuration.OpenOnLogin))
         {
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
-        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.configuration.PreserveMessagesOnLogout))
+        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.PreserveMessagesOnLogout))
         {
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         ImGui.Spacing();
         ImGui.Text("Channels to Log");
         ImGui.Separator();
 
-        var standardEmotes = this.configuration.AllowedChannels.Contains(XivChatType.StandardEmote);
-        var customEmotes = this.configuration.AllowedChannels.Contains(XivChatType.CustomEmote);
-        var party = this.configuration.AllowedChannels.Contains(XivChatType.Party);
-        var say = this.configuration.AllowedChannels.Contains(XivChatType.Say);
-        var whispers = this.configuration.AllowedChannels.Contains(XivChatType.TellOutgoing) && this.configuration.AllowedChannels.Contains(XivChatType.TellIncoming);
+        var standardEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.StandardEmote);
+        var customEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.CustomEmote);
+        var party = this.Configuration.AllowedChannels.Contains(XivChatType.Party);
+        var say = this.Configuration.AllowedChannels.Contains(XivChatType.Say);
+        var whispers = this.Configuration.AllowedChannels.Contains(XivChatType.TellOutgoing) && this.Configuration.AllowedChannels.Contains(XivChatType.TellIncoming);
 
         if (ImGui.Checkbox("Say", ref say))
         {
           if (say)
           {
-            this.configuration.AllowedChannels.Add(XivChatType.Say);
+            this.Configuration.AllowedChannels.Add(XivChatType.Say);
           }
           else
           {
-            this.configuration.AllowedChannels.Remove(XivChatType.Say);
+            this.Configuration.AllowedChannels.Remove(XivChatType.Say);
           }
 
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         if (ImGui.Checkbox("Standard Emotes", ref standardEmotes))
         {
           if (standardEmotes)
           {
-            this.configuration.AllowedChannels.Add(XivChatType.StandardEmote);
+            this.Configuration.AllowedChannels.Add(XivChatType.StandardEmote);
           }
           else
           {
-            this.configuration.AllowedChannels.Remove(XivChatType.StandardEmote);
+            this.Configuration.AllowedChannels.Remove(XivChatType.StandardEmote);
           }
 
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         if (ImGui.Checkbox("Custom Emotes", ref customEmotes))
         {
           if (customEmotes)
           {
-            this.configuration.AllowedChannels.Add(XivChatType.CustomEmote);
+            this.Configuration.AllowedChannels.Add(XivChatType.CustomEmote);
           }
           else
           {
-            this.configuration.AllowedChannels.Remove(XivChatType.CustomEmote);
+            this.Configuration.AllowedChannels.Remove(XivChatType.CustomEmote);
           }
 
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         if (ImGui.Checkbox("Whispers", ref whispers))
         {
           if (whispers)
           {
-            this.configuration.AllowedChannels.Add(XivChatType.TellIncoming);
-            this.configuration.AllowedChannels.Add(XivChatType.TellOutgoing);
+            this.Configuration.AllowedChannels.Add(XivChatType.TellIncoming);
+            this.Configuration.AllowedChannels.Add(XivChatType.TellOutgoing);
           }
           else
           {
-            this.configuration.AllowedChannels.Remove(XivChatType.TellIncoming);
-            this.configuration.AllowedChannels.Remove(XivChatType.TellOutgoing);
+            this.Configuration.AllowedChannels.Remove(XivChatType.TellIncoming);
+            this.Configuration.AllowedChannels.Remove(XivChatType.TellOutgoing);
           }
 
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         if (ImGui.Checkbox("Party", ref party))
         {
           if (party)
           {
-            this.configuration.AllowedChannels.Add(XivChatType.Party);
+            this.Configuration.AllowedChannels.Add(XivChatType.Party);
           }
           else
           {
-            this.configuration.AllowedChannels.Remove(XivChatType.Party);
+            this.Configuration.AllowedChannels.Remove(XivChatType.Party);
           }
 
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
         ImGui.Separator();
 
-        if (ImGui.Checkbox("Enable Debug Logging", ref this.configuration.DebugLogging))
+        if (ImGui.Checkbox("Enable Debug Logging", ref this.Configuration.DebugLogging))
         {
-          this.configuration.Save();
+          this.Configuration.Save();
         }
 
-        if (configuration.DebugLogging)
+        if (Configuration.DebugLogging)
         {
 
-          if (ImGui.Checkbox("Track target tab creation", ref this.configuration.DebugLoggingCreatingTab))
+          if (ImGui.Checkbox("Track target tab creation", ref this.Configuration.DebugLoggingCreatingTab))
           {
-            this.configuration.Save();
+            this.Configuration.Save();
           }
           // if (ImGui.Checkbox("Track target changing", ref this.configuration.DebugLoggingTargetChanging))
           // {
           //   this.configuration.Save();
           // }
-          if (ImGui.Checkbox("Log Messages", ref this.configuration.DebugLoggingMessages))
+          if (ImGui.Checkbox("Log Messages", ref this.Configuration.DebugLoggingMessages))
           {
-            this.configuration.Save();
+            this.Configuration.Save();
           }
 
-          if (configuration.DebugLoggingMessages)
+          if (Configuration.DebugLoggingMessages)
           {
             ImGui.Text("--");
             ImGui.SameLine();
-            if (ImGui.Checkbox("Log Message Payloads", ref this.configuration.DebugLoggingMessagePayloads))
+            if (ImGui.Checkbox("Log Message Payloads", ref this.Configuration.DebugLoggingMessagePayloads))
             {
-              this.configuration.Save();
+              this.Configuration.Save();
             }
 
             ImGui.Text("--");
             ImGui.SameLine();
-            if (ImGui.Checkbox("Log Message Contents", ref this.configuration.DebugLoggingMessageContents))
+            if (ImGui.Checkbox("Log Message Contents", ref this.Configuration.DebugLoggingMessageContents))
             {
-              this.configuration.Save();
+              this.Configuration.Save();
             }
 
             ImGui.Text("--");
             ImGui.SameLine();
-            if (ImGui.Checkbox("Log Message As JSON", ref this.configuration.DebugLoggingMessageAsJson))
+            if (ImGui.Checkbox("Log Message As JSON", ref this.Configuration.DebugLoggingMessageAsJson))
             {
-              this.configuration.Save();
+              this.Configuration.Save();
             }
           }
         }

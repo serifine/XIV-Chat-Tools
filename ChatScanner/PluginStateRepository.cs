@@ -4,32 +4,54 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Plugin;
+using Dalamud.Game.Command;
+using Dalamud.Data;
+using Dalamud.Game;
+using Dalamud.Logging;
+using Dalamud.Game.Gui;
+using Dalamud.Game.Gui.Toast;
+using Dalamud.IoC;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.Sanitizer;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.ClientState.Actors;
-using Dalamud.Game.ClientState.Actors.Types;
 using ChatScanner.Models;
 
 namespace ChatScanner
 {
-  public class StateManagementRepository : IDisposable
+  [PluginInterface]
+  public class PluginState : IDisposable
   {
-    private List<FocusTab> _focusTabs;
-    private List<ChatEntry> _chatEntries;
-    private DalamudPluginInterface _pluginInterface;
-    private Configuration _configuration;
+    private List<FocusTab> _focusTabs { get; set; }
+    private List<ChatEntry> _chatEntries { get; set; }
 
-    public static StateManagementRepository Instance { get; private set; }
+    private Configuration Configuration { get; set; }
+    
+    [PluginService]
+    internal DalamudPluginInterface PluginInterface { get; set; }
+    
+    [PluginService]
+    internal ClientState ClientState { get; set; }
+    
+    [PluginService]
+    internal ObjectTable ObjectTable { get; set; }
+    
+    [PluginService]
+    internal TargetManager TargetManager { get; init; }
 
-    private StateManagementRepository(DalamudPluginInterface pi, Configuration config)
+    // public static StateManagementRepository Instance { get; private set; }
+
+    public PluginState(Configuration config)
     {
       try
       {
         this._chatEntries = new List<ChatEntry>();
         this._focusTabs = new List<FocusTab>();
-        this._pluginInterface = pi;
-        this._configuration = config;
+        this.Configuration = config;
       }
       catch (Exception e)
       {
@@ -37,36 +59,31 @@ namespace ChatScanner
       }
     }
 
-    public static void Init(DalamudPluginInterface pi, Configuration config)
-    {
-      Instance = new StateManagementRepository(pi, config);
-    }
-
     public void Dispose()
     {
-
+      
     }
 
     public string GetPlayerName()
     {
-      return _pluginInterface.ClientState.LocalPlayer?.Name;
+      return this.ClientState.LocalPlayer.Name.TextValue;
     }
 
-    public List<Actor> GetActorList()
+    public List<GameObject> GetActorList()
     {
-      return _pluginInterface.ClientState.Actors
-        .Where(t => t.Name != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
+      return this.ObjectTable
+        .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
         .OrderBy(t => t.Name)
         .ToList();
     }
 
-    public Actor GetFocusTarget()
+    public GameObject? GetFocusTarget()
     {
-      var focusTarget = _pluginInterface.ClientState.Targets.CurrentTarget;
+      GameObject? focusTarget = this.TargetManager.Target;
 
-      if (focusTarget == null)
+      if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
       {
-        focusTarget = _pluginInterface.ClientState.Targets.MouseOverTarget;
+        focusTarget = TargetManager.MouseOverTarget;
       }
 
       if (focusTarget != null && focusTarget.ObjectKind != ObjectKind.Player)
@@ -79,7 +96,7 @@ namespace ChatScanner
 
     public int? GetFocusTargetId()
     {
-      return this._pluginInterface.ClientState.Targets.CurrentTarget?.ActorId;
+      return ((int)this.GetFocusTarget().ObjectId);
     }
 
     public List<ChatEntry> GetAllMessages()
@@ -95,7 +112,7 @@ namespace ChatScanner
 
       return this._chatEntries
         .Where(t => t.OwnerId == GetPlayerName())
-        .Where(t => t.SenderName == focusTarget?.Name || t.SenderName.StartsWith(focusTarget?.Name))
+        .Where(t => t.SenderName == focusTarget?.Name.TextValue || t.SenderName.StartsWith(focusTarget?.Name.TextValue))
         .ToList();
     }
 
@@ -112,11 +129,11 @@ namespace ChatScanner
       chatEntry.OwnerId = GetPlayerName();
       this._chatEntries.Add(chatEntry);
 
-      // PluginLog.Log("Adding chat message to repository");
-      // PluginLog.Log("---------------------------------");
-      // PluginLog.Log("senderId:" + chatEntry.SenderId);
-      // PluginLog.Log("senderName:" + chatEntry.SenderName);
-      // PluginLog.Log("message:" + chatEntry.Message);
+      PluginLog.Log("Adding chat message to repository");
+      PluginLog.Log("---------------------------------");
+      PluginLog.Log("senderId:" + chatEntry.SenderId);
+      PluginLog.Log("senderName:" + chatEntry.SenderName);
+      PluginLog.Log("message:" + chatEntry.Message);
     }
 
     public void ClearMessageHistory()
@@ -135,7 +152,7 @@ namespace ChatScanner
 
       if (focusTarget != null)
       {
-        if (_configuration.DebugLogging && _configuration.DebugLoggingCreatingTab)
+        if (Configuration.DebugLogging && Configuration.DebugLoggingCreatingTab)
         {
           PluginLog.Log("CREATING FOCUS TAB");
           PluginLog.Log("=======================================================");
@@ -146,7 +163,7 @@ namespace ChatScanner
           PluginLog.Log("");
         }
 
-        var focusTab = new FocusTab(focusTarget.Name);
+        var focusTab = new FocusTab(focusTarget.Name.TextValue);
 
         this._focusTabs.Add(focusTab);
       }
