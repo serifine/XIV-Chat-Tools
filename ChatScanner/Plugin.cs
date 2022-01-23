@@ -147,7 +147,7 @@ namespace ChatScanner
 
     private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
     {
-      if (Configuration.DebugLogging && Configuration.DebugLoggingMessages && Configuration.TrackableChannels.Any(t => t == type))
+      if (Configuration.DebugLogging && Configuration.DebugLoggingMessages && Configuration.ActiveChannels.Any(t => t == type))
       {
         PluginLog.Log("NEW CHAT MESSAGE RECEIVED");
         PluginLog.Log("=======================================================");
@@ -201,7 +201,7 @@ namespace ChatScanner
       }
 
 
-      if (isHandled || !Configuration.AllowedChannels.Any(t => t == type))
+      if (isHandled || !Configuration.ActiveChannels.Any(t => t == type))
       {
         return;
       }

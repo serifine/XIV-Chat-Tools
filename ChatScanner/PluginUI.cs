@@ -12,8 +12,8 @@ namespace ChatScanner
   // to do any cleanup
   class PluginUI : IDisposable
   {
-    private Configuration Configuration;
-    private PluginState PluginState;
+    private Configuration Configuration { get; set; }
+    private PluginState PluginState { get; set; }
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
@@ -53,6 +53,8 @@ namespace ChatScanner
     {
       this.Configuration = configuration;
       this.PluginState = state;
+
+      UpdateChannelsToLog();
     }
 
     public void Dispose()
@@ -319,7 +321,19 @@ namespace ChatScanner
 
       if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible, ImGuiWindowFlags.None))
       {
-        if (ImGui.Checkbox("Open On Login", ref this.Configuration.OpenOnLogin))
+        RenderStandardSettings();
+
+        RenderChannelLoggingSettings();
+
+        RenderMessagePersistenceOptions();
+        
+        RenderDevLogging();
+      }
+      ImGui.End();
+    }
+
+    private void RenderStandardSettings() {
+      if (ImGui.Checkbox("Open On Login", ref this.Configuration.OpenOnLogin))
         {
           this.Configuration.Save();
         }
@@ -328,10 +342,45 @@ namespace ChatScanner
         {
           this.Configuration.Save();
         }
+    }
 
+    private int ChannelLogging_ActiveSelection = 0;
+    private int ChannelLogging_InactiveSelection = 0;
 
+    private String[] InactiveChannels;
+    private String[] ActiveChannels;
 
-        ImGui.Spacing();
+    private void AddActiveChannel() {
+      var channel = Configuration.AllChannels.First(t => t.Name == InactiveChannels[ChannelLogging_InactiveSelection]);
+
+      Configuration.ActiveChannels.Add(channel.ChatType);
+      
+      UpdateChannelsToLog();
+    }
+
+    private void RemoveActiveChannel() {
+      var channel = Configuration.AllChannels.First(t => t.Name == ActiveChannels[ChannelLogging_ActiveSelection]);
+
+      Configuration.ActiveChannels.Remove(channel.ChatType);
+
+      UpdateChannelsToLog();
+    }
+
+    private void UpdateChannelsToLog() {
+      InactiveChannels = Configuration.AllChannels
+        .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == false)
+        .Select(t => t.Name)
+        .OrderBy(t => t)
+        .ToArray();
+      ActiveChannels = Configuration.AllChannels
+        .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == true)
+        .Select(t => t.Name)
+        .OrderBy(t => t)
+        .ToArray();
+    }
+
+    private void RenderChannelLoggingSettings() {
+      ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
@@ -340,90 +389,32 @@ namespace ChatScanner
         ImGui.Spacing();
         ImGui.Spacing();
 
+        
 
+        ImGui.SetNextItemWidth(260);
+        ImGui.PushID("AddChannelComboBox");
+        ImGui.Combo("", ref ChannelLogging_InactiveSelection, InactiveChannels, InactiveChannels.Count());
+        ImGui.PopID();
+        ImGui.SameLine();
+        if (ImGui.Button("Add Selected Channel")) AddActiveChannel();
 
-        var standardEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.StandardEmote);
-        var customEmotes = this.Configuration.AllowedChannels.Contains(XivChatType.CustomEmote);
-        var party = this.Configuration.AllowedChannels.Contains(XivChatType.Party);
-        var say = this.Configuration.AllowedChannels.Contains(XivChatType.Say);
-        var whispers = this.Configuration.AllowedChannels.Contains(XivChatType.TellOutgoing) && this.Configuration.AllowedChannels.Contains(XivChatType.TellIncoming);
+        // ImGui.PushItemWidth(180);
+        ImGui.PushID("InactiveChannelsListbox");
+        ImGui.SetNextItemWidth(400);
+        ImGui.ListBox("", ref ChannelLogging_ActiveSelection, ActiveChannels, ActiveChannels.Count());
+        ImGui.PopID();
+        if (ImGui.Button("Remove Selected Channel From Watch List")) RemoveActiveChannel();
 
-        if (ImGui.Checkbox("Say", ref say))
-        {
-          if (say)
-          {
-            this.Configuration.AllowedChannels.Add(XivChatType.Say);
-          }
-          else
-          {
-            this.Configuration.AllowedChannels.Remove(XivChatType.Say);
-          }
+        // ImGui.SameLine();
+        
+        // ImGui.PushID("ActiveChannelsListbox");
+        // ImGui.ListBox("", ref currentActiveSelection, ActiveChannels, ActiveChannels.Count());
+        // ImGui.PopID();
+        // ImGui.PopItemWidth();
+    }
 
-          this.Configuration.Save();
-        }
-
-        if (ImGui.Checkbox("Standard Emotes", ref standardEmotes))
-        {
-          if (standardEmotes)
-          {
-            this.Configuration.AllowedChannels.Add(XivChatType.StandardEmote);
-          }
-          else
-          {
-            this.Configuration.AllowedChannels.Remove(XivChatType.StandardEmote);
-          }
-
-          this.Configuration.Save();
-        }
-
-        if (ImGui.Checkbox("Custom Emotes", ref customEmotes))
-        {
-          if (customEmotes)
-          {
-            this.Configuration.AllowedChannels.Add(XivChatType.CustomEmote);
-          }
-          else
-          {
-            this.Configuration.AllowedChannels.Remove(XivChatType.CustomEmote);
-          }
-
-          this.Configuration.Save();
-        }
-
-        if (ImGui.Checkbox("Whispers", ref whispers))
-        {
-          if (whispers)
-          {
-            this.Configuration.AllowedChannels.Add(XivChatType.TellIncoming);
-            this.Configuration.AllowedChannels.Add(XivChatType.TellOutgoing);
-          }
-          else
-          {
-            this.Configuration.AllowedChannels.Remove(XivChatType.TellIncoming);
-            this.Configuration.AllowedChannels.Remove(XivChatType.TellOutgoing);
-          }
-
-          this.Configuration.Save();
-        }
-
-        if (ImGui.Checkbox("Party", ref party))
-        {
-          if (party)
-          {
-            this.Configuration.AllowedChannels.Add(XivChatType.Party);
-          }
-          else
-          {
-            this.Configuration.AllowedChannels.Remove(XivChatType.Party);
-          }
-
-          this.Configuration.Save();
-        }
-
-
-
-
-        ImGui.Spacing();
+    private void RenderMessagePersistenceOptions() {
+      ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
@@ -431,9 +422,6 @@ namespace ChatScanner
         ImGui.Text("Message Saving");
         ImGui.Spacing();
         ImGui.Spacing();
-
-
-
 
         if (ImGui.Checkbox("Preserve Messages on Logout", ref this.Configuration.MessageLog_PreserveOnLogout))
         {
@@ -455,11 +443,9 @@ namespace ChatScanner
         }
 
         ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLog_FilePath, 2048);
+    }
 
-
-
-
-
+    private void RenderDevLogging() {
         ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Separator();
@@ -514,8 +500,6 @@ namespace ChatScanner
             }
           }
         }
-      }
-      ImGui.End();
     }
   }
 }
