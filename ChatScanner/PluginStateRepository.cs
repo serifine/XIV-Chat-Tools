@@ -65,7 +65,8 @@ namespace ChatScanner
           var ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options);
 
 
-          if (Configuration.MessageLog_DeleteOldMessages) {
+          if (Configuration.MessageLog_DeleteOldMessages)
+          {
             ChatEntries = ChatEntries
               .Where(t => (DateTime.Now - t.DateSent).TotalDays < Configuration.MessageLog_DaysToKeepOldMessages)
               .ToList();
@@ -92,22 +93,26 @@ namespace ChatScanner
 
     public string GetPlayerName()
     {
-      if (this.ClientState.LocalPlayer) {
+      if (this.ClientState.LocalPlayer)
+      {
         return this.ClientState.LocalPlayer.Name.TextValue;
-      } else {
+      }
+      else
+      {
         return "";
       }
     }
 
-    public List<GameObject> GetActorList()
+    public List<PlayerCharacter> GetNearbyPlayers()
     {
       return this.ObjectTable
         .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
+        .Cast<PlayerCharacter>()
         .OrderBy(t => t.Name.TextValue)
         .ToList();
     }
 
-    public GameObject? GetFocusTarget()
+    public PlayerCharacter? GetCurrentOrMouseoverTarget()
     {
       GameObject? focusTarget = this.TargetManager.Target;
 
@@ -121,12 +126,7 @@ namespace ChatScanner
         focusTarget = null;
       }
 
-      return focusTarget;
-    }
-
-    public int? GetFocusTargetId()
-    {
-      return ((int)this.GetFocusTarget().ObjectId);
+      return focusTarget as PlayerCharacter;
     }
 
     public List<ChatEntry> GetAllMessages()
@@ -138,7 +138,7 @@ namespace ChatScanner
 
     public List<ChatEntry> GetMessagesForFocusTarget()
     {
-      var focusTarget = this.GetFocusTarget();
+      var focusTarget = this.GetCurrentOrMouseoverTarget();
 
       return this._chatEntries
         .Where(t => t.OwnerId == GetPlayerName())
@@ -177,7 +177,7 @@ namespace ChatScanner
 
     public void AddFocusTabFromTarget()
     {
-      var focusTarget = GetFocusTarget();
+      var focusTarget = GetCurrentOrMouseoverTarget();
 
       if (focusTarget != null)
       {
@@ -210,14 +210,21 @@ namespace ChatScanner
 
     private async void PersistMessages()
     {
-      var options = new JsonSerializerOptions
+      try
       {
-        WriteIndented = true,
-        IncludeFields = true
-      };
-      var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
+        var options = new JsonSerializerOptions
+        {
+          WriteIndented = true,
+          IncludeFields = true
+        };
+        var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
 
-      await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
+        await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
+      }
+      catch (Exception ex)
+      {
+        PluginLog.Error("An error has occurred while trying to save chat history:" + ex.Message);
+      }
     }
   }
 }

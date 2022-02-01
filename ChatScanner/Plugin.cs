@@ -16,8 +16,8 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ChatScanner
 {
@@ -39,11 +39,14 @@ namespace ChatScanner
 
     internal PluginState PluginState { get; init; }
 
-    // internal StateManagementRepository StateRepository { get; }
     internal Configuration Configuration { get; }
     internal PluginUI PluginUI { get; }
 
-    private const string commandName = "/cScan";
+    private List<string> commandAliases = new List<string>() {
+      "/chatScanner",
+      "/cScanner",
+      "/cscan"
+    };
     private List<string> settingsArgumentAliases = new List<string>() {
       "settings",
       "config",
@@ -57,32 +60,22 @@ namespace ChatScanner
       Configuration.Initialize(PluginInterface);
 
       PluginState = PluginInterface.Create<PluginState>(Configuration);
-      // if (!PluginInterface.Inject(new StateManagementRepository(Configuration)))
-	    //   PluginLog.Error("Could not satisfy requirements for otherInstance");
-
-      // StateManagementRepository.Init(PluginInterface, ClientState, Configuration);
-      // StateRepository = StateManagementRepository.Instance;
-
       PluginUI = new PluginUI(Configuration, PluginState);
 
-
-      CommandManager.AddHandler("/chatScanner", new CommandInfo(OnCommand)
+      foreach (string commandAlias in commandAliases)
       {
-        HelpMessage = "Opens the Chat Scanner window."
-      });
-      CommandManager.AddHandler("/cScanner", new CommandInfo(OnCommand)
-      {
-        HelpMessage = "Alias for /chatScanner."
-      });
-      CommandManager.AddHandler("/cscan", new CommandInfo(OnCommand)
-      {
-        HelpMessage = "Alias for /chatScanner."
-      });
-
+        CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
+        {
+          HelpMessage = commandAliases.First() == commandAlias ?
+              "Opens the Chat Scanner window." : "Alias for /chatScanner."
+        });
+      }
 
       ChatGui.ChatMessage += Chat_OnChatMessage;
+
       ClientState.Login += OnLogin;
       ClientState.Logout += OnLogout;
+      
       PluginInterface.UiBuilder.Draw += DrawUI;
       PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
     }
@@ -99,17 +92,15 @@ namespace ChatScanner
       PluginInterface.UiBuilder.Draw -= DrawUI;
       PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
 
-      CommandManager.RemoveHandler("/chatScanner");
-      CommandManager.RemoveHandler("/cScanner");
-      CommandManager.RemoveHandler("/cscan");
-
-      // TODO: re enable
-      // StateRepository.Dispose();
+      foreach (string commandAlias in commandAliases)
+      {
+        CommandManager.RemoveHandler(commandAlias);
+      }
     }
 
     private void OnCommand(string command, string args)
     {
-      if (args.ToLower() == "config" || settingsArgumentAliases.Contains(args.ToLower()))
+      if (settingsArgumentAliases.Contains(args.ToLower()))
       {
         PluginUI.SettingsVisible = true;
       }
@@ -154,7 +145,7 @@ namespace ChatScanner
         PluginLog.Log("Message Type: " + type.ToString());
         PluginLog.Log("Is Marked Handled: " + isHandled.ToString());
         PluginLog.Log("Raw Sender: " + sender.TextValue);
-        PluginLog.Log("Parsed Sender: " + ParsePlayerName(type, sender));
+        PluginLog.Log("Parsed Sender: " + ParseSenderName(type, sender));
 
         if (Configuration.DebugLoggingMessagePayloads && sender.Payloads.Any())
         {
@@ -179,7 +170,7 @@ namespace ChatScanner
           PluginLog.Log("CMessage Json: ");
           try
           {
-            PluginLog.Log(JsonSerializer.Serialize(cmessage));
+            // PluginLog.Log(JsonSerializer.Serialize(cmessage));
           }
           catch (Exception ex)
           {
@@ -190,7 +181,7 @@ namespace ChatScanner
           PluginLog.Log("Sender Json: ");
           try
           {
-            PluginLog.Log(JsonSerializer.Serialize(sender));
+            // PluginLog.Log(JsonSerializer.Serialize(sender));
           }
           catch (Exception ex)
           {
@@ -199,7 +190,6 @@ namespace ChatScanner
           }
         }
       }
-
 
       if (isHandled || !Configuration.ActiveChannels.Any(t => t == type))
       {
@@ -211,11 +201,11 @@ namespace ChatScanner
         ChatType = type,
         Message = cmessage.TextValue,
         SenderId = senderId,
-        SenderName = ParsePlayerName(type, sender)
+        SenderName = ParseSenderName(type, sender)
       });
     }
 
-    private string ParsePlayerName(XivChatType type, SeString sender)
+    private string ParseSenderName(XivChatType type, SeString sender)
     {
       if (type == XivChatType.TellIncoming)
       {

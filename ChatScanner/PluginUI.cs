@@ -137,7 +137,7 @@ namespace ChatScanner
 
     public void SelectedTargetTab()
     {
-      var focusTarget = PluginState.GetFocusTarget();
+      var focusTarget = PluginState.GetCurrentOrMouseoverTarget();
 
       if (focusTarget != null)
       {
@@ -215,7 +215,7 @@ namespace ChatScanner
 
         ImGui.Separator();
 
-        foreach (var actor in PluginState.GetActorList())
+        foreach (var actor in PluginState.GetNearbyPlayers())
         {
           if (ImGui.Selectable(actor.Name.TextValue))
           {
@@ -230,7 +230,7 @@ namespace ChatScanner
       {
         if (comboCurrentValue == "Focus Target")
         {
-          var focusTarget = PluginState.GetFocusTarget();
+          var focusTarget = PluginState.GetCurrentOrMouseoverTarget();
 
           if (focusTarget != null)
           {
@@ -356,6 +356,7 @@ namespace ChatScanner
       Configuration.ActiveChannels.Add(channel.ChatType);
       
       UpdateChannelsToLog();
+      Configuration.Save();
     }
 
     private void RemoveActiveChannel() {
@@ -364,6 +365,7 @@ namespace ChatScanner
       Configuration.ActiveChannels.Remove(channel.ChatType);
 
       UpdateChannelsToLog();
+      Configuration.Save();
     }
 
     private void UpdateChannelsToLog() {

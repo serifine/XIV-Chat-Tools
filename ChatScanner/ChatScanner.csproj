@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Dalamud, Version=6.2.0.23, Culture=neutral, PublicKeyToken=null">
+      <Reference Include="Dalamud, Culture=neutral, PublicKeyToken=null">
         <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
         <Private>false</Private>
       </Reference>
@@ -18,15 +18,15 @@
         <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="ImGui.NET, Version=1.82.0.0, Culture=neutral, PublicKeyToken=null">
+      <Reference Include="ImGui.NET, Culture=neutral, PublicKeyToken=null">
         <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="ImGuiScene, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <Reference Include="ImGuiScene, Culture=neutral, PublicKeyToken=null">
         <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="Lumina, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <Reference Include="Lumina, Culture=neutral, PublicKeyToken=null">
         <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
         <Private>false</Private>
       </Reference>
@@ -37,7 +37,8 @@
 
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="DalamudPackager" Version="2.1.2"/>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="DalamudPackager" Version="2.1.2"/>
     </ItemGroup>
 
 </Project>
