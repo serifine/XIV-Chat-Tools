@@ -1,44 +1,44 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 <PropertyGroup>
-        <TargetFramework>net5-windows</TargetFramework>
+        <TargetFramework>net6-windows</TargetFramework>
         <RootNamespace>ChatScanner</RootNamespace>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
         <Nullable>annotations</Nullable>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     </PropertyGroup>
 
     <ItemGroup>
       <Reference Include="Dalamud, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\Dalamud.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="FFXIVClientStructs">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\FFXIVClientStructs.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="ImGui.NET, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\ImGui.NET.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="ImGuiScene, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\ImGuiScene.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="Lumina, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\Lumina.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="Lumina.Excel">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
+        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\7.0.0.4\Lumina.Excel.dll</HintPath>
         <Private>false</Private>
       </Reference>
 
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="DalamudPackager" Version="2.1.2"/>
+      <PackageReference Include="DalamudPackager" Version="2.1.8" />
     </ItemGroup>
 
 </Project>
