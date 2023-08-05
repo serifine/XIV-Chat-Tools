@@ -4,11 +4,11 @@
     "Name": "Chat Scanner",
     "Description": "Easily filter messages in crowded environments, bringings some sanity back to RP. \n \n Use /chatScanner settings to opent he settings window.",
     "InternalName": "ChatScanner",
-    "AssemblyVersion": "2.1.0",
-    "TestingAssemblyVersion": "2.1.0",
+    "AssemblyVersion": "2.2.0",
+    "TestingAssemblyVersion": "2.2.0",
     "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
     "ApplicableVersion": "any",
-    "DalamudApiLevel": 7,
+    "DalamudApiLevel": 8,
     "IsHide": "False",
     "IsTestingExclusive": "False",
     "DownloadCount": 420,
@@ -16,8 +16,8 @@
     "LoadPriority": 69420,
     "LoadRequiredState": 2,
     "LoadSync": true,
-    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.1.0/ChatScanner.zip",
-    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.1.0/ChatScanner.zip",
-    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.1.0/ChatScanner.zip"
+    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.2.0/ChatScanner.zip",
+    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.2.0/ChatScanner.zip",
+    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Scanner/releases/download/2.2.0/ChatScanner.zip"
     }
 ]
