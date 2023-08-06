@@ -28,7 +28,7 @@ namespace ChatScanner
             set { this.visible = value; }
         }
 
-        private bool settingsVisible = true;
+        private bool settingsVisible = false;
         public bool SettingsVisible
         {
             get { return this.settingsVisible; }
