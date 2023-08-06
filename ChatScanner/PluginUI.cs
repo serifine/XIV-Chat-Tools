@@ -5,6 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using ChatScanner.Models;
 using Dalamud.Game.Text;
+using Lumina.Excel.GeneratedSheets;
+using Dalamud.Logging;
+using Newtonsoft.Json;
+using System.Threading.Channels;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace ChatScanner
 {
@@ -23,13 +28,12 @@ namespace ChatScanner
             set { this.visible = value; }
         }
 
-        private bool settingsVisible = false;
+        private bool settingsVisible = true;
         public bool SettingsVisible
         {
             get { return this.settingsVisible; }
             set { this.settingsVisible = value; }
         }
-
 
         private bool autoScrollToBottom = false;
         public bool AutoScrollToBottom
@@ -39,9 +43,6 @@ namespace ChatScanner
         }
 
         private string comboCurrentValue = "Focus Target";
-
-        private readonly Vector4 ORANGE_COLOR = new Vector4(0.950f, 0.500f, 0f, 1f);
-        private readonly Vector4 LIGHT_ORANGE_COLOR = new Vector4(0.950f, 0.650f, 0f, 1f);
 
         private FocusTab customWindowFocusTab = new FocusTab("Private Window")
         {
@@ -74,9 +75,6 @@ namespace ChatScanner
                 return;
             }
 
-            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
-            ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
-
             ImGui.SetNextWindowSize(new Vector2(375, 330), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(375, 330), new Vector2(float.MaxValue, float.MaxValue));
 
@@ -91,17 +89,8 @@ namespace ChatScanner
                     PluginState.AddFocusTabFromTarget();
                 }
 
-                // ImGui.Separator();
-
                 if (ImGui.BeginTabBar("MainTabs", ImGuiTabBarFlags.Reorderable))
                 {
-                    if (ImGui.BeginTabItem("Dev Tab 2"))
-                    {
-                        SelectedTargetTab();
-
-                        ImGui.EndTabItem();
-                    }
-
                     if (ImGui.BeginTabItem("Selected Target"))
                     {
                         SelectedTargetTab();
@@ -281,32 +270,49 @@ namespace ChatScanner
             }
         }
 
-        public Vector4 color;
-
         public void MessagePanel(List<ChatEntry> messages)
         {
             ImGui.BeginChild("Messages");
-
-            ImGui.ColorEdit4("", ref color, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs);
-
 
             var isChatAtBottom = ImGui.GetScrollY() == ImGui.GetScrollMaxY();
 
             foreach (var chatItem in messages)
             {
+                ImGui.Spacing();
+
                 if (chatItem.SenderName == PluginState.GetPlayerName())
                 {
-                    ImGui.TextColored(ORANGE_COLOR, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
-                    ImGui.SameLine();
-                    ImGui.TextWrapped(chatItem.Message);
+                    ImGui.TextColored(Configuration.CharacterNameColor, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
                 }
                 else
                 {
-                    ImGui.Spacing();
                     ImGui.Text(chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
-                    ImGui.SameLine();
-                    ImGui.TextWrapped(chatItem.Message);
                 }
+
+                if (Configuration.DisableCustomChatColors)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+                }
+                else if (chatItem.ChatType == XivChatType.CustomEmote || chatItem.ChatType == XivChatType.StandardEmote)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.EmoteColor);
+                }
+                else if (chatItem.ChatType == XivChatType.TellIncoming || chatItem.ChatType == XivChatType.TellOutgoing)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.TellColor);
+                }
+                else if (chatItem.ChatType == XivChatType.Party)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.PartyColor);
+                }
+                else
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+                }
+
+                ImGui.SameLine();
+                ImGui.TextWrapped(chatItem.Message);
+                ImGui.PopStyleColor();
             }
 
             if (AutoScrollToBottom == true)
@@ -324,7 +330,6 @@ namespace ChatScanner
                 return;
             }
 
-
             var scale = ImGui.GetIO().FontGlobalScale;
 
             ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.FirstUseEver);
@@ -340,6 +345,7 @@ namespace ChatScanner
 
                 RenderDevLogging();
             }
+
             ImGui.End();
         }
 
@@ -403,11 +409,61 @@ namespace ChatScanner
             ImGui.Separator();
             ImGui.Spacing();
             ImGui.Spacing();
+            ImGui.Text("Notify when message contains (comma delimited)");
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.InputText("", ref Configuration.MessageLog_Watchers, 24096))
+            {
+                Configuration.Save();
+            }
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            ImGui.Spacing();
+            ImGui.Text("Chat Colors");
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.Checkbox("Disable Custom Chat Colors", ref Configuration.DisableCustomChatColors))
+            {
+                Configuration.Save();
+            }
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.ColorEdit4("Character Name Color", ref Configuration.CharacterNameColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            {
+                Configuration.Save();
+            }
+            if (ImGui.ColorEdit4("Normal Message Color", ref Configuration.NormalChatColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            {
+                Configuration.Save();
+            }
+            if (ImGui.ColorEdit4("Emote Color", ref Configuration.EmoteColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            {
+                Configuration.Save();
+            }
+            if (ImGui.ColorEdit4("Tell Color", ref Configuration.TellColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            {
+                Configuration.Save();
+            }
+            if (ImGui.ColorEdit4("Party Chat Color", ref Configuration.PartyColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            {
+                Configuration.Save();
+            }
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            ImGui.Spacing();
             ImGui.Text("Channels to Log");
             ImGui.Spacing();
             ImGui.Spacing();
-
-
 
             ImGui.SetNextItemWidth(260);
             ImGui.PushID("AddChannelComboBox");
@@ -416,19 +472,12 @@ namespace ChatScanner
             ImGui.SameLine();
             if (ImGui.Button("Add Selected Channel")) AddActiveChannel();
 
-            // ImGui.PushItemWidth(180);
+            ImGui.PushItemWidth(180);
             ImGui.PushID("InactiveChannelsListbox");
             ImGui.SetNextItemWidth(400);
             ImGui.ListBox("", ref ChannelLogging_ActiveSelection, ActiveChannels, ActiveChannels.Count());
             ImGui.PopID();
             if (ImGui.Button("Remove Selected Channel From Watch List")) RemoveActiveChannel();
-
-            // ImGui.SameLine();
-
-            // ImGui.PushID("ActiveChannelsListbox");
-            // ImGui.ListBox("", ref currentActiveSelection, ActiveChannels, ActiveChannels.Count());
-            // ImGui.PopID();
-            // ImGui.PopItemWidth();
         }
 
         private void RenderMessagePersistenceOptions()

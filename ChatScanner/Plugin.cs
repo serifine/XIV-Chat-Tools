@@ -18,6 +18,7 @@ using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace ChatScanner
 {
@@ -137,10 +138,11 @@ namespace ChatScanner
 
         private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
         {
-            if (Enum.IsDefined(typeof(XivChatType), type) == false || Configuration.AllChannels.Any(t => t.ChatType == type) == false)
+            if (Enum.IsDefined(typeof(XivChatType), type) == false || Configuration.AllChannels.Any(t => t.ChatType == type) == false || isHandled || !Configuration.ActiveChannels.Any(t => t == type))
             {
                 return;
             }
+
 
             var parsedSenderName = ParseSenderName(type, sender);
 
@@ -175,7 +177,7 @@ namespace ChatScanner
                 }
             }
 
-            if (Configuration.DebugLogging && Configuration.DebugLoggingMessages && Configuration.ActiveChannels.Any(t => t == type))
+            if (Configuration.DebugLogging && Configuration.DebugLoggingMessages)
             {
                 PluginLog.Log("NEW CHAT MESSAGE RECEIVED");
                 PluginLog.Log("=======================================================");
@@ -228,9 +230,12 @@ namespace ChatScanner
                 }
             }
 
-            if (isHandled || !Configuration.ActiveChannels.Any(t => t == type))
+            var watchers = Configuration.MessageLog_Watchers.Split(",");
+            var messageText = cmessage.TextValue;
+
+            if (watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
             {
-                return;
+                UIModule.PlayChatSoundEffect(2);
             }
 
             PluginState.AddChatMessage(new Models.ChatEntry()
@@ -251,19 +256,38 @@ namespace ChatScanner
                 return (playerPayload as PlayerPayload).PlayerName;
             }
 
-            if (type == XivChatType.TellOutgoing || type == XivChatType.Party || type == XivChatType.Say)
-            {
-                return PluginState.GetPlayerName();
-            }
-            
             if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
             {
                 var textPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
-            
+
                 if (textPayload != null)
                 {
                     return (textPayload as TextPayload).Text;
                 }
+            }
+
+            if (type == XivChatType.TellOutgoing
+             || type == XivChatType.Party
+             || type == XivChatType.Say
+             || type == XivChatType.CrossLinkShell1
+             || type == XivChatType.CrossLinkShell2
+             || type == XivChatType.CrossLinkShell3
+             || type == XivChatType.CrossLinkShell4
+             || type == XivChatType.CrossLinkShell5
+             || type == XivChatType.CrossLinkShell6
+             || type == XivChatType.CrossLinkShell7
+             || type == XivChatType.CrossLinkShell8
+             || type == XivChatType.Ls1
+             || type == XivChatType.Ls2
+             || type == XivChatType.Ls3
+             || type == XivChatType.Ls4
+             || type == XivChatType.Ls5
+             || type == XivChatType.Ls6
+             || type == XivChatType.Ls7
+             || type == XivChatType.Ls8
+            )
+            {
+                return PluginState.GetPlayerName();
             }
 
             return "N/A|BadType";
