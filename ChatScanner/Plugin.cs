@@ -233,7 +233,9 @@ namespace ChatScanner
             var watchers = Configuration.MessageLog_Watchers.Split(",");
             var messageText = cmessage.TextValue;
 
-            if (watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
+            
+
+            if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
             {
                 UIModule.PlayChatSoundEffect(2);
             }
