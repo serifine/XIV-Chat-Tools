@@ -19,27 +19,21 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Dalamud.Plugin.Services;
 
 namespace ChatScanner
 {
-    public class ChatScannerPlugin : IDalamudPlugin
+    public class Plugin : IDalamudPlugin
     {
         public string Name => "Chat Scanner";
 
-        [PluginService]
-        internal DalamudPluginInterface PluginInterface { get; init; }
-
-        [PluginService]
-        internal ChatGui ChatGui { get; init; }
-
-        [PluginService]
-        internal ClientState ClientState { get; init; }
-
-        [PluginService]
-        internal CommandManager CommandManager { get; init; }
+        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
+        [PluginService] public static IClientState ClientState { get; private set; } = null!;
+        [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
+        [PluginService] public static IPluginLog Logger { get; private set; } = null!;
 
         internal PluginState PluginState { get; init; }
-
         internal Configuration Configuration { get; }
         internal PluginUI PluginUI { get; }
 
@@ -48,13 +42,14 @@ namespace ChatScanner
           "/cScanner",
           "/cscan"
         };
+
         private List<string> settingsArgumentAliases = new List<string>() {
           "settings",
           "config",
           "c"
         };
 
-        public ChatScannerPlugin()
+        public Plugin()
         {
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(PluginInterface);
@@ -120,12 +115,12 @@ namespace ChatScanner
             PluginUI.SettingsVisible = true;
         }
 
-        private void OnLogin(object sender, EventArgs args)
+        private void OnLogin()
         {
             PluginUI.Visible = Configuration.OpenOnLogin;
         }
 
-        private void OnLogout(object sender, EventArgs args)
+        private void OnLogout()
         {
             PluginUI.Visible = false;
             PluginState.ClearAllFocusTabs();
@@ -148,84 +143,84 @@ namespace ChatScanner
 
             if (Configuration.DebugLogging && parsedSenderName == "N/A|BadType")
             {
-                PluginLog.Log("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
-                PluginLog.Log("=======================================================");
-                PluginLog.Log("Message Type: " + type.ToString());
-                PluginLog.Log("Is Marked Handled: " + isHandled.ToString());
-                PluginLog.Log("Raw Sender: " + sender.TextValue);
-                PluginLog.Log("Parsed Sender: " + parsedSenderName);
-                PluginLog.Log("CMessage Json: ");
+                Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
+                Logger.Error("=======================================================");
+                Logger.Error("Message Type: " + type.ToString());
+                Logger.Error("Is Marked Handled: " + isHandled.ToString());
+                Logger.Error("Raw Sender: " + sender.TextValue);
+                Logger.Error("Parsed Sender: " + parsedSenderName);
+                Logger.Error("CMessage Json: ");
                 try
                 {
-                    PluginLog.Log(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
+                    Logger.Error(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Log("An error occurred during serialization.");
-                    PluginLog.Log(ex.Message);
+                    Logger.Error("An error occurred during serialization.");
+                    Logger.Error(ex.Message);
                 }
 
-                PluginLog.Log("Sender Json: ");
+                Logger.Error("Sender Json: ");
                 try
                 {
-                    PluginLog.Log(JsonConvert.SerializeObject(sender, Formatting.Indented));
+                    Logger.Error(JsonConvert.SerializeObject(sender, Formatting.Indented));
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Log("An error occurred during serialization.");
-                    PluginLog.Log(ex.Message);
+                    Logger.Error("An error occurred during serialization.");
+                    Logger.Error(ex.Message);
                 }
             }
 
             if (Configuration.DebugLogging && Configuration.DebugLoggingMessages)
             {
-                PluginLog.Log("NEW CHAT MESSAGE RECEIVED");
-                PluginLog.Log("=======================================================");
-                PluginLog.Log("Message Type: " + type.ToString());
-                PluginLog.Log("Is Marked Handled: " + isHandled.ToString());
-                PluginLog.Log("Raw Sender: " + sender.TextValue);
-                PluginLog.Log("Parsed Sender: " + parsedSenderName);
+                Logger.Debug("NEW CHAT MESSAGE RECEIVED");
+                Logger.Debug("=======================================================");
+                Logger.Debug("Message Type: " + type.ToString());
+                Logger.Debug("Is Marked Handled: " + isHandled.ToString());
+                Logger.Debug("Raw Sender: " + sender.TextValue);
+                Logger.Debug("Parsed Sender: " + parsedSenderName);
 
                 if (Configuration.DebugLoggingMessagePayloads && sender.Payloads.Any())
                 {
-                    PluginLog.Log("");
-                    PluginLog.Log("SenderPayloads");
+                    Logger.Debug("");
+                    Logger.Debug("SenderPayloads");
                     foreach (var payload in sender.Payloads)
                     {
-                        PluginLog.Log("Type: " + payload.Type.ToString());
-                        PluginLog.Log(payload.ToString());
+                        Logger.Debug("Type: " + payload.Type.ToString());
+                        Logger.Debug(payload.ToString());
                     }
                 }
 
                 if (Configuration.DebugLoggingMessageContents)
                 {
-                    PluginLog.Log("");
-                    PluginLog.Log("Message: " + cmessage.TextValue);
+                    Logger.Debug("");
+                    Logger.Debug("Message: " + cmessage.TextValue);
                 }
 
                 if (Configuration.DebugLoggingMessageAsJson)
                 {
-                    PluginLog.Log("");
-                    PluginLog.Log("CMessage Json: ");
+                    Logger.Debug("");
+                    Logger.Debug("CMessage Json: ");
                     try
                     {
-                        PluginLog.Log(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
+                        Logger.Debug(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
                     }
                     catch (Exception ex)
                     {
-                        PluginLog.Log("An error occurred during serialization.");
-                        PluginLog.Log(ex.Message);
+                        Logger.Debug("An error occurred during serialization.");
+                        Logger.Debug(ex.Message);
                     }
 
-                    PluginLog.Log("Sender Json: ");
+                    Logger.Debug("Sender Json: ");
                     try
                     {
-                        PluginLog.Log(JsonConvert.SerializeObject(sender, Formatting.Indented));
+                        Logger.Debug(JsonConvert.SerializeObject(sender, Formatting.Indented));
                     }
                     catch (Exception ex)
                     {
-                        PluginLog.Log("An error occurred during serialization.");
-                        PluginLog.Log(ex.Message);
+                        Logger.Debug("An error occurred during serialization.");
+                        Logger.Debug(ex.Message);
                     }
                 }
             }
