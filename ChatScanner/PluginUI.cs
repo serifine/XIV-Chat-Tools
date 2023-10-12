@@ -10,11 +10,13 @@ using Dalamud.Logging;
 using Newtonsoft.Json;
 using System.Threading.Channels;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Newtonsoft.Json.Serialization;
+using Dalamud.IoC;
+using Dalamud.Plugin.Services;
+using Dalamud.Interface.Utility;
 
 namespace ChatScanner
 {
-    // It is good to have this be disposable in general, in case you ever need it
-    // to do any cleanup
     class PluginUI : IDisposable
     {
         private Configuration Configuration { get; set; }
@@ -288,7 +290,6 @@ namespace ChatScanner
                 {
                     ImGui.Text(chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
                 }
-
                 if (Configuration.DisableCustomChatColors)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
@@ -311,7 +312,7 @@ namespace ChatScanner
                 }
 
                 ImGui.SameLine();
-                ImGui.TextWrapped(chatItem.Message);
+                ImGuiHelpers.SafeTextWrapped(chatItem.Message);
                 ImGui.PopStyleColor();
             }
 
