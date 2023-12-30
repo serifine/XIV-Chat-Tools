@@ -220,6 +220,8 @@ namespace ChatScanner
 
             var tabMessages = PluginState.SearchMessages(SearchText);
 
+            ImGui.Separator();
+
             if (tabMessages.Count() > 0)
             {
                 DrawMessagePanel(tabMessages);
