@@ -50,6 +50,10 @@ namespace ChatScanner
             this.Configuration = configuration;
             this.PluginState = state;
 
+            var io = ImGui.GetIO();
+
+            io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
             UpdateChannelsToLog();
         }
 
@@ -112,39 +116,38 @@ namespace ChatScanner
                     ImGui.EndChild();
                 }
 
-                ImGui.PopStyleVar();
+                ImGui.PopStyleVar(); 
                 ImGui.PopStyleColor();
-
 
                 uint dockspaceId = ImGui.GetID("ChatScannerDockspace");
                 ImGui.DockSpace(dockspaceId);
 
-
+                 
                 // add padding for all child windows
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
-
-                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                 
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                 if (ImGui.Begin("Selected Target"))
                 {
                     DrawSelectedTargetTab();
                     ImGui.End();
                 }
 
-                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                 if (ImGui.Begin("Search Messages"))
                 {
                     DrawSearchTab();
                     ImGui.End();
                 }
 
-                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                 if (ImGui.Begin("All Messages"))
                 {
                     DrawAllMessagesTab();
                     ImGui.End();
                 }
 
-                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                 if (ImGui.Begin("Custom Watch"))
                 {
                     DrawCustomTab("DefaultCustom");
@@ -153,7 +156,7 @@ namespace ChatScanner
 
                 foreach (var focusTab in PluginState.GetFocusTabs())
                 {
-                    ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                    ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                     if (ImGui.Begin(focusTab.Name, ref focusTab.Open))
                     {
                         DrawFocusTab(focusTab.FocusTabId.ToString(), focusTab);
