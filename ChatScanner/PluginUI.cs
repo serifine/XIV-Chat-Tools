@@ -74,61 +74,101 @@ namespace ChatScanner
 
             var scale = ImGui.GetIO().FontGlobalScale;
 
-            if (ImGui.Begin("Chat Scanner", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+
+            if (ImGui.Begin("Chat Scanner", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoBackground))
             {
-                ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
-                ImGui.SameLine(ImGui.GetContentRegionAvail().X - (100 * scale));
-                if (ImGui.Button("Add Focus Target"))
-                {
-                    PluginState.AddFocusTabFromTarget();
+                bool isWindowFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows | ImGuiFocusedFlags.RootWindow | ImGuiFocusedFlags.DockHierarchy);
+
+                unsafe {
+                    Vector4 bgColor;
+
+                    if (isWindowFocused)
+                    {
+                        bgColor = *ImGui.GetStyleColorVec4(ImGuiCol.TitleBgActive);
+                    } else
+                    {
+                        bgColor = *ImGui.GetStyleColorVec4(ImGuiCol.TitleBg);
+                    }
+                    
+                    ImGui.PushStyleColor(ImGuiCol.ChildBg, bgColor);
                 }
 
-                if (ImGui.BeginTabBar("MainTabs", ImGuiTabBarFlags.Reorderable))
+                ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
+
+                if (ImGui.BeginChild("ChildTest", new Vector2(0, 30), false))
                 {
-                    if (ImGui.BeginTabItem("Selected Target"))
+                    ImGui.SameLine(8);
+                    ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
+                    ImGui.SameLine(ImGui.GetContentRegionAvail().X - (120 * scale));
+                    if (ImGui.Button("Add Focus Target"))
                     {
-                        DrawSelectedTargetTab();
-
-                        ImGui.EndTabItem();
+                        PluginState.AddFocusTabFromTarget();
                     }
-
-                    if (ImGui.BeginTabItem("Search Messages"))
-                    {
-                        DrawSearchTab();
-
-                        ImGui.EndTabItem();
-                    }
-
-                    if (ImGui.BeginTabItem("All Messages"))
-                    {
-                        DrawAllMessagesTab();
-
-                        ImGui.EndTabItem();
-                    }
-
-                    if (ImGui.BeginTabItem("Custom Watch"))
-                    {
-                        DrawCustomTab("DefaultCustom");
-
-                        ImGui.EndTabItem();
-                    }
-
-                    foreach (var focusTab in PluginState.GetFocusTabs())
-                    {
-                        if (ImGui.BeginTabItem(focusTab.Name, ref focusTab.Open, ImGuiTabItemFlags.None))
-                        {
-                            DrawFocusTab(focusTab.FocusTabId.ToString(), focusTab);
-
-                            ImGui.EndTabItem();
-                        }
-                    }
-
-                    PluginState.RemoveClosedFocusTabs();
-
-                    ImGui.EndTabBar();
+                    ImGui.EndChild();
                 }
+
+                ImGui.PopStyleVar();
+                ImGui.PopStyleColor();
+
+
+                uint dockspaceId = ImGui.GetID("ChatScannerDockspace");
+                ImGui.DockSpace(dockspaceId);
+
+
+                // add padding for all child windows
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
+
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                if (ImGui.Begin("Selected Target"))
+                {
+                    DrawSelectedTargetTab();
+                    ImGui.End();
+                }
+
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                if (ImGui.Begin("Search Messages"))
+                {
+                    DrawSearchTab();
+                    ImGui.End();
+                }
+
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                if (ImGui.Begin("All Messages"))
+                {
+                    DrawAllMessagesTab();
+                    ImGui.End();
+                }
+
+                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                if (ImGui.Begin("Custom Watch"))
+                {
+                    DrawCustomTab("DefaultCustom");
+                    ImGui.End();
+                }
+
+                foreach (var focusTab in PluginState.GetFocusTabs())
+                {
+                    ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.FirstUseEver);
+                    if (ImGui.Begin(focusTab.Name, ref focusTab.Open))
+                    {
+                        DrawFocusTab(focusTab.FocusTabId.ToString(), focusTab);
+
+                        ImGui.End();
+                    }
+                }
+
+                // remove child window padding style
+                ImGui.PopStyleVar();
+                ImGui.PopStyleVar();
+
+                PluginState.RemoveClosedFocusTabs();
+
+                ImGui.End();
             }
-            ImGui.End();
+
+            ImGui.PopStyleVar();
         }
 
 
@@ -142,7 +182,7 @@ namespace ChatScanner
 
                 if (messages != null && messages.Count() > 0)
                 {
-                    MessagePanel(messages);
+                    DrawMessagePanel(messages);
                 }
                 else
                 {
@@ -161,7 +201,7 @@ namespace ChatScanner
 
             if (tabMessages.Count() > 0)
             {
-                MessagePanel(tabMessages);
+                DrawMessagePanel(tabMessages);
             }
             else
             {
@@ -182,7 +222,7 @@ namespace ChatScanner
 
             if (tabMessages.Count() > 0)
             {
-                MessagePanel(tabMessages);
+                DrawMessagePanel(tabMessages);
             }
             else
             {
@@ -268,7 +308,7 @@ namespace ChatScanner
 
             if (tabMessages.Count() > 0)
             {
-                MessagePanel(tabMessages);
+                DrawMessagePanel(tabMessages);
             }
             else
             {
@@ -282,7 +322,7 @@ namespace ChatScanner
 
             if (tabMessages.Count() > 0)
             {
-                MessagePanel(tabMessages);
+                DrawMessagePanel(tabMessages);
             }
             else
             {
@@ -290,7 +330,7 @@ namespace ChatScanner
             }
         }
 
-        public void MessagePanel(List<ChatEntry> messages)
+        public void DrawMessagePanel(List<ChatEntry> messages)
         {
             ImGui.BeginChild("Messages");
 
@@ -354,21 +394,21 @@ namespace ChatScanner
             ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(400, 350), new Vector2(float.MaxValue, float.MaxValue));
 
-            if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible, ImGuiWindowFlags.None))
+            if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,  ImGuiWindowFlags.NoDocking))
             {
-                RenderStandardSettings();
+                DrawStandardSettings();
 
-                RenderChannelLoggingSettings();
+                DrawChannelLoggingSettings();
 
-                RenderMessagePersistenceOptions();
+                DrawMessagePersistenceOptions();
 
-                RenderDevLogging();
+                DrawDevLogging();
             }
 
             ImGui.End();
         }
 
-        private void RenderStandardSettings()
+        private void DrawStandardSettings()
         {
             if (ImGui.Checkbox("Open On Login", ref this.Configuration.OpenOnLogin))
             {
@@ -421,7 +461,7 @@ namespace ChatScanner
               .ToArray();
         }
 
-        private void RenderChannelLoggingSettings()
+        private void DrawChannelLoggingSettings()
         {
             ImGui.Spacing();
             ImGui.Spacing();
@@ -499,7 +539,7 @@ namespace ChatScanner
             if (ImGui.Button("Remove Selected Channel From Watch List")) RemoveActiveChannel();
         }
 
-        private void RenderMessagePersistenceOptions()
+        private void DrawMessagePersistenceOptions()
         {
             ImGui.Spacing();
             ImGui.Spacing();
@@ -532,7 +572,7 @@ namespace ChatScanner
             ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLog_FilePath, 2048);
         }
 
-        private void RenderDevLogging()
+        private void DrawDevLogging()
         {
             ImGui.Spacing();
             ImGui.Spacing();
