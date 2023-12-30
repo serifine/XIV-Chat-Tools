@@ -334,7 +334,7 @@ namespace ChatScanner
                 ImGui.PopStyleColor();
             }
 
-            if (AutoScrollToBottom)
+            if (AutoScrollToBottom || isChatAtBottom == true)
             {
                 ImGui.SetScrollHereY(1.0f);
             }
