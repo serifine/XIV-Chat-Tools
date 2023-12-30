@@ -151,6 +151,15 @@ namespace ChatScanner
               .ToList();
         }
 
+        public List<ChatEntry> SearchMessages(string searchText)
+        {
+            return this._chatEntries
+                .Where(t =>
+                    t.Message.ToLower().Contains(searchText.ToLower()) ||
+                    t.SenderName.ToLower().Contains(searchText.ToLower()))
+                .ToList();
+        }
+
         public void AddChatMessage(ChatEntry chatEntry)
         {
             chatEntry.OwnerId = GetPlayerName();

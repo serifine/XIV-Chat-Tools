@@ -5,14 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ChatScanner.Models;
 using Dalamud.Game.Text;
-using Lumina.Excel.GeneratedSheets;
-using Dalamud.Logging;
-using Newtonsoft.Json;
-using System.Threading.Channels;
-using FFXIVClientStructs.FFXIV.Client.UI;
-using Newtonsoft.Json.Serialization;
-using Dalamud.IoC;
-using Dalamud.Plugin.Services;
 using Dalamud.Interface.Utility;
 
 namespace ChatScanner
@@ -95,14 +87,21 @@ namespace ChatScanner
                 {
                     if (ImGui.BeginTabItem("Selected Target"))
                     {
-                        SelectedTargetTab();
+                        DrawSelectedTargetTab();
+
+                        ImGui.EndTabItem();
+                    }
+
+                    if (ImGui.BeginTabItem("Search Messages"))
+                    {
+                        DrawSearchTab();
 
                         ImGui.EndTabItem();
                     }
 
                     if (ImGui.BeginTabItem("All Messages"))
                     {
-                        AllMessagesTab();
+                        DrawAllMessagesTab();
 
                         ImGui.EndTabItem();
                     }
@@ -133,7 +132,7 @@ namespace ChatScanner
         }
 
 
-        public void SelectedTargetTab()
+        public void DrawSelectedTargetTab()
         {
             var focusTarget = PluginState.GetCurrentOrMouseoverTarget();
 
@@ -156,10 +155,30 @@ namespace ChatScanner
             }
         }
 
-        public void AllMessagesTab()
+        public void DrawAllMessagesTab()
         {
-
             var tabMessages = PluginState.GetAllMessages();
+
+            if (tabMessages.Count() > 0)
+            {
+                MessagePanel(tabMessages);
+            }
+            else
+            {
+                ImGui.Text("No messages to display.");
+            }
+        }
+
+        private string SearchText = "";
+
+        public void DrawSearchTab()
+        {
+            if (ImGui.InputText("Search Text", ref SearchText, 24096))
+            {
+                Configuration.Save();
+            }
+
+            var tabMessages = PluginState.SearchMessages(SearchText);
 
             if (tabMessages.Count() > 0)
             {
@@ -259,7 +278,6 @@ namespace ChatScanner
 
         public void DrawFocusTab(string tabId, FocusTab focusTab)
         {
-
             var tabMessages = PluginState.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
 
             if (tabMessages.Count() > 0)
@@ -316,9 +334,9 @@ namespace ChatScanner
                 ImGui.PopStyleColor();
             }
 
-            if (AutoScrollToBottom == true)
+            if (AutoScrollToBottom)
             {
-                ImGui.SetScrollY(ImGui.GetScrollMaxY());
+                ImGui.SetScrollHereY(1.0f);
             }
 
             ImGui.EndChild();
