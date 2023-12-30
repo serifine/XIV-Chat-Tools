@@ -38,7 +38,9 @@ namespace ChatScanner
         public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatScanner";
         public string MessageLog_FileName = "ChatLogs.json";
         public string MessageLog_Watchers = "";
-  
+
+        public bool SplitDateAndNames = true;
+
         public Vector4 CharacterNameColor = new Vector4(255, 255, 255, 255);
         public Vector4 NormalChatColor = new Vector4(255, 255, 255, 255);
         public Vector4 EmoteColor = new Vector4(0.950f, 0.500f, 0f, 1f);

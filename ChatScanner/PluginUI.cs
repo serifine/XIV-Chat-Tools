@@ -6,6 +6,7 @@ using System.Linq;
 using ChatScanner.Models;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Table;
 
 namespace ChatScanner
 {
@@ -80,17 +81,19 @@ namespace ChatScanner
             {
                 bool isWindowFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows | ImGuiFocusedFlags.RootWindow | ImGuiFocusedFlags.DockHierarchy);
 
-                unsafe {
+                unsafe
+                {
                     Vector4 bgColor;
 
                     if (isWindowFocused)
                     {
                         bgColor = *ImGui.GetStyleColorVec4(ImGuiCol.TitleBgActive);
-                    } else
+                    }
+                    else
                     {
                         bgColor = *ImGui.GetStyleColorVec4(ImGuiCol.TitleBg);
                     }
-                    
+
                     ImGui.PushStyleColor(ImGuiCol.ChildBg, bgColor);
                 }
 
@@ -338,42 +341,37 @@ namespace ChatScanner
 
             var isChatAtBottom = ImGui.GetScrollY() == ImGui.GetScrollMaxY();
 
-            foreach (var chatItem in messages)
+            if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
             {
-                ImGui.Spacing();
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch);
 
-                if (chatItem.SenderName == PluginState.GetPlayerName())
+                foreach (var chatEntry in messages)
                 {
-                    ImGui.TextColored(Configuration.CharacterNameColor, chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
-                }
-                else
-                {
-                    ImGui.Text(chatItem.DateSent.ToShortTimeString() + " " + chatItem.SenderName + ": ");
-                }
-                if (Configuration.DisableCustomChatColors)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
-                }
-                else if (chatItem.ChatType == XivChatType.CustomEmote || chatItem.ChatType == XivChatType.StandardEmote)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.EmoteColor);
-                }
-                else if (chatItem.ChatType == XivChatType.TellIncoming || chatItem.ChatType == XivChatType.TellOutgoing)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.TellColor);
-                }
-                else if (chatItem.ChatType == XivChatType.Party)
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.PartyColor);
-                }
-                else
-                {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+
+                    SetNameColor(chatEntry);
+
+                    if (Configuration.SplitDateAndNames == true)
+                    {
+                        ImGui.Text(chatEntry.SenderName);
+                        ImGui.Text(chatEntry.DateSent.ToShortTimeString());
+                    } else
+                    {
+                        ImGui.Text(chatEntry.DateSent.ToShortTimeString() + " " + chatEntry.SenderName + ": ");
+                    }
+                    ImGui.PopStyleColor();
+
+                    ImGui.TableSetColumnIndex(1);
+
+                    SetMessageColor(chatEntry);
+                    ImGuiHelpers.SafeTextWrapped(chatEntry.Message);
+                    ImGui.PopStyleColor();
                 }
 
-                ImGui.SameLine();
-                ImGuiHelpers.SafeTextWrapped(chatItem.Message);
-                ImGui.PopStyleColor();
+
+                ImGui.EndTable();
             }
 
             if (AutoScrollToBottom || isChatAtBottom == true)
@@ -382,6 +380,42 @@ namespace ChatScanner
             }
 
             ImGui.EndChild();
+        }
+
+        private void SetNameColor(ChatEntry chatEntry)
+        {
+            if (chatEntry.SenderName == PluginState.GetPlayerName())
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.CharacterNameColor);
+            }
+            else
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            }
+        }
+
+        private void SetMessageColor(ChatEntry chatEntry)
+        {
+            if (Configuration.DisableCustomChatColors)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            }
+            else if (chatEntry.ChatType == XivChatType.CustomEmote || chatEntry.ChatType == XivChatType.StandardEmote)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.EmoteColor);
+            }
+            else if (chatEntry.ChatType == XivChatType.TellIncoming || chatEntry.ChatType == XivChatType.TellOutgoing)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.TellColor);
+            }
+            else if (chatEntry.ChatType == XivChatType.Party)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.PartyColor);
+            }
+            else
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            }
         }
 
         public void DrawSettingsWindow()
@@ -396,7 +430,7 @@ namespace ChatScanner
             ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(400, 350), new Vector2(float.MaxValue, float.MaxValue));
 
-            if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible,  ImGuiWindowFlags.NoDocking))
+            if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible, ImGuiWindowFlags.NoDocking))
             {
                 DrawStandardSettings();
 
@@ -484,6 +518,20 @@ namespace ChatScanner
             ImGui.Separator();
             ImGui.Spacing();
             ImGui.Spacing();
+            ImGui.Text("Notify when message contains (comma delimited)");
+            ImGui.Spacing();
+            ImGui.Spacing();
+
+            if (ImGui.Checkbox("Split date and names on new lines", ref Configuration.SplitDateAndNames))
+            {
+                Configuration.Save();
+            }
+
+            ImGui.Spacing();
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            ImGui.Spacing();
             ImGui.Text("Chat Colors");
             ImGui.Spacing();
             ImGui.Spacing();
@@ -496,7 +544,7 @@ namespace ChatScanner
             ImGui.Spacing();
             ImGui.Spacing();
 
-            if (ImGui.ColorEdit4("Character Name Color", ref Configuration.CharacterNameColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            if (ImGui.ColorEdit4("My Name Color", ref Configuration.CharacterNameColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
             {
                 Configuration.Save();
             }
