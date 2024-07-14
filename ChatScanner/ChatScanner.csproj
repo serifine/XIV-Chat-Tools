@@ -1,50 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Dalamud.NET.Sdk/9.0.2">
 
-<PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <RootNamespace>ChatScanner</RootNamespace>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>2.3.0</Version>
-        <Nullable>annotations</Nullable>
-        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <PropertyGroup>
+        <PackageId>ChatScanner</PackageId>
+        <Version>2.5.0</Version>
+        <Authors>serifine</Authors>
+        <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Scanner</PackageProjectUrl>
     </PropertyGroup>
-
-    <ItemGroup>
-      <Reference Include="Dalamud, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-      <Reference Include="FFXIVClientStructs">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-      <Reference Include="ImGui.NET, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-      <Reference Include="ImGuiScene, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-      <Reference Include="Lumina, Culture=neutral, PublicKeyToken=null">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-      <Reference Include="Lumina.Excel">
-        <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
-        <Private>false</Private>
-      </Reference>
-
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="DalamudPackager" Version="2.1.12" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Windows\" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Include="..\.editorconfig" Link=".editorconfig" />
-    </ItemGroup>
 
 </Project>

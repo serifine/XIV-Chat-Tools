@@ -37,7 +37,7 @@ namespace ChatScanner
         private Configuration Configuration { get; set; }
 
         [PluginService]
-        internal DalamudPluginInterface PluginInterface { get; set; }
+        internal IDalamudPluginInterface PluginInterface { get; set; }
 
         [PluginService] public static IClientState ClientState { get; set; }
         [PluginService] public static IObjectTable ObjectTable { get; set; }
@@ -90,7 +90,7 @@ namespace ChatScanner
 
         public string GetPlayerName()
         {
-            if (ClientState.LocalPlayer)
+            if (ClientState.LocalPlayer != null)
             {
                 return ClientState.LocalPlayer.Name.TextValue;
             }
@@ -100,18 +100,18 @@ namespace ChatScanner
             }
         }
 
-        public List<PlayerCharacter> GetNearbyPlayers()
+        public List<IPlayerCharacter> GetNearbyPlayers()
         {
             return ObjectTable
               .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-              .Cast<PlayerCharacter>()
+              .Cast<IPlayerCharacter>()
               .OrderBy(t => t.Name.TextValue)
               .ToList();
         }
 
-        public PlayerCharacter? GetCurrentOrMouseoverTarget()
+        public IPlayerCharacter? GetCurrentOrMouseoverTarget()
         {
-            GameObject? focusTarget = TargetManager.Target;
+            IGameObject? focusTarget = TargetManager.Target;
 
             if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
             {
@@ -123,7 +123,7 @@ namespace ChatScanner
                 focusTarget = null;
             }
 
-            return focusTarget as PlayerCharacter;
+            return focusTarget as IPlayerCharacter;
         }
 
         public List<ChatEntry> GetAllMessages()

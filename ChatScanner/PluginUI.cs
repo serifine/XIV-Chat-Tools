@@ -521,9 +521,6 @@ namespace ChatScanner
             ImGui.Separator();
             ImGui.Spacing();
             ImGui.Spacing();
-            ImGui.Text("Notify when message contains (comma delimited)");
-            ImGui.Spacing();
-            ImGui.Spacing();
 
             if (ImGui.Checkbox("Split date and names on new lines", ref Configuration.SplitDateAndNames))
             {

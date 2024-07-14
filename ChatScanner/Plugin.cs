@@ -27,7 +27,7 @@ namespace ChatScanner
     {
         public string Name => "Chat Scanner";
 
-        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
         [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
         [PluginService] public static IClientState ClientState { get; private set; } = null!;
         [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
@@ -71,7 +71,7 @@ namespace ChatScanner
             ClientState.Login += OnLogin;
             ClientState.Logout += OnLogout;
 
-            PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginInterface.UiBuilder.OpenMainUi += DrawUI;
             PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         }
 
@@ -84,7 +84,7 @@ namespace ChatScanner
             ClientState.Login -= OnLogin;
             ClientState.Logout -= OnLogout;
 
-            PluginInterface.UiBuilder.Draw -= DrawUI;
+            PluginInterface.UiBuilder.OpenMainUi -= DrawUI;
             PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
 
             foreach (string commandAlias in commandAliases)
@@ -131,7 +131,7 @@ namespace ChatScanner
             }
         }
 
-        private void Chat_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString cmessage, ref bool isHandled)
+        private void Chat_OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
         {
             if (Enum.IsDefined(typeof(XivChatType), type) == false || Configuration.AllChannels.Any(t => t.ChatType == type) == false || isHandled || !Configuration.ActiveChannels.Any(t => t == type))
             {
@@ -152,7 +152,7 @@ namespace ChatScanner
                 Logger.Error("CMessage Json: ");
                 try
                 {
-                    Logger.Error(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
+                    Logger.Error(JsonConvert.SerializeObject(message, Formatting.Indented));
                 }
                 catch (Exception ex)
                 {
@@ -195,7 +195,7 @@ namespace ChatScanner
                 if (Configuration.DebugLoggingMessageContents)
                 {
                     Logger.Debug("");
-                    Logger.Debug("Message: " + cmessage.TextValue);
+                    Logger.Debug("Message: " + message.TextValue);
                 }
 
                 if (Configuration.DebugLoggingMessageAsJson)
@@ -204,7 +204,7 @@ namespace ChatScanner
                     Logger.Debug("CMessage Json: ");
                     try
                     {
-                        Logger.Debug(JsonConvert.SerializeObject(cmessage, Formatting.Indented));
+                        Logger.Debug(JsonConvert.SerializeObject(message, Formatting.Indented));
                     }
                     catch (Exception ex)
                     {
@@ -226,7 +226,7 @@ namespace ChatScanner
             }
 
             var watchers = Configuration.MessageLog_Watchers.Split(",");
-            var messageText = cmessage.TextValue;
+            var messageText = message.TextValue;
 
             
 
@@ -238,8 +238,8 @@ namespace ChatScanner
             PluginState.AddChatMessage(new Models.ChatEntry()
             {
                 ChatType = type,
-                Message = cmessage.TextValue,
-                SenderId = senderId,
+                Message = message.TextValue,
+                Timestamp = timestamp,
                 SenderName = parsedSenderName
             });
         }
