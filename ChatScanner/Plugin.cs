@@ -71,8 +71,9 @@ namespace ChatScanner
             ClientState.Login += OnLogin;
             ClientState.Logout += OnLogout;
 
-            PluginInterface.UiBuilder.OpenMainUi += DrawUI;
-            PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
+            PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUI;
         }
 
         public void Dispose()
@@ -85,7 +86,8 @@ namespace ChatScanner
             ClientState.Logout -= OnLogout;
 
             PluginInterface.UiBuilder.OpenMainUi -= DrawUI;
-            PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
+            PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
+            PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUI;
 
             foreach (string commandAlias in commandAliases)
             {
@@ -110,7 +112,13 @@ namespace ChatScanner
             PluginUI.Draw();
         }
 
-        private void DrawConfigUI()
+        private void OpenMainUI()
+        {
+            PluginUI.Visible = true;
+            Logger.Debug(PluginUI.Visible.ToString());
+        }
+
+        private void OpenConfigUI()
         {
             PluginUI.SettingsVisible = true;
         }
