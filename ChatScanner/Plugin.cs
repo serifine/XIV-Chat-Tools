@@ -232,7 +232,15 @@ namespace ChatScanner
 
             if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
             {
-                UIModule.PlayChatSoundEffect(2);
+                try
+                {
+                    UIModule.PlayChatSoundEffect(2);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("Error playing sound via Dalamud.");
+                    Logger.Debug(ex.Message);
+                }
             }
 
             PluginState.AddChatMessage(new Models.ChatEntry()

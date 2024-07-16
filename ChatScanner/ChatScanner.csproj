@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>ChatScanner</PackageId>
-        <Version>2.5.0</Version>
+        <Version>2.5.1</Version>
         <Authors>serifine</Authors>
         <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Scanner</PackageProjectUrl>
     </PropertyGroup>
