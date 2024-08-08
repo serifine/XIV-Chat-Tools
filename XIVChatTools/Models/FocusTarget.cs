@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.Text;
 
-namespace ChatScanner.Models
+namespace XIVChatTools.Models
 {
   public class FocusTab
   {
@@ -53,6 +53,6 @@ namespace ChatScanner.Models
   public class FocusTarget
   {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public required string Name { get; set; }
   }
 }

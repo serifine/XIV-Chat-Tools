@@ -6,11 +6,11 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace ChatScanner
+namespace XIVChatTools
 {
     public class ChannelType
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public Vector4 Color { get; set; }
         public XivChatType ChatType { get; set; }
     }
@@ -35,7 +35,7 @@ namespace ChatScanner
         public bool MessageLog_ArchiveLogs = false;
         public bool MessageLog_DeleteOldMessages = true;
         public int MessageLog_DaysToKeepOldMessages = 7;
-        public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatScanner";
+        public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\XIVChatTools";
         public string MessageLog_FileName = "ChatLogs.json";
         public string MessageLog_Watchers = "";
 
@@ -92,7 +92,7 @@ namespace ChatScanner
         // the below exist just to make saving less cumbersome
 
         [NonSerialized]
-        private IDalamudPluginInterface pluginInterface;
+        private IDalamudPluginInterface? pluginInterface;
 
         public void Initialize(IDalamudPluginInterface pluginInterface)
         {
@@ -101,6 +101,11 @@ namespace ChatScanner
 
         public void Save()
         {
+            if (this.pluginInterface == null)
+            {
+                throw new InvalidOperationException("Plugin interface not set.");
+            }
+
             this.pluginInterface.SavePluginConfig(this);
         }
     }

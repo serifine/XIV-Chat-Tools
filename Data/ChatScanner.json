@@ -1,11 +1,11 @@
 {
   "Author": "Serifine",
-  "Name": "Chat Scanner",
-  "Description": "Easily filter messages in crowded environments, bringings some sanity back to RP. \n \n Use /chatScanner settings to opent he settings window.",
-  "InternalName": "ChatScanner",
+  "Name": "Chat Tools",
+  "Description": "Easily filter messages in crowded environments, bringings some sanity back to RP. \n \n Use /ChatTools settings to open the settings window.",
+  "InternalName": "XIVChatTools",
   "AssemblyVersion": "1.0.5",
-  "RepoUrl": "https://github.com/serifine/XIV-Chat-Scanner",
+  "RepoUrl": "https://github.com/serifine/XIV-Chat-Tools",
   "ApplicableVersion": "any",
-  "Tags": ["sample", "plugin", "goats"],
+  "Tags": ["chat", ""],
   "DalamudApiLevel": 3
 }

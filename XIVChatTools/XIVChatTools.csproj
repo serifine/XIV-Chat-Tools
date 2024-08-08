@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/9.0.2">
 
     <PropertyGroup>
-        <PackageId>ChatScanner</PackageId>
+        <PackageId>XIVChatTools</PackageId>
         <Version>2.5.2</Version>
         <Authors>serifine</Authors>
         <Private>False</Private>
-        <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Scanner</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Tools</PackageProjectUrl>
     </PropertyGroup>
 
 </Project>

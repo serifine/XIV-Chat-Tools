@@ -19,14 +19,14 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.Sanitizer;
 using Dalamud.Game.Text.SeStringHandling;
-using ChatScanner.Models;
+using XIVChatTools.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 
-namespace ChatScanner
+namespace XIVChatTools
 {
     [PluginInterface]
     public class PluginState : IDisposable
@@ -36,15 +36,11 @@ namespace ChatScanner
 
         private Configuration Configuration { get; set; }
 
-        [PluginService]
-        internal IDalamudPluginInterface PluginInterface { get; set; }
-
-        [PluginService] public static IClientState ClientState { get; set; }
-        [PluginService] public static IObjectTable ObjectTable { get; set; }
-        [PluginService] public static ITargetManager TargetManager { get; set; }
-        [PluginService] public static IPluginLog Logger { get; private set; } = null!;
-
-        // public static StateManagementRepository Instance { get; private set; }
+        [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+        [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+        [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
+        [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
         public PluginState(Configuration config)
         {
@@ -59,8 +55,8 @@ namespace ChatScanner
                     {
                         IncludeFields = true
                     };
-                    var ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options);
-
+                    
+                    List<ChatEntry> ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options) ?? [];
 
                     if (Configuration.MessageLog_DeleteOldMessages)
                     {
@@ -74,12 +70,12 @@ namespace ChatScanner
                 catch (Exception e)
                 {
                     Logger.Error(e, "Could not load Chat Logs!");
-                    this._chatEntries = new List<ChatEntry>();
+                    this._chatEntries = [];
                 }
             }
             else
             {
-                this._chatEntries = new List<ChatEntry>();
+                this._chatEntries = [];
             }
         }
 
@@ -135,11 +131,16 @@ namespace ChatScanner
 
         public List<ChatEntry> GetMessagesForFocusTarget()
         {
-            var focusTarget = this.GetCurrentOrMouseoverTarget();
+            IPlayerCharacter? focusTarget = this.GetCurrentOrMouseoverTarget();
+
+            if (focusTarget == null)
+            {
+                return [];
+            }
 
             return this._chatEntries
               .Where(t => t.OwnerId == GetPlayerName())
-              .Where(t => t.SenderName == focusTarget?.Name.TextValue || t.SenderName.StartsWith(focusTarget?.Name.TextValue))
+              .Where(t => t.SenderName == focusTarget.Name.TextValue || t.SenderName.StartsWith(focusTarget.Name.TextValue))
               .ToList();
         }
 
@@ -162,7 +163,6 @@ namespace ChatScanner
 
         public void AddChatMessage(ChatEntry chatEntry)
         {
-            chatEntry.OwnerId = GetPlayerName();
             this._chatEntries.Add(chatEntry);
 
             if (Configuration.MessageLog_PreserveOnLogout)

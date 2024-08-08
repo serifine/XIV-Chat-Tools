@@ -1,5 +1,5 @@
-# ChatScanner
-A FFXIV Chat Scanner to facilitate easier RP!
+# XIV Chat Tools
+A set of chat tools for Final Fantasy XIV to facilitate easier RP!
   
   ### To Use
   You'll need to fixup the library dependencies (for both projects), to point at your local dalamud binary directory.

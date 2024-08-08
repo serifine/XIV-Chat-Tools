@@ -21,48 +21,48 @@ using Newtonsoft.Json.Serialization;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using Dalamud.Plugin.Services;
 
-namespace ChatScanner
+namespace XIVChatTools
 {
     public class Plugin : IDalamudPlugin
     {
         public string Name => "Chat Scanner";
 
-        [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-        [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
-        [PluginService] public static IClientState ClientState { get; private set; } = null!;
-        [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
-        [PluginService] public static IPluginLog Logger { get; private set; } = null!;
+        [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
+        [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+        [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+        [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
         internal PluginState PluginState { get; init; }
         internal Configuration Configuration { get; }
         internal PluginUI PluginUI { get; }
 
-        private List<string> commandAliases = new List<string>() {
-          "/chatScanner",
-          "/cScanner",
-          "/cscan"
-        };
+        private readonly List<string> commandAliases = [
+            "/chattools",
+            "/ctools",
+            "/ct"
+        ];
 
-        private List<string> settingsArgumentAliases = new List<string>() {
+        private readonly List<string> settingsArgumentAliases = [
           "settings",
-          "config",
-          "c"
-        };
+          "config"
+        ];
 
         public Plugin()
         {
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(PluginInterface);
-            PluginState = PluginInterface.Create<PluginState>(Configuration);
-            PluginUI = new PluginUI(Configuration, PluginState);
-            PluginUI.Visible = Configuration.OpenOnLogin;
+            PluginState = PluginInterface.Create<PluginState>(Configuration)!;
+            PluginUI = new PluginUI(Configuration, PluginState) {
+                Visible = Configuration.OpenOnLogin
+            };
 
             foreach (string commandAlias in commandAliases)
             {
                 CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
                 {
                     HelpMessage = commandAliases.First() == commandAlias ?
-                      "Opens the Chat Scanner window." : "Alias for /chatScanner."
+                      "Opens the Chat Scanner window." : "Alias for /chattools."
                 });
             }
 
@@ -196,7 +196,7 @@ namespace ChatScanner
                     foreach (var payload in sender.Payloads)
                     {
                         Logger.Debug("Type: " + payload.Type.ToString());
-                        Logger.Debug(payload.ToString());
+                        Logger.Debug(payload.ToString() ?? "");
                     }
                 }
 
@@ -254,6 +254,7 @@ namespace ChatScanner
             PluginState.AddChatMessage(new Models.ChatEntry()
             {
                 ChatType = type,
+                OwnerId = PluginState.GetPlayerName(),
                 Message = message.TextValue,
                 Timestamp = timestamp,
                 SenderName = parsedSenderName
@@ -262,20 +263,20 @@ namespace ChatScanner
 
         private string ParseSenderName(XivChatType type, SeString sender)
         {
-            var playerPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+            Payload? payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
-            if (playerPayload != null)
+            if (payload is PlayerPayload playerPayload)
             {
-                return (playerPayload as PlayerPayload).PlayerName;
+                return playerPayload.PlayerName;
             }
 
             if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
             {
-                var textPayload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
+                payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
 
-                if (textPayload != null)
+                if (payload is TextPayload textPayload && textPayload.Text != null)
                 {
-                    return (textPayload as TextPayload).Text;
+                    return textPayload.Text;
                 }
             }
 

@@ -3,12 +3,12 @@ using System;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
-using ChatScanner.Models;
+using XIVChatTools.Models;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Table;
 
-namespace ChatScanner
+namespace XIVChatTools
 {
     class PluginUI : IDisposable
     {
@@ -119,7 +119,7 @@ namespace ChatScanner
                 ImGui.PopStyleVar(); 
                 ImGui.PopStyleColor();
 
-                uint dockspaceId = ImGui.GetID("ChatScannerDockspace");
+                uint dockspaceId = ImGui.GetID("XIVChatToolsDockspace");
                 ImGui.DockSpace(dockspaceId);
 
                  
@@ -463,8 +463,8 @@ namespace ChatScanner
         private int ChannelLogging_ActiveSelection = 0;
         private int ChannelLogging_InactiveSelection = 0;
 
-        private String[] InactiveChannels;
-        private String[] ActiveChannels;
+        private String[] InactiveChannels = [];
+        private String[] ActiveChannels = [];
 
         private void AddActiveChannel()
         {
