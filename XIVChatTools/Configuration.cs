@@ -35,7 +35,7 @@ namespace XIVChatTools
         public bool MessageLog_ArchiveLogs = false;
         public bool MessageLog_DeleteOldMessages = true;
         public int MessageLog_DaysToKeepOldMessages = 7;
-        public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\XIVChatTools";
+        public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
         public string MessageLog_FileName = "ChatLogs.json";
         public string MessageLog_Watchers = "";
 
