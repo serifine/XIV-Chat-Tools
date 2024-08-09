@@ -8,3 +8,9 @@ dotnet_diagnostic.IDE0305.severity = none
 dotnet_diagnostic.CA1862.severity = none
 # Simplify new expression 
 dotnet_diagnostic.IDE0090.severity = none
+# Ignore CA1822: Mark members as static
+dotnet_analyzer_diagnostic.category-Style.severity = none
+# Ignore CA1816: Call GC.Collect before allocating large objects
+dotnet_diagnostic.CA1816.severity = none
+# Ignore CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = none
