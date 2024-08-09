@@ -35,7 +35,6 @@ public class WindowManagerService : IDisposable
 {
     private readonly Plugin _plugin;
     private readonly WindowSystem _windowSystem;
-    internal readonly PluginUI PluginUI;
 
     private Configuration Configuration => _plugin.Configuration;
 
@@ -62,28 +61,23 @@ public class WindowManagerService : IDisposable
         _windowSystem.AddWindow(SettingsWindow);
         _windowSystem.AddWindow(ChatToolsWindow);
 
-        PluginUI = new(_plugin);
-
-        ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
+        ToolbarWindow.IsOpen = Plugin.ClientState.IsLoggedIn && Configuration.OpenOnLogin;
     }
 
     public void Draw()
     {
-        PluginUI.Draw();
         _windowSystem.Draw();
     }
 
     public void CloseAllWindows() {
+        SearchWindow.IsOpen = false;
+        SettingsWindow.IsOpen = false;
+        ChatToolsWindow.IsOpen = false;
         ToolbarWindow.IsOpen = false;
-
-        PluginUI.visible = false;
-        PluginUI.settingsVisible = false;
     }
 
     public void Dispose()
-    {
-        if (PluginUI != null) PluginUI.Dispose();
-        
-        _windowSystem.RemoveAllWindows();
+    {        
+        _windowSystem?.RemoveAllWindows();
     }
 }

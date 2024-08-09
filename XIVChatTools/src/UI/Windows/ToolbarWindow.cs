@@ -20,12 +20,13 @@ public class ToolbarWindow : Window
     private Configuration Configuration => _plugin.Configuration;
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
-    internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Toolbar###{Plugin.Name}")
+    internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base("Toolbar###ChatToolsToolbar")
     {
         _plugin = plugin;
         _windowManagerService = windowManagerService;
 
         Size = new Vector2(450, 50);
+        SizeCondition = ImGuiCond.Always;
         Flags = ImGuiWindowFlags.NoScrollbar
             | ImGuiWindowFlags.NoScrollWithMouse
             | ImGuiWindowFlags.NoDocking
@@ -57,13 +58,13 @@ public class ToolbarWindow : Window
     private void DrawInterface() {
         if (ImGui.Button("Ctools Window"))
         {
-            _windowManagerService.PluginUI.visible = !_windowManagerService.PluginUI.visible;
+            _windowManagerService.ChatToolsWindow.IsOpen = !_windowManagerService.ChatToolsWindow.IsOpen;
         }
 
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (80 * Scale));
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
-            // searchWindowVisible = !searchWindowVisible;
+            _windowManagerService.SearchWindow.IsOpen = true;
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Search Messages");
@@ -79,7 +80,7 @@ public class ToolbarWindow : Window
         ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-            // settingsVisible = !settingsVisible;
+            _windowManagerService.SettingsWindow.IsOpen = true;
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Settings");

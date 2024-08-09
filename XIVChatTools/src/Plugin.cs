@@ -102,7 +102,7 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUI;
 
-        if (WindowManagerService != null) WindowManagerService.Dispose();
+        WindowManagerService?.Dispose();
 
         foreach (string commandAlias in commandAliases)
         {
@@ -116,7 +116,7 @@ public class Plugin : IDalamudPlugin
     {
         if (settingsArgumentAliases.Contains(args.ToLower()))
         {
-            WindowManagerService.ToolbarWindow.IsOpen = !WindowManagerService.ToolbarWindow.IsOpen;
+            WindowManagerService.SettingsWindow.IsOpen = !WindowManagerService.SettingsWindow.IsOpen;
         }
         else
         {
@@ -131,12 +131,12 @@ public class Plugin : IDalamudPlugin
 
     private void OpenMainUI()
     {
-        WindowManagerService.ToolbarWindow.IsOpen = true;
+        WindowManagerService.ToolbarWindow.Toggle();
     }
 
     private void OpenConfigUI()
     {
-        // PluginUI.settingsVisible = true;
+        WindowManagerService.SettingsWindow.Toggle();
     }
 
     private void OnLogin()
