@@ -1,5 +1,19 @@
-author: serifine
 name: Chat Tools
-punchline: Easily filter messages in crowded environments, bringing some sanity back to RP.
-description: Easily filter messages in crowded environments, bringing some sanity back to RP. Set up windows to watch participants and filter out the noise.
+author: serifine
+punchline: Filter messages in crowded environments, bringing some sanity back to RP.
+description:
+  Chat Tools was developed to cut through the cluttered chat that can happen at large RP events, or in crowded environments.
+  
+  Just some of the things you can do with Chat Tools is:
+  - Filter messages in crowded environments
+  - Set up windows to watch specific characters of your choice
+  - Set up windows to watch for messages from a group of characters
+  - Quickly scan what your selected or hovered targets have said
+  - Search through your message history
+  - Preserve messages on logout
 repo_url: https://github.com/serifine/XIV-Chat-Tools
+tags:
+  - Social
+  - UI
+  - Chat
+  - RP
