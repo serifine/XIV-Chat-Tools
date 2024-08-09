@@ -2,7 +2,7 @@
   "Author": "Serifine",
   "Name": "Chat Tools",
   "Description": "Easily filter messages in crowded environments, bringings some sanity back to RP. \n \n Use /ChatTools settings to open the settings window.",
-  "InternalName": "XIVChatTools",
+  "InternalName": "ChatTools",
   "AssemblyVersion": "1.0.5",
   "RepoUrl": "https://github.com/serifine/XIV-Chat-Tools",
   "ApplicableVersion": "any",
