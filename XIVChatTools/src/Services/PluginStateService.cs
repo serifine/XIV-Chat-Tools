@@ -180,6 +180,11 @@ public class PluginStateService : IDisposable
 
     public List<ChatEntry> SearchMessages(string searchText)
     {
+        if (searchText == string.Empty)
+        {
+            return this._chatEntries.ToList();
+        }
+
         return this._chatEntries
             .Where(t =>
                 t.Message.ToLower().Contains(searchText.ToLower()) ||
