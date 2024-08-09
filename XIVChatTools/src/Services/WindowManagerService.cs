@@ -34,7 +34,7 @@ namespace XIVChatTools.Services;
 public class WindowManagerService : IDisposable
 {
     private readonly Plugin _plugin;
-    private readonly WindowSystem WindowSystem;
+    private readonly WindowSystem _windowSystem;
     internal readonly PluginUI PluginUI;
 
     private Configuration Configuration => _plugin.Configuration;
@@ -43,15 +43,24 @@ public class WindowManagerService : IDisposable
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
     public ToolbarWindow ToolbarWindow;
+    public SearchWindow SearchWindow;
+    public SettingsWindow SettingsWindow;
+    public ChatToolsWindow ChatToolsWindow;
 
     public WindowManagerService(Plugin plugin)
     {
         _plugin = plugin;
-        WindowSystem = new(Plugin.Name);
+        _windowSystem = new(Plugin.Name);
 
         ToolbarWindow = new(_plugin, this);
+        SearchWindow = new(_plugin, this);
+        SettingsWindow = new(_plugin, this);
+        ChatToolsWindow = new(_plugin, this);
 
-        WindowSystem.AddWindow(ToolbarWindow);
+        _windowSystem.AddWindow(ToolbarWindow);
+        _windowSystem.AddWindow(SearchWindow);
+        _windowSystem.AddWindow(SettingsWindow);
+        _windowSystem.AddWindow(ChatToolsWindow);
 
         PluginUI = new(_plugin);
 
@@ -61,7 +70,7 @@ public class WindowManagerService : IDisposable
     public void Draw()
     {
         PluginUI.Draw();
-        WindowSystem.Draw();
+        _windowSystem.Draw();
     }
 
     public void CloseAllWindows() {
@@ -75,6 +84,6 @@ public class WindowManagerService : IDisposable
     {
         if (PluginUI != null) PluginUI.Dispose();
         
-        WindowSystem.RemoveAllWindows();
+        _windowSystem.RemoveAllWindows();
     }
 }
