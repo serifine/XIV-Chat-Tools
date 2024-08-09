@@ -26,240 +26,240 @@ using System.IO;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 
-namespace XIVChatTools
+namespace XIVChatTools;
+
+[PluginInterface]
+public class PluginState : IDisposable
 {
-    [PluginInterface]
-    public class PluginState : IDisposable
+    private List<FocusTab> _focusTabs { get; set; }
+    private List<ChatEntry> _chatEntries { get; set; }
+
+    private Configuration Configuration { get; set; }
+
+    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
+    [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
+
+    public PluginState(Configuration config)
     {
-        private List<FocusTab> _focusTabs { get; set; }
-        private List<ChatEntry> _chatEntries { get; set; }
+        this.Configuration = config;
+        this._focusTabs = new List<FocusTab>();
 
-        private Configuration Configuration { get; set; }
+        string fullFilePath = $"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}";
 
-        [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-        [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-        [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
-        [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
-        [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
-
-        public PluginState(Configuration config)
+        if (Directory.Exists(Configuration.MessageLog_FilePath) == false)
         {
-            this.Configuration = config;
-            this._focusTabs = new List<FocusTab>();
-
-            string fullFilePath = $"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}";
-
-            if (Directory.Exists(Configuration.MessageLog_FilePath) == false)
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(Configuration.MessageLog_FilePath);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e, "Could not create new chat log directory.");
-                    this._chatEntries = [];
-                }
+                Directory.CreateDirectory(Configuration.MessageLog_FilePath);
             }
-
-            if (File.Exists(fullFilePath) == false)
+            catch (Exception e)
             {
-                try {
-                    File.WriteAllLines(fullFilePath, ["[", "", "]"]);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e, "Could not create new chat log file.");
-                    this._chatEntries = [];
-                }
-            }
-
-            if (Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
-            {
-                try
-                {
-                    var FileResult = File.ReadAllText($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}");
-                    var options = new JsonSerializerOptions
-                    {
-                        IncludeFields = true
-                    };
-                    
-                    List<ChatEntry> ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options) ?? [];
-
-                    if (Configuration.MessageLog_DeleteOldMessages)
-                    {
-                        ChatEntries = ChatEntries
-                          .Where(t => (DateTime.Now - t.DateSent).TotalDays < Configuration.MessageLog_DaysToKeepOldMessages)
-                          .ToList();
-                    }
-
-                    this._chatEntries = ChatEntries;
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e, "Could not load Chat Logs.");
-                    this._chatEntries = [];
-                }
-            }
-            else
-            {
-                Logger.Information("Log file not found.");
+                Logger.Error(e, "Could not create new chat log directory.");
                 this._chatEntries = [];
             }
         }
 
-        public void Dispose()
-        {
-
-        }
-
-        public string GetPlayerName()
-        {
-            if (ClientState.LocalPlayer != null)
-            {
-                return ClientState.LocalPlayer.Name.TextValue;
-            }
-            else
-            {
-                return "";
-            }
-        }
-
-        public List<IPlayerCharacter> GetNearbyPlayers()
-        {
-            return ObjectTable
-              .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-              .Cast<IPlayerCharacter>()
-              .OrderBy(t => t.Name.TextValue)
-              .ToList();
-        }
-
-        public IPlayerCharacter? GetCurrentOrMouseoverTarget()
-        {
-            IGameObject? focusTarget = TargetManager.Target;
-
-            if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
-            {
-                focusTarget = TargetManager.MouseOverTarget;
-            }
-
-            if (focusTarget != null && focusTarget.ObjectKind != ObjectKind.Player)
-            {
-                focusTarget = null;
-            }
-
-            return focusTarget as IPlayerCharacter;
-        }
-
-        public List<ChatEntry> GetAllMessages()
-        {
-            return this._chatEntries
-              .Where(t => t.OwnerId == GetPlayerName())
-              .ToList();
-        }
-
-        public List<ChatEntry> GetMessagesForFocusTarget()
-        {
-            IPlayerCharacter? focusTarget = this.GetCurrentOrMouseoverTarget();
-
-            if (focusTarget == null)
-            {
-                return [];
-            }
-
-            return this._chatEntries
-              .Where(t => t.OwnerId == GetPlayerName())
-              .Where(t => t.SenderName == focusTarget.Name.TextValue || t.SenderName.StartsWith(focusTarget.Name.TextValue))
-              .ToList();
-        }
-
-        public List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
-        {
-            return this._chatEntries
-              .Where(t => t.OwnerId == GetPlayerName())
-              .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
-              .ToList();
-        }
-
-        public List<ChatEntry> SearchMessages(string searchText)
-        {
-            return this._chatEntries
-                .Where(t =>
-                    t.Message.ToLower().Contains(searchText.ToLower()) ||
-                    t.SenderName.ToLower().Contains(searchText.ToLower()))
-                .ToList();
-        }
-
-        public void AddChatMessage(ChatEntry chatEntry)
-        {
-            this._chatEntries.Add(chatEntry);
-
-            if (Configuration.MessageLog_PreserveOnLogout)
-            {
-                PersistMessages();
-            }
-        }
-
-        public void ClearMessageHistory()
-        {
-            this._chatEntries.Clear();
-        }
-
-        public List<FocusTab> GetFocusTabs()
-        {
-            return this._focusTabs;
-        }
-
-        public void AddFocusTabFromTarget()
-        {
-            var focusTarget = GetCurrentOrMouseoverTarget();
-
-            if (focusTarget != null)
-            {
-                if (Configuration.DebugLogging)
-                {
-                    Logger.Debug("CREATING FOCUS TAB");
-                    Logger.Debug("=======================================================");
-                    Logger.Debug("     Focus Target: " + focusTarget.Name);
-                    Logger.Debug("");
-                    Logger.Debug("");
-                    Logger.Debug("");
-                    Logger.Debug("");
-                }
-
-                var focusTab = new FocusTab(focusTarget.Name.TextValue);
-
-                this._focusTabs.Add(focusTab);
-            }
-        }
-
-        public void RemoveClosedFocusTabs()
-        {
-            this._focusTabs.RemoveAll(t => t.Open == false);
-        }
-
-        public void ClearAllFocusTabs()
-        {
-            this._focusTabs.Clear();
-        }
-
-        private async void PersistMessages()
+        if (File.Exists(fullFilePath) == false)
         {
             try
             {
+                File.WriteAllLines(fullFilePath, ["[", "", "]"]);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Could not create new chat log file.");
+                this._chatEntries = [];
+            }
+        }
+
+        if (Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
+        {
+            try
+            {
+                var FileResult = File.ReadAllText($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}");
                 var options = new JsonSerializerOptions
                 {
-                    WriteIndented = true,
                     IncludeFields = true
                 };
-                var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
 
-                await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
+                List<ChatEntry> ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options) ?? [];
+
+                if (Configuration.MessageLog_DeleteOldMessages)
+                {
+                    ChatEntries = ChatEntries
+                      .Where(t => (DateTime.Now - t.DateSent).TotalDays < Configuration.MessageLog_DaysToKeepOldMessages)
+                      .ToList();
+                }
+
+                this._chatEntries = ChatEntries;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Logger.Error("An error has occurred while trying to save chat history:" + ex.Message);
+                Logger.Error(e, "Could not load Chat Logs.");
+                this._chatEntries = [];
             }
+        }
+        else
+        {
+            Logger.Information("Log file not found.");
+            this._chatEntries = [];
+        }
+    }
+
+    public void Dispose()
+    {
+
+    }
+
+    public string GetPlayerName()
+    {
+        if (ClientState.LocalPlayer != null)
+        {
+            return ClientState.LocalPlayer.Name.TextValue;
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public List<IPlayerCharacter> GetNearbyPlayers()
+    {
+        return ObjectTable
+          .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
+          .Cast<IPlayerCharacter>()
+          .OrderBy(t => t.Name.TextValue)
+          .ToList();
+    }
+
+    public IPlayerCharacter? GetCurrentOrMouseoverTarget()
+    {
+        IGameObject? focusTarget = TargetManager.Target;
+
+        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
+        {
+            focusTarget = TargetManager.MouseOverTarget;
+        }
+
+        if (focusTarget != null && focusTarget.ObjectKind != ObjectKind.Player)
+        {
+            focusTarget = null;
+        }
+
+        return focusTarget as IPlayerCharacter;
+    }
+
+    public List<ChatEntry> GetAllMessages()
+    {
+        return this._chatEntries
+          .Where(t => t.OwnerId == GetPlayerName())
+          .ToList();
+    }
+
+    public List<ChatEntry> GetMessagesForFocusTarget()
+    {
+        IPlayerCharacter? focusTarget = this.GetCurrentOrMouseoverTarget();
+
+        if (focusTarget == null)
+        {
+            return [];
+        }
+
+        return this._chatEntries
+          .Where(t => t.OwnerId == GetPlayerName())
+          .Where(t => t.SenderName == focusTarget.Name.TextValue || t.SenderName.StartsWith(focusTarget.Name.TextValue))
+          .ToList();
+    }
+
+    public List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
+    {
+        return this._chatEntries
+          .Where(t => t.OwnerId == GetPlayerName())
+          .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
+          .ToList();
+    }
+
+    public List<ChatEntry> SearchMessages(string searchText)
+    {
+        return this._chatEntries
+            .Where(t =>
+                t.Message.ToLower().Contains(searchText.ToLower()) ||
+                t.SenderName.ToLower().Contains(searchText.ToLower()))
+            .ToList();
+    }
+
+    public void AddChatMessage(ChatEntry chatEntry)
+    {
+        this._chatEntries.Add(chatEntry);
+
+        if (Configuration.MessageLog_PreserveOnLogout)
+        {
+            PersistMessages();
+        }
+    }
+
+    public void ClearMessageHistory()
+    {
+        this._chatEntries.Clear();
+    }
+
+    public List<FocusTab> GetFocusTabs()
+    {
+        return this._focusTabs;
+    }
+
+    public void AddFocusTabFromTarget()
+    {
+        var focusTarget = GetCurrentOrMouseoverTarget();
+
+        if (focusTarget != null)
+        {
+            if (Configuration.DebugLogging)
+            {
+                Logger.Debug("CREATING FOCUS TAB");
+                Logger.Debug("=======================================================");
+                Logger.Debug("     Focus Target: " + focusTarget.Name);
+                Logger.Debug("");
+                Logger.Debug("");
+                Logger.Debug("");
+                Logger.Debug("");
+            }
+
+            var focusTab = new FocusTab(focusTarget.Name.TextValue);
+
+            this._focusTabs.Add(focusTab);
+        }
+    }
+
+    public void RemoveClosedFocusTabs()
+    {
+        this._focusTabs.RemoveAll(t => t.Open == false);
+    }
+
+    public void ClearAllFocusTabs()
+    {
+        this._focusTabs.Clear();
+    }
+
+    private async void PersistMessages()
+    {
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                IncludeFields = true
+            };
+            var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
+
+            await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("An error has occurred while trying to save chat history:" + ex.Message);
         }
     }
 }

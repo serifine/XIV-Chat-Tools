@@ -5,54 +5,54 @@ using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.Text;
 
-namespace XIVChatTools.Models
+namespace XIVChatTools.Models;
+
+public class FocusTab
 {
-  public class FocusTab
+  public Guid FocusTabId = new Guid();
+  public string Name = "";
+  public bool Open = true;
+  public List<string> focusTargets = new List<string>();
+
+  public FocusTab(string name)
   {
-    public Guid FocusTabId = new Guid();
-    public string Name = "";
-    public bool Open = true;
-    public List<string> focusTargets = new List<string>();
+    this.Name = name;
 
-    public FocusTab(string name)
+    if (this.focusTargets.Any(t => t == name) == false)
     {
-      this.Name = name;
-
-      if (this.focusTargets.Any(t => t == name) == false)
-      {
-        this.focusTargets.Add(name);
-      }
-    }
-
-    public List<string> GetFocusTargets()
-    {
-      return focusTargets.ToList();
-    }
-
-    public void AddFocusTarget(string name)
-    {
-      if (this.focusTargets.Any(t => t == name) == false)
-      {
-        this.focusTargets.Add(name);
-      }
-    }
-
-    public void RemoveFocusTarget(string name)
-    {
-      if (this.focusTargets.Any(t => t == name))
-      {
-        this.focusTargets.Remove(name);
-      }
-    }
-
-    public bool IsPlayerAdded(string name) {
-      return this.focusTargets.Any(t => t == name);
+      this.focusTargets.Add(name);
     }
   }
 
-  public class FocusTarget
+  public List<string> GetFocusTargets()
   {
-    public int Id { get; set; }
-    public required string Name { get; set; }
+    return focusTargets.ToList();
   }
+
+  public void AddFocusTarget(string name)
+  {
+    if (this.focusTargets.Any(t => t == name) == false)
+    {
+      this.focusTargets.Add(name);
+    }
+  }
+
+  public void RemoveFocusTarget(string name)
+  {
+    if (this.focusTargets.Any(t => t == name))
+    {
+      this.focusTargets.Remove(name);
+    }
+  }
+
+  public bool IsPlayerAdded(string name)
+  {
+    return this.focusTargets.Any(t => t == name);
+  }
+}
+
+public class FocusTarget
+{
+  public int Id { get; set; }
+  public required string Name { get; set; }
 }

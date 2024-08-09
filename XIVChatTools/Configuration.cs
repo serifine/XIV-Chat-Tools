@@ -6,46 +6,46 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace XIVChatTools
+namespace XIVChatTools;
+
+public class ChannelType
 {
-    public class ChannelType
-    {
-        public required string Name { get; set; }
-        public Vector4 Color { get; set; }
-        public XivChatType ChatType { get; set; }
-    }
+    public required string Name { get; set; }
+    public Vector4 Color { get; set; }
+    public XivChatType ChatType { get; set; }
+}
 
-    [Serializable]
-    public class Configuration : IPluginConfiguration
-    {
-        public int Version { get; set; } = 0;
+[Serializable]
+public class Configuration : IPluginConfiguration
+{
+    public int Version { get; set; } = 0;
 
-        public bool OpenOnLogin = false;
+    public bool OpenOnLogin = false;
 
-        public bool SplitDateAndNames = true;
+    public bool SplitDateAndNames = true;
 
-        #region Chat Log Settings
+    #region Chat Log Settings
 
-        public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
-        public string MessageLog_FileName = "ChatLogs.json";
-        public string MessageLog_Watchers = "";
+    public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
+    public string MessageLog_FileName = "ChatLogs.json";
+    public string MessageLog_Watchers = "";
 
-        public bool MessageLog_PreserveOnLogout = true;
-        public bool MessageLog_DeleteOldMessages = true;
-        public int MessageLog_DaysToKeepOldMessages = 7;
+    public bool MessageLog_PreserveOnLogout = true;
+    public bool MessageLog_DeleteOldMessages = true;
+    public int MessageLog_DaysToKeepOldMessages = 7;
 
-        #endregion
+    #endregion
 
-        #region Channel and Chat Settings
+    #region Channel and Chat Settings
 
-        public bool DisableCustomChatColors = false;
-        public Vector4 CharacterNameColor = new Vector4(255, 255, 255, 255);
-        public Vector4 NormalChatColor = new Vector4(255, 255, 255, 255);
-        public Vector4 EmoteColor = new Vector4(0.950f, 0.500f, 0f, 1f);
-        public Vector4 PartyColor = new Vector4(239, 122, 13, 255);
-        public Vector4 TellColor = new Vector4(239, 122, 13, 255);
-        
-        public List<XivChatType> ActiveChannels { get; set; } = new List<XivChatType>() {
+    public bool DisableCustomChatColors = false;
+    public Vector4 CharacterNameColor = new Vector4(255, 255, 255, 255);
+    public Vector4 NormalChatColor = new Vector4(255, 255, 255, 255);
+    public Vector4 EmoteColor = new Vector4(0.950f, 0.500f, 0f, 1f);
+    public Vector4 PartyColor = new Vector4(239, 122, 13, 255);
+    public Vector4 TellColor = new Vector4(239, 122, 13, 255);
+
+    public List<XivChatType> ActiveChannels { get; set; } = new List<XivChatType>() {
             XivChatType.StandardEmote,
             XivChatType.CustomEmote,
             XivChatType.Party,
@@ -55,37 +55,36 @@ namespace XIVChatTools
             XivChatType.Yell,
         };
 
-        #endregion
+    #endregion
 
-        #region Debug Logging Settings
-        
-        public bool DebugLogging = false;
+    #region Debug Logging Settings
 
-        #endregion
+    public bool DebugLogging = false;
+
+    #endregion
 
 
-        [NonSerialized] public List<ChannelType> AllChannels = Constants.AllChannels;
-        
-        //
-        // the below exist just to make saving less cumbersome
-        //
+    [NonSerialized] public List<ChannelType> AllChannels = Constants.AllChannels;
 
-        [NonSerialized]
-        private IDalamudPluginInterface? pluginInterface;
+    //
+    // the below exist just to make saving less cumbersome
+    //
 
-        public void Initialize(IDalamudPluginInterface pluginInterface)
+    [NonSerialized]
+    private IDalamudPluginInterface? pluginInterface;
+
+    public void Initialize(IDalamudPluginInterface pluginInterface)
+    {
+        this.pluginInterface = pluginInterface;
+    }
+
+    public void Save()
+    {
+        if (this.pluginInterface == null)
         {
-            this.pluginInterface = pluginInterface;
+            throw new InvalidOperationException("Plugin interface not set.");
         }
 
-        public void Save()
-        {
-            if (this.pluginInterface == null)
-            {
-                throw new InvalidOperationException("Plugin interface not set.");
-            }
-
-            this.pluginInterface.SavePluginConfig(this);
-        }
+        this.pluginInterface.SavePluginConfig(this);
     }
 }
