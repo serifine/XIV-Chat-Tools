@@ -7,8 +7,8 @@ namespace XIVChatTools;
 
 public static class Constants
 {
-  public static readonly List<ChannelType> AllChannels = [
-    new ChannelType { Name = "Alliance",                Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.Alliance         },
+    public static readonly List<ChannelType> AllChannels = [
+      new ChannelType { Name = "Alliance",                Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.Alliance         },
     new ChannelType { Name = "Cross World LinkShell 1", Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.CrossLinkShell1  },
     new ChannelType { Name = "Cross World LinkShell 2", Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.CrossLinkShell2  },
     new ChannelType { Name = "Cross World LinkShell 3", Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.CrossLinkShell3  },
@@ -37,5 +37,5 @@ public static class Constants
     new ChannelType { Name = "TellOutgoing",            Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.TellOutgoing     },
     new ChannelType { Name = "NoviceNetwork",           Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.NoviceNetwork    },
     new ChannelType { Name = "PvPTeam",                 Color = new Vector4(0, 0, 0, 0),    ChatType = XivChatType.PvPTeam          }
-  ];
+    ];
 }
