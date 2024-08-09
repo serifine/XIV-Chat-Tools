@@ -6,3 +6,5 @@ dotnet_diagnostic.CA1416.severity = none
 dotnet_diagnostic.IDE0305.severity = none
 # Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 dotnet_diagnostic.CA1862.severity = none
+# Simplify new expression 
+dotnet_diagnostic.IDE0090.severity = none
