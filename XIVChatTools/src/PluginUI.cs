@@ -8,19 +8,20 @@ using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Components;
+using XIVChatTools.Services;
 
 namespace XIVChatTools;
 
 class PluginUI : IDisposable
 {
-    private Configuration Configuration { get; set; }
-    private PluginState PluginState { get; set; }
-
     public bool visible = false;
-    public bool toolbarVisible = false;
     public bool searchWindowVisible = false;
     public bool settingsVisible = false;
     private bool autoScrollToBottom = false;
+
+    private Plugin _plugin { get; set; }
+    private Configuration Configuration => _plugin.Configuration;
+    private PluginStateService PluginState => _plugin.PluginState;
 
     private float Scale
     {
@@ -37,10 +38,9 @@ class PluginUI : IDisposable
     };
 
     // passing in the image here just for simplicity
-    public PluginUI(Configuration configuration, PluginState state)
+    public PluginUI(Plugin plugin)
     {
-        this.Configuration = configuration;
-        this.PluginState = state;
+        _plugin = plugin;
 
         var io = ImGui.GetIO();
 
@@ -55,80 +55,9 @@ class PluginUI : IDisposable
 
     public void Draw()
     {
-        DrawToolbarWindow();
         DrawMainWindow();
         DrawSearchWindow();
         DrawSettingsWindow();
-    }
-
-    public void DrawToolbarWindow()
-    {
-        if (!toolbarVisible)
-        {
-            return;
-        }
-
-        ImGui.SetNextWindowSize(new Vector2(400, 75), ImGuiCond.FirstUseEver);
-        ImGui.SetNextWindowSizeConstraints(new Vector2(400, 75), new Vector2(float.MaxValue, float.MaxValue));
-
-
-        if (ImGui.Begin("Chat Tools Toolbar", ref toolbarVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoTitleBar))
-        {
-            // Alerts menu
-            if (ImGui.BeginPopup("Alerts"))
-            {
-
-                ImGui.Spacing();
-                ImGui.Spacing();
-                ImGui.Text("You can set up watchers that will make a notification sound whenever you receive a message that containers the selected phrase.");
-                ImGui.Spacing();
-                ImGui.Text("These phrases need to be separated by a comma.");
-                ImGui.Spacing();
-                ImGui.Spacing();
-                ImGui.Text("Global Watchers");
-
-                if (ImGui.InputTextWithHint("", "Example, watch example", ref Configuration.MessageLog_Watchers, 24096))
-                {
-                    Configuration.Save();
-                }
-
-                ImGui.EndPopup();
-            }
-
-            if (ImGui.Button("Ctools Window"))
-            {
-                visible = true;
-            }
-
-            ImGui.SameLine(ImGui.GetContentRegionAvail().X - (80 * Scale));
-
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
-                searchWindowVisible = !searchWindowVisible;
-
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip("Search Messages");
-
-            ImGui.SameLine();
-
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.Bell))
-                ImGui.OpenPopup("Alerts");
-
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip("Chat Alerts");
-
-            ImGui.SameLine();
-
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-                settingsVisible = !settingsVisible;
-
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip("Settings");
-
-
-            ImGui.End();
-        }
-
-        // ImGui.PopStyleVar();
     }
 
     public void DrawSearchWindow()
@@ -203,7 +132,6 @@ class PluginUI : IDisposable
             if (ImGui.BeginChild("ChildTest", new Vector2(0, 30), false))
             {
                 ImGui.SameLine(8);
-                ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
                 ImGui.SameLine(ImGui.GetContentRegionAvail().X - (120 * Scale));
                 if (ImGui.Button("Add Focus Target"))
                 {
@@ -226,13 +154,6 @@ class PluginUI : IDisposable
             if (ImGui.Begin("Selected Target"))
             {
                 DrawSelectedTargetTab();
-                ImGui.End();
-            }
-
-            ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
-            if (ImGui.Begin("All Messages"))
-            {
-                DrawAllMessagesTab();
                 ImGui.End();
             }
 
@@ -287,20 +208,6 @@ class PluginUI : IDisposable
         else
         {
             ImGui.Text("No target selected.");
-        }
-    }
-
-    public void DrawAllMessagesTab()
-    {
-        var tabMessages = PluginState.GetAllMessages();
-
-        if (tabMessages.Count() > 0)
-        {
-            DrawMessagePanel(tabMessages);
-        }
-        else
-        {
-            ImGui.Text("No messages to display.");
         }
     }
 

@@ -10,12 +10,15 @@ using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Logging;
 using Dalamud.IoC;
+using Dalamud;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using Dalamud.Plugin.Services;
+using Dalamud.Interface.Windowing;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using XIVChatTools.Services;
 
 namespace XIVChatTools;
 
@@ -29,54 +32,67 @@ public class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
-    internal PluginState PluginState { get; init; }
-    internal Configuration Configuration { get; }
-    internal PluginUI PluginUI { get; }
+    internal readonly PluginStateService PluginState;
+    internal readonly WindowManagerService WindowManagerService;
+    internal readonly Configuration Configuration;
 
     private readonly List<string> commandAliases = [
         "/chattools",
-            "/ctools",
-            "/ct"
+        "/ctools",
+        "/ct"
     ];
 
     private readonly List<string> settingsArgumentAliases = [
-      "settings",
-          "config"
+        "settings",
+        "config"
     ];
 
     public Plugin()
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        Configuration.Initialize(PluginInterface);
-        PluginState = PluginInterface.Create<PluginState>(Configuration)!;
-        PluginUI = new PluginUI(Configuration, PluginState)
+        try
         {
-            toolbarVisible = Configuration.OpenOnLogin
-        };
+            Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            // to be removed later
+            Configuration.Initialize(PluginInterface);
 
-        foreach (string commandAlias in commandAliases)
-        {
-            CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
+            #region Register Services
+
+            PluginState = PluginInterface.Create<PluginStateService>(this)!;
+            WindowManagerService = PluginInterface.Create<WindowManagerService>(this)!;
+
+            if (PluginState == null) throw new Exception("Fatal Error: Failed to create PluginStateService.");
+            if (WindowManagerService == null) throw new Exception("Fatal Error: Failed to create WindowManagerService.");
+
+            #endregion
+
+
+            ChatGui.ChatMessage += Chat_OnChatMessage;
+
+            ClientState.Login += OnLogin;
+            ClientState.Logout += OnLogout;
+
+            PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
+            PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUI;
+
+            foreach (string commandAlias in commandAliases)
             {
-                HelpMessage = commandAliases.First() == commandAlias ?
-                  "Opens the Chat Scanner window." : "Alias for /chattools."
-            });
+                CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
+                {
+                    HelpMessage = commandAliases.First() == commandAlias ?
+                      "Opens the Chat Scanner window." : "Alias for /chattools."
+                });
+            }
         }
-
-        ChatGui.ChatMessage += Chat_OnChatMessage;
-
-        ClientState.Login += OnLogin;
-        ClientState.Logout += OnLogout;
-
-        PluginInterface.UiBuilder.Draw += DrawUI;
-        PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
-        PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUI;
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
     {
-        PluginUI.Dispose();
-
         ChatGui.ChatMessage -= Chat_OnChatMessage;
 
         ClientState.Login -= OnLogin;
@@ -86,9 +102,13 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUI;
 
+        if (WindowManagerService != null) WindowManagerService.Dispose();
+
         foreach (string commandAlias in commandAliases)
         {
-            CommandManager.RemoveHandler(commandAlias);
+            if (CommandManager.Commands.Any(t => t.Key == commandAlias)) {
+                CommandManager.RemoveHandler(commandAlias);
+            }
         }
     }
 
@@ -96,7 +116,7 @@ public class Plugin : IDalamudPlugin
     {
         if (settingsArgumentAliases.Contains(args.ToLower()))
         {
-            PluginUI.settingsVisible = true;
+            WindowManagerService.ToolbarWindow.IsOpen = !WindowManagerService.ToolbarWindow.IsOpen;
         }
         else
         {
@@ -106,28 +126,27 @@ public class Plugin : IDalamudPlugin
 
     private void DrawUI()
     {
-        PluginUI.Draw();
+        WindowManagerService.Draw();
     }
 
     private void OpenMainUI()
     {
-        PluginUI.toolbarVisible = true;
+        WindowManagerService.ToolbarWindow.IsOpen = true;
     }
 
     private void OpenConfigUI()
     {
-        PluginUI.settingsVisible = true;
+        // PluginUI.settingsVisible = true;
     }
 
     private void OnLogin()
     {
-        PluginUI.toolbarVisible = Configuration.OpenOnLogin;
+        WindowManagerService.ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
     }
 
     private void OnLogout()
     {
-        PluginUI.toolbarVisible = false;
-        PluginUI.visible = false;
+        WindowManagerService.CloseAllWindows();
         PluginState.ClearAllFocusTabs();
 
         if (Configuration.MessageLog_PreserveOnLogout == false)

@@ -26,15 +26,14 @@ using System.IO;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 
-namespace XIVChatTools;
+namespace XIVChatTools.Services;
 
 [PluginInterface]
-public class PluginState : IDisposable
+public class PluginStateService : IDisposable
 {
-    private List<FocusTab> _focusTabs { get; set; }
-    private List<ChatEntry> _chatEntries { get; set; }
-
-    private Configuration Configuration { get; set; }
+    private readonly Plugin _plugin;
+    private readonly List<FocusTab> _focusTabs;
+    private readonly List<ChatEntry> _chatEntries;
 
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
@@ -42,23 +41,23 @@ public class PluginState : IDisposable
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
-    public PluginState(Configuration config)
+    public PluginStateService(Plugin plugin)
     {
-        this.Configuration = config;
-        this._focusTabs = new List<FocusTab>();
+        _plugin = plugin;
+        _focusTabs = new List<FocusTab>();
+        _chatEntries = [];
 
-        string fullFilePath = $"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}";
+        string fullFilePath = $"{_plugin.Configuration.MessageLog_FilePath}\\{_plugin.Configuration.MessageLog_FileName}";
 
-        if (Directory.Exists(Configuration.MessageLog_FilePath) == false)
+        if (Directory.Exists(_plugin.Configuration.MessageLog_FilePath) == false)
         {
             try
             {
-                Directory.CreateDirectory(Configuration.MessageLog_FilePath);
+                Directory.CreateDirectory(_plugin.Configuration.MessageLog_FilePath);
             }
             catch (Exception e)
             {
                 Logger.Error(e, "Could not create new chat log directory.");
-                this._chatEntries = [];
             }
         }
 
@@ -71,15 +70,14 @@ public class PluginState : IDisposable
             catch (Exception e)
             {
                 Logger.Error(e, "Could not create new chat log file.");
-                this._chatEntries = [];
             }
         }
 
-        if (Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
+        if (_plugin.Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
         {
             try
             {
-                var FileResult = File.ReadAllText($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}");
+                var FileResult = File.ReadAllText($"{_plugin.Configuration.MessageLog_FilePath}\\{_plugin.Configuration.MessageLog_FileName}");
                 var options = new JsonSerializerOptions
                 {
                     IncludeFields = true
@@ -87,10 +85,10 @@ public class PluginState : IDisposable
 
                 List<ChatEntry> ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options) ?? [];
 
-                if (Configuration.MessageLog_DeleteOldMessages)
+                if (_plugin.Configuration.MessageLog_DeleteOldMessages)
                 {
                     ChatEntries = ChatEntries
-                      .Where(t => (DateTime.Now - t.DateSent).TotalDays < Configuration.MessageLog_DaysToKeepOldMessages)
+                      .Where(t => (DateTime.Now - t.DateSent).TotalDays < _plugin.Configuration.MessageLog_DaysToKeepOldMessages)
                       .ToList();
                 }
 
@@ -99,13 +97,11 @@ public class PluginState : IDisposable
             catch (Exception e)
             {
                 Logger.Error(e, "Could not load Chat Logs.");
-                this._chatEntries = [];
             }
         }
         else
         {
             Logger.Information("Log file not found.");
-            this._chatEntries = [];
         }
     }
 
@@ -195,7 +191,7 @@ public class PluginState : IDisposable
     {
         this._chatEntries.Add(chatEntry);
 
-        if (Configuration.MessageLog_PreserveOnLogout)
+        if (_plugin.Configuration.MessageLog_PreserveOnLogout)
         {
             PersistMessages();
         }
@@ -217,7 +213,7 @@ public class PluginState : IDisposable
 
         if (focusTarget != null)
         {
-            if (Configuration.DebugLogging)
+            if (_plugin.Configuration.DebugLogging)
             {
                 Logger.Debug("CREATING FOCUS TAB");
                 Logger.Debug("=======================================================");
@@ -255,7 +251,7 @@ public class PluginState : IDisposable
             };
             var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
 
-            await File.WriteAllTextAsync($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}", jsonData);
+            await File.WriteAllTextAsync($"{_plugin.Configuration.MessageLog_FilePath}\\{_plugin.Configuration.MessageLog_FileName}", jsonData);
         }
         catch (Exception ex)
         {
