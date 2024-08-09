@@ -46,7 +46,35 @@ namespace XIVChatTools
         {
             this.Configuration = config;
             this._focusTabs = new List<FocusTab>();
-            if (Configuration.MessageLog_PreserveOnLogout && File.Exists($"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}"))
+
+            string fullFilePath = $"{Configuration.MessageLog_FilePath}\\{Configuration.MessageLog_FileName}";
+
+            if (Directory.Exists(Configuration.MessageLog_FilePath) == false)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Configuration.MessageLog_FilePath);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, "Could not create new chat log directory.");
+                    this._chatEntries = [];
+                }
+            }
+
+            if (File.Exists(fullFilePath) == false)
+            {
+                try {
+                    File.WriteAllLines(fullFilePath, ["[", "", "]"]);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, "Could not create new chat log file.");
+                    this._chatEntries = [];
+                }
+            }
+
+            if (Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
             {
                 try
                 {
@@ -69,12 +97,13 @@ namespace XIVChatTools
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e, "Could not load Chat Logs!");
+                    Logger.Error(e, "Could not load Chat Logs.");
                     this._chatEntries = [];
                 }
             }
             else
             {
+                Logger.Information("Log file not found.");
                 this._chatEntries = [];
             }
         }
@@ -187,7 +216,7 @@ namespace XIVChatTools
 
             if (focusTarget != null)
             {
-                if (Configuration.DebugLogging && Configuration.DebugLoggingCreatingTab)
+                if (Configuration.DebugLogging)
                 {
                     Logger.Debug("CREATING FOCUS TAB");
                     Logger.Debug("=======================================================");

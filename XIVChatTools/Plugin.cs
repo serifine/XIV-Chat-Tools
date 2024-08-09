@@ -13,11 +13,7 @@ using Dalamud.IoC;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
-using System.Reflection;
-
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using Dalamud.Plugin.Services;
 
@@ -25,7 +21,7 @@ namespace XIVChatTools
 {
     public class Plugin : IDalamudPlugin
     {
-        public string Name => "Chat Scanner";
+        public static string Name => "Chat Scanner";
 
         [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
         [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
@@ -53,8 +49,9 @@ namespace XIVChatTools
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(PluginInterface);
             PluginState = PluginInterface.Create<PluginState>(Configuration)!;
-            PluginUI = new PluginUI(Configuration, PluginState) {
-                Visible = Configuration.OpenOnLogin
+            PluginUI = new PluginUI(Configuration, PluginState)
+            {
+                toolbarVisible = Configuration.OpenOnLogin
             };
 
             foreach (string commandAlias in commandAliases)
@@ -85,7 +82,7 @@ namespace XIVChatTools
             ClientState.Login -= OnLogin;
             ClientState.Logout -= OnLogout;
 
-            PluginInterface.UiBuilder.OpenMainUi -= DrawUI;
+            PluginInterface.UiBuilder.Draw -= DrawUI;
             PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
             PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUI;
 
@@ -99,11 +96,11 @@ namespace XIVChatTools
         {
             if (settingsArgumentAliases.Contains(args.ToLower()))
             {
-                PluginUI.SettingsVisible = true;
+                PluginUI.settingsVisible = true;
             }
             else
             {
-                PluginUI.Visible = true;
+                OpenMainUI();
             }
         }
 
@@ -114,23 +111,23 @@ namespace XIVChatTools
 
         private void OpenMainUI()
         {
-            PluginUI.Visible = true;
-            Logger.Debug(PluginUI.Visible.ToString());
+            PluginUI.toolbarVisible = true;
         }
 
         private void OpenConfigUI()
         {
-            PluginUI.SettingsVisible = true;
+            PluginUI.settingsVisible = true;
         }
 
         private void OnLogin()
         {
-            PluginUI.Visible = Configuration.OpenOnLogin;
+            PluginUI.toolbarVisible = Configuration.OpenOnLogin;
         }
 
         private void OnLogout()
         {
-            PluginUI.Visible = false;
+            PluginUI.toolbarVisible = false;
+            PluginUI.visible = false;
             PluginState.ClearAllFocusTabs();
 
             if (Configuration.MessageLog_PreserveOnLogout == false)
@@ -180,7 +177,7 @@ namespace XIVChatTools
                 }
             }
 
-            if (Configuration.DebugLogging && Configuration.DebugLoggingMessages)
+            if (Configuration.DebugLogging)
             {
                 Logger.Debug("NEW CHAT MESSAGE RECEIVED");
                 Logger.Debug("=======================================================");
@@ -189,7 +186,7 @@ namespace XIVChatTools
                 Logger.Debug("Raw Sender: " + sender.TextValue);
                 Logger.Debug("Parsed Sender: " + parsedSenderName);
 
-                if (Configuration.DebugLoggingMessagePayloads && sender.Payloads.Any())
+                if (sender.Payloads.Any())
                 {
                     Logger.Debug("");
                     Logger.Debug("SenderPayloads");
@@ -200,43 +197,37 @@ namespace XIVChatTools
                     }
                 }
 
-                if (Configuration.DebugLoggingMessageContents)
+                Logger.Debug("");
+                Logger.Debug("Message: " + message.TextValue);
+
+                Logger.Debug("");
+                Logger.Debug("CMessage Json: ");
+                try
                 {
-                    Logger.Debug("");
-                    Logger.Debug("Message: " + message.TextValue);
+                    Logger.Debug(JsonConvert.SerializeObject(message, Formatting.Indented));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("An error occurred during serialization.");
+                    Logger.Debug(ex.Message);
                 }
 
-                if (Configuration.DebugLoggingMessageAsJson)
+                Logger.Debug("Sender Json: ");
+                try
                 {
-                    Logger.Debug("");
-                    Logger.Debug("CMessage Json: ");
-                    try
-                    {
-                        Logger.Debug(JsonConvert.SerializeObject(message, Formatting.Indented));
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Debug("An error occurred during serialization.");
-                        Logger.Debug(ex.Message);
-                    }
-
-                    Logger.Debug("Sender Json: ");
-                    try
-                    {
-                        Logger.Debug(JsonConvert.SerializeObject(sender, Formatting.Indented));
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Debug("An error occurred during serialization.");
-                        Logger.Debug(ex.Message);
-                    }
+                    Logger.Debug(JsonConvert.SerializeObject(sender, Formatting.Indented));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("An error occurred during serialization.");
+                    Logger.Debug(ex.Message);
                 }
             }
 
             var watchers = Configuration.MessageLog_Watchers.Split(",");
             var messageText = message.TextValue;
 
-            
+
 
             if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
             {

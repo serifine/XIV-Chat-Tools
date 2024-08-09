@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using XIVChatTools.Models;
 using Dalamud.Game.Text;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using Dalamud.Interface.Utility.Table;
+using Dalamud.Interface.Components;
 
 namespace XIVChatTools
 {
@@ -15,29 +16,20 @@ namespace XIVChatTools
         private Configuration Configuration { get; set; }
         private PluginState PluginState { get; set; }
 
-        // this extra bool exists for ImGui, since you can't ref a property
-        private bool visible = false;
-        public bool Visible
-        {
-            get { return this.visible; }
-            set { this.visible = value; }
-        }
-
-        private bool settingsVisible = false;
-        public bool SettingsVisible
-        {
-            get { return this.settingsVisible; }
-            set { this.settingsVisible = value; }
-        }
-
+        public bool visible = false;
+        public bool toolbarVisible = false;
+        public bool searchWindowVisible = false;
+        public bool settingsVisible = false;
         private bool autoScrollToBottom = false;
-        public bool AutoScrollToBottom
+
+        private float Scale
         {
-            get { return this.autoScrollToBottom; }
-            set { this.autoScrollToBottom = value; }
+            get { return ImGui.GetIO().FontGlobalScale; }
         }
 
         private string comboCurrentValue = "Focus Target";
+        private string searchText = "";
+        List<ChatEntry> searchMessages = [];
 
         private FocusTab customWindowFocusTab = new FocusTab("Private Window")
         {
@@ -63,13 +55,84 @@ namespace XIVChatTools
 
         public void Draw()
         {
+            DrawToolbarWindow();
             DrawMainWindow();
+            DrawSearchWindow();
             DrawSettingsWindow();
         }
 
-        public void DrawMainWindow()
+        public void DrawToolbarWindow()
         {
-            if (!Visible)
+            if (!toolbarVisible)
+            {
+                return;
+            }
+
+            ImGui.SetNextWindowSize(new Vector2(400, 75), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSizeConstraints(new Vector2(400, 75), new Vector2(float.MaxValue, float.MaxValue));
+
+
+            if (ImGui.Begin("Chat Tools Toolbar", ref toolbarVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoTitleBar))
+            {
+                // Alerts menu
+                if (ImGui.BeginPopup("Alerts"))
+                {
+
+                    ImGui.Spacing();
+                    ImGui.Spacing();
+                    ImGui.Text("You can set up watchers that will make a notification sound whenever you receive a message that containers the selected phrase.");
+                    ImGui.Spacing();
+                    ImGui.Text("These phrases need to be separated by a comma.");
+                    ImGui.Spacing();
+                    ImGui.Spacing();
+                    ImGui.Text("Global Watchers");
+
+                    if (ImGui.InputTextWithHint("", "Example, watch example", ref Configuration.MessageLog_Watchers, 24096))
+                    {
+                        Configuration.Save();
+                    }
+
+                    ImGui.EndPopup();
+                }
+
+                if (ImGui.Button("Ctools Window")) {
+                    visible = true;
+                }
+
+                ImGui.SameLine(ImGui.GetContentRegionAvail().X - (80 * Scale));
+
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
+                    searchWindowVisible = !searchWindowVisible;
+
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Search Messages");
+
+                ImGui.SameLine();
+
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Bell))
+                    ImGui.OpenPopup("Alerts");
+
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Chat Alerts");
+
+                ImGui.SameLine();
+
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
+                    settingsVisible = !settingsVisible;
+
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Settings");
+
+
+                ImGui.End();
+            }
+
+            // ImGui.PopStyleVar();
+        }
+
+        public void DrawSearchWindow()
+        {
+            if (!searchWindowVisible)
             {
                 return;
             }
@@ -77,11 +140,43 @@ namespace XIVChatTools
             ImGui.SetNextWindowSize(new Vector2(375, 330), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(375, 330), new Vector2(float.MaxValue, float.MaxValue));
 
-            var scale = ImGui.GetIO().FontGlobalScale;
+            if (ImGui.Begin("Search Messages", ref searchWindowVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking))
+            {
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                if (ImGui.InputTextWithHint("", "Search Messages", ref searchText, 24096))
+                {
+                    searchMessages = PluginState.SearchMessages(searchText);
+                }
+
+                ImGui.Separator();
+
+                if (searchMessages.Count > 0)
+                {
+                    DrawMessagePanel(searchMessages);
+                }
+                else
+                {
+                    ImGui.Text("No messages to display.");
+                }
+
+                ImGui.End();
+            }
+
+        }
+
+        public void DrawMainWindow()
+        {
+            if (!visible)
+            {
+                return;
+            }
+
+            ImGui.SetNextWindowSize(new Vector2(375, 330), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSizeConstraints(new Vector2(375, 330), new Vector2(float.MaxValue, float.MaxValue));
 
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
 
-            if (ImGui.Begin("Chat Scanner", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoBackground))
+            if (ImGui.Begin("Chat Tools", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoBackground))
             {
                 bool isWindowFocused = ImGui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows | ImGuiFocusedFlags.RootWindow | ImGuiFocusedFlags.DockHierarchy);
 
@@ -108,7 +203,7 @@ namespace XIVChatTools
                 {
                     ImGui.SameLine(8);
                     ImGui.Checkbox("Auto scroll on new messages.", ref autoScrollToBottom);
-                    ImGui.SameLine(ImGui.GetContentRegionAvail().X - (120 * scale));
+                    ImGui.SameLine(ImGui.GetContentRegionAvail().X - (120 * Scale));
                     if (ImGui.Button("Add Focus Target"))
                     {
                         PluginState.AddFocusTabFromTarget();
@@ -116,27 +211,20 @@ namespace XIVChatTools
                     ImGui.EndChild();
                 }
 
-                ImGui.PopStyleVar(); 
+                ImGui.PopStyleVar();
                 ImGui.PopStyleColor();
 
-                uint dockspaceId = ImGui.GetID("XIVChatToolsDockspace");
+                uint dockspaceId = ImGui.GetID("ChatToolsDockspace");
                 ImGui.DockSpace(dockspaceId);
 
-                 
+
                 // add padding for all child windows
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
-                 
+
                 ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
                 if (ImGui.Begin("Selected Target"))
                 {
                     DrawSelectedTargetTab();
-                    ImGui.End();
-                }
-
-                ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
-                if (ImGui.Begin("Search Messages"))
-                {
-                    DrawSearchTab();
                     ImGui.End();
                 }
 
@@ -215,33 +303,8 @@ namespace XIVChatTools
             }
         }
 
-        private string SearchText = "";
-
-        public void DrawSearchTab()
-        {
-            if (ImGui.InputText("Search Text", ref SearchText, 24096))
-            {
-                Configuration.Save();
-            }
-
-            var tabMessages = PluginState.SearchMessages(SearchText);
-
-            ImGui.Separator();
-
-            if (tabMessages.Count() > 0)
-            {
-                DrawMessagePanel(tabMessages);
-            }
-            else
-            {
-                ImGui.Text("No messages to display.");
-            }
-        }
-
         public void DrawCustomTab(string tabId)
         {
-            var scale = ImGui.GetIO().FontGlobalScale;
-
             if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
             {
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
@@ -263,7 +326,7 @@ namespace XIVChatTools
             }
 
 
-            ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * scale));
+            ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * Scale));
             ImGui.SetNextItemWidth(200);
             if (ImGui.BeginCombo(" ", comboCurrentValue))
             {
@@ -360,7 +423,8 @@ namespace XIVChatTools
                     {
                         ImGui.Text(chatEntry.SenderName);
                         ImGui.Text(chatEntry.DateSent.ToShortTimeString());
-                    } else
+                    }
+                    else
                     {
                         ImGui.Text(chatEntry.DateSent.ToShortTimeString() + " " + chatEntry.SenderName + ": ");
                     }
@@ -377,7 +441,7 @@ namespace XIVChatTools
                 ImGui.EndTable();
             }
 
-            if (AutoScrollToBottom || isChatAtBottom == true)
+            if (isChatAtBottom == true)
             {
                 ImGui.SetScrollHereY(1.0f);
             }
@@ -421,19 +485,20 @@ namespace XIVChatTools
             }
         }
 
+
+        #region Settings UI
+
         public void DrawSettingsWindow()
         {
-            if (!SettingsVisible)
+            if (!settingsVisible)
             {
                 return;
             }
 
-            var scale = ImGui.GetIO().FontGlobalScale;
-
             ImGui.SetNextWindowSize(new Vector2(400, 350), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(400, 350), new Vector2(float.MaxValue, float.MaxValue));
 
-            if (ImGui.Begin("Chat Scanner Configuration", ref this.settingsVisible, ImGuiWindowFlags.NoDocking))
+            if (ImGui.Begin("Chat Tools Configuration", ref this.settingsVisible, ImGuiWindowFlags.NoDocking))
             {
                 DrawStandardSettings();
 
@@ -637,47 +702,8 @@ namespace XIVChatTools
             {
                 this.Configuration.Save();
             }
-
-            if (Configuration.DebugLogging)
-            {
-
-                if (ImGui.Checkbox("Track target tab creation", ref this.Configuration.DebugLoggingCreatingTab))
-                {
-                    this.Configuration.Save();
-                }
-                // if (ImGui.Checkbox("Track target changing", ref this.configuration.DebugLoggingTargetChanging))
-                // {
-                //   this.configuration.Save();
-                // }
-                if (ImGui.Checkbox("Log Messages", ref this.Configuration.DebugLoggingMessages))
-                {
-                    this.Configuration.Save();
-                }
-
-                if (Configuration.DebugLoggingMessages)
-                {
-                    ImGui.Text("--");
-                    ImGui.SameLine();
-                    if (ImGui.Checkbox("Log Message Payloads", ref this.Configuration.DebugLoggingMessagePayloads))
-                    {
-                        this.Configuration.Save();
-                    }
-
-                    ImGui.Text("--");
-                    ImGui.SameLine();
-                    if (ImGui.Checkbox("Log Message Contents", ref this.Configuration.DebugLoggingMessageContents))
-                    {
-                        this.Configuration.Save();
-                    }
-
-                    ImGui.Text("--");
-                    ImGui.SameLine();
-                    if (ImGui.Checkbox("Log Message As JSON", ref this.Configuration.DebugLoggingMessageAsJson))
-                    {
-                        this.Configuration.Save();
-                    }
-                }
-            }
         }
+
+        #endregion
     }
 }
