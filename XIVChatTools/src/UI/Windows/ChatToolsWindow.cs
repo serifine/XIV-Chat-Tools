@@ -38,7 +38,12 @@ public class ChatToolsWindow : Window
         _windowManagerService = windowManagerService;
         _messagePanel = new(_plugin);
 
+        ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+
+        this.IsOpen = true;
+
         Size = new Vector2(450, 50);
+        SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoBackground;
     }
 
@@ -69,7 +74,7 @@ public class ChatToolsWindow : Window
     {
         var tabMessages = PluginState.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
 
-        if (tabMessages.Count() > 0)
+        if (tabMessages.Count > 0)
         {
             _messagePanel.Draw(tabMessages);
         }
@@ -168,10 +173,6 @@ public class ChatToolsWindow : Window
         uint dockspaceId = ImGui.GetID("ChatToolsDockspace");
         ImGui.DockSpace(dockspaceId);
 
-
-        // add padding for all child windows
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 8));
-
         ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
         if (ImGui.Begin("Selected Target"))
         {
@@ -197,17 +198,27 @@ public class ChatToolsWindow : Window
             }
         }
 
-        // remove child window padding style
-        ImGui.PopStyleVar();
-        ImGui.PopStyleVar();
-
         PluginState.RemoveClosedFocusTabs();
     }
 
 
+    public override void PreDraw()
+    {
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+
+        base.PreDraw();
+    }
+
+    public override void PostDraw()
+    {
+        ImGui.PopStyleVar();
+
+        base.PostDraw();
+    }
+
     public override void Draw()
     {
-        try 
+        try
         {
             DrawInterface();
         }
