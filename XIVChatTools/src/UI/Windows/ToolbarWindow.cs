@@ -22,7 +22,7 @@ public class ToolbarWindow : Window
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
     private int selectedWindowType = 0;
-    private string[] windowTypes = new string[] { "Selected Target", "Custom Window" };
+    private string[] windowTypes = new string[] { "Watch Target", "Custom Window" };
 
     internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base("Toolbar###ChatToolsToolbar")
     {
