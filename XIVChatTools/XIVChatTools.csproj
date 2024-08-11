@@ -8,4 +8,9 @@
         <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Tools</PackageProjectUrl>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Content Include="images\icon.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
 </Project>
