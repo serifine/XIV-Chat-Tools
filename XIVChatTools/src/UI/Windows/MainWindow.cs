@@ -15,7 +15,7 @@ using XIVChatTools.Services;
 
 namespace XIVChatTools.UI.Windows;
 
-public class ChatToolsWindow : Window
+public class MainWindow : Window
 {
     private readonly Plugin _plugin;
     private readonly WindowManagerService _windowManagerService;
@@ -32,7 +32,7 @@ public class ChatToolsWindow : Window
 
     private string comboCurrentValue = "Focus Target";
 
-    internal ChatToolsWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Chat Tools###ChatToolsMainWindow")
+    internal MainWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Chat Tools###ChatToolsMainWindow")
     {
         _plugin = plugin;
         _windowManagerService = windowManagerService;

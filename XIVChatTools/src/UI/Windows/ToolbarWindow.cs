@@ -85,11 +85,11 @@ public class ToolbarWindow : Window
 
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (117 * Scale));
 
-        if (ImGuiComponents.IconButton(_windowManagerService.ChatToolsWindow.IsOpen ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye))
-            _windowManagerService.ChatToolsWindow.Toggle();
+        if (ImGuiComponents.IconButton(_windowManagerService.MainWindow.IsOpen ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye))
+            _windowManagerService.MainWindow.Toggle();
 
         if (ImGui.IsItemHovered())
-            ImGui.SetTooltip(_windowManagerService.ChatToolsWindow.IsOpen ? "Hide Main Window" : "Show Main Window");
+            ImGui.SetTooltip(_windowManagerService.MainWindow.IsOpen ? "Hide Main Window" : "Show Main Window");
 
         ImGui.SameLine();
 

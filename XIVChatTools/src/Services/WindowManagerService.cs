@@ -44,7 +44,7 @@ public class WindowManagerService : IDisposable
     public ToolbarWindow ToolbarWindow;
     public SearchWindow SearchWindow;
     public SettingsWindow SettingsWindow;
-    public ChatToolsWindow ChatToolsWindow;
+    public MainWindow MainWindow;
 
     public WindowManagerService(Plugin plugin)
     {
@@ -54,12 +54,12 @@ public class WindowManagerService : IDisposable
         ToolbarWindow = new(_plugin, this);
         SearchWindow = new(_plugin, this);
         SettingsWindow = new(_plugin, this);
-        ChatToolsWindow = new(_plugin, this);
+        MainWindow = new(_plugin, this);
 
         _windowSystem.AddWindow(ToolbarWindow);
         _windowSystem.AddWindow(SearchWindow);
         _windowSystem.AddWindow(SettingsWindow);
-        _windowSystem.AddWindow(ChatToolsWindow);
+        _windowSystem.AddWindow(MainWindow);
 
         ToolbarWindow.IsOpen = Plugin.ClientState.IsLoggedIn && Configuration.OpenOnLogin;
     }
@@ -72,7 +72,7 @@ public class WindowManagerService : IDisposable
     public void CloseAllWindows() {
         SearchWindow.IsOpen = false;
         SettingsWindow.IsOpen = false;
-        ChatToolsWindow.IsOpen = false;
+        MainWindow.IsOpen = false;
         ToolbarWindow.IsOpen = false;
     }
 
