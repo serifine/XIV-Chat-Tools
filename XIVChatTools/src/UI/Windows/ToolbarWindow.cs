@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -20,12 +21,15 @@ public class ToolbarWindow : Window
     private Configuration Configuration => _plugin.Configuration;
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
+    private int selectedWindowType = 0;
+    private string[] windowTypes = new string[] { "Selected Target", "Custom Window" };
+
     internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base("Toolbar###ChatToolsToolbar")
     {
         _plugin = plugin;
         _windowManagerService = windowManagerService;
 
-        Size = new Vector2(450, 50);
+        Size = new Vector2(450 * Scale, 40 * Scale);
         SizeCondition = ImGuiCond.Always;
         Flags = ImGuiWindowFlags.NoScrollbar
             | ImGuiWindowFlags.NoScrollWithMouse
@@ -34,7 +38,8 @@ public class ToolbarWindow : Window
             | ImGuiWindowFlags.NoResize;
     }
 
-    private void DrawPopups() {
+    private void DrawPopups()
+    {
         if (ImGui.BeginPopup("Alerts"))
         {
             ImGui.Spacing();
@@ -55,16 +60,41 @@ public class ToolbarWindow : Window
         }
     }
 
-    private void DrawInterface() {
-        if (ImGui.Button("Ctools Window"))
+    private void DrawInterface()
+    {
+        // if (ImGui.Button("Open Watch Window"))
+        // {
+        //     _windowManagerService.ChatToolsWindow.IsOpen = !_windowManagerService.ChatToolsWindow.IsOpen;
+        // }
+
+        // ImGui.SameLine();
+
+        ImGui.SetNextItemWidth(140 * Scale);
+        if (ImGui.Combo("", ref selectedWindowType, windowTypes, windowTypes.Length))
         {
-            _windowManagerService.ChatToolsWindow.IsOpen = !_windowManagerService.ChatToolsWindow.IsOpen;
+            // on change
+        }
+        
+        ImGui.SameLine();
+
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.PlusCircle)) {
+            // on click
         }
 
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (80 * Scale));
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Tab");
+
+        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (117 * Scale));
+
+        if (ImGuiComponents.IconButton(_windowManagerService.ChatToolsWindow.IsOpen ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye))
+            _windowManagerService.ChatToolsWindow.Toggle();
+
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip(_windowManagerService.ChatToolsWindow.IsOpen ? "Hide Main Window" : "Show Main Window");
+
+        ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
-            _windowManagerService.SearchWindow.IsOpen = true;
+            _windowManagerService.SearchWindow.Toggle();
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Search Messages");
@@ -80,12 +110,11 @@ public class ToolbarWindow : Window
         ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-            _windowManagerService.SettingsWindow.IsOpen = true;
+            _windowManagerService.SettingsWindow.Toggle();
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Settings");
     }
-
 
     public override void Draw()
     {
