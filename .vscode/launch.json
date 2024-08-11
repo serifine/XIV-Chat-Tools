@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "program": "E:/SteamLibrary/steamapps/common/FINAL FANTASY XIV Online/game/ffxiv_dx11.exe",
+      "processName": "ffxiv_dx11.exe",
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
