@@ -56,27 +56,18 @@ public class Plugin : IDalamudPlugin
             // to be removed later
             Configuration.Initialize(PluginInterface);
 
-            #region Register Services
-
-            PluginState = PluginInterface.Create<PluginStateService>(this)!;
-            MessageService = PluginInterface.Create<MessageService>(this)!;
-            WindowManagerService = PluginInterface.Create<WindowManagerService>(this)!;
-
-            if (PluginState == null) throw new Exception("Fatal Error - Failed to create service: PluginStateService");
-            if (MessageService == null) throw new Exception("Fatal Error - Failed to create service: MessageService");
-            if (WindowManagerService == null) throw new Exception("Fatal Error - Failed to create service: WindowManagerService");
-
-            #endregion
-
-
-            ChatGui.ChatMessage += Chat_OnChatMessage;
+            PluginState = RegisterService<PluginStateService>();
+            MessageService = RegisterService<MessageService>();
+            WindowManagerService = RegisterService<WindowManagerService>();
 
             ClientState.Login += OnLogin;
             ClientState.Logout += OnLogout;
 
-            PluginInterface.UiBuilder.Draw += DrawUI;
-            PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
-            PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUI;
+            PluginInterface.UiBuilder.Draw += OnDrawUI;
+            PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
+            PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
+
+            ChatGui.ChatMessage += OnChatMessage;
 
             foreach (string commandAlias in commandAliases)
             {
@@ -94,26 +85,7 @@ public class Plugin : IDalamudPlugin
         }
     }
 
-    public void Dispose()
-    {
-        ChatGui.ChatMessage -= Chat_OnChatMessage;
-
-        ClientState.Login -= OnLogin;
-        ClientState.Logout -= OnLogout;
-
-        PluginInterface.UiBuilder.Draw -= DrawUI;
-        PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
-        PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUI;
-
-        WindowManagerService?.Dispose();
-
-        foreach (string commandAlias in commandAliases)
-        {
-            if (CommandManager.Commands.Any(t => t.Key == commandAlias)) {
-                CommandManager.RemoveHandler(commandAlias);
-            }
-        }
-    }
+    #region Event Handlers
 
     private void OnCommand(string command, string args)
     {
@@ -123,24 +95,23 @@ public class Plugin : IDalamudPlugin
         }
         else
         {
-            OpenMainUI();
+            OnOpenMainUI();
         }
     }
 
-    private void DrawUI()
+    private void OnDrawUI()
     {
         WindowManagerService.Draw();
 
-        // post draw events
-
+        PostDrawEvents();
     }
 
-    private void OpenMainUI()
+    private void OnOpenMainUI()
     {
         WindowManagerService.ToolbarWindow.Toggle();
     }
 
-    private void OpenConfigUI()
+    private void OnOpenConfigUI()
     {
         WindowManagerService.SettingsWindow.Toggle();
     }
@@ -161,98 +132,23 @@ public class Plugin : IDalamudPlugin
         }
     }
 
-    private void Chat_OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         if (Enum.IsDefined(typeof(XivChatType), type) == false || Configuration.AllChannels.Any(t => t.ChatType == type) == false || isHandled || !Configuration.ActiveChannels.Any(t => t == type))
         {
             return;
         }
 
-
         var parsedSenderName = ParseSenderName(type, sender);
 
-        if (Configuration.DebugLogging && parsedSenderName == "N/A|BadType")
-        {
-            Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
-            Logger.Error("=======================================================");
-            Logger.Error("Message Type: " + type.ToString());
-            Logger.Error("Is Marked Handled: " + isHandled.ToString());
-            Logger.Error("Raw Sender: " + sender.TextValue);
-            Logger.Error("Parsed Sender: " + parsedSenderName);
-            Logger.Error("CMessage Json: ");
-            try
-            {
-                Logger.Error(JsonConvert.SerializeObject(message, Formatting.Indented));
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("An error occurred during serialization.");
-                Logger.Error(ex.Message);
-            }
-
-            Logger.Error("Sender Json: ");
-            try
-            {
-                Logger.Error(JsonConvert.SerializeObject(sender, Formatting.Indented));
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("An error occurred during serialization.");
-                Logger.Error(ex.Message);
-            }
-        }
 
         if (Configuration.DebugLogging)
         {
-            Logger.Debug("NEW CHAT MESSAGE RECEIVED");
-            Logger.Debug("=======================================================");
-            Logger.Debug("Message Type: " + type.ToString());
-            Logger.Debug("Is Marked Handled: " + isHandled.ToString());
-            Logger.Debug("Raw Sender: " + sender.TextValue);
-            Logger.Debug("Parsed Sender: " + parsedSenderName);
-
-            if (sender.Payloads.Any())
-            {
-                Logger.Debug("");
-                Logger.Debug("SenderPayloads");
-                foreach (var payload in sender.Payloads)
-                {
-                    Logger.Debug("Type: " + payload.Type.ToString());
-                    Logger.Debug(payload.ToString() ?? "");
-                }
-            }
-
-            Logger.Debug("");
-            Logger.Debug("Message: " + message.TextValue);
-
-            Logger.Debug("");
-            Logger.Debug("CMessage Json: ");
-            try
-            {
-                Logger.Debug(JsonConvert.SerializeObject(message, Formatting.Indented));
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("An error occurred during serialization.");
-                Logger.Debug(ex.Message);
-            }
-
-            Logger.Debug("Sender Json: ");
-            try
-            {
-                Logger.Debug(JsonConvert.SerializeObject(sender, Formatting.Indented));
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("An error occurred during serialization.");
-                Logger.Debug(ex.Message);
-            }
+            ChatDevLogging(type, timestamp, sender, message, isHandled, parsedSenderName);
         }
 
         var watchers = Configuration.MessageLog_Watchers.Split(",");
         var messageText = message.TextValue;
-
-
 
         if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
         {
@@ -275,6 +171,57 @@ public class Plugin : IDalamudPlugin
             Timestamp = timestamp,
             SenderName = parsedSenderName
         });
+    }
+
+    #endregion
+
+    public void Dispose()
+    {
+        ClientState.Login -= OnLogin;
+        ClientState.Logout -= OnLogout;
+
+        PluginInterface.UiBuilder.Draw -= OnDrawUI;
+        PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
+        PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
+
+        ChatGui.ChatMessage -= OnChatMessage;
+
+        WindowManagerService?.Dispose();
+
+        foreach (string commandAlias in commandAliases)
+        {
+            if (CommandManager.Commands.Any(t => t.Key == commandAlias))
+            {
+                CommandManager.RemoveHandler(commandAlias);
+            }
+        }
+    }
+
+    private T RegisterService<T>() where T : class
+    {
+        try
+        {
+            var service = PluginInterface.Create<T>(this);
+
+            if (service == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            return service;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Fatal Error - Failed to create service: {typeof(T).Name}");
+            Logger.Error(ex, ex.Message);
+
+            throw;
+        }
+    }
+
+    private void PostDrawEvents()
+    {
+
     }
 
     private string ParseSenderName(XivChatType type, SeString sender)
@@ -321,5 +268,64 @@ public class Plugin : IDalamudPlugin
         }
 
         return "N/A|BadType";
+    }
+
+    private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, bool isHandled, string parsedSenderName)
+    {
+        if (parsedSenderName == "N/A|BadType")
+        {
+            Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
+            Logger.Error("=======================================================");
+            Logger.Error("Message Type: " + type.ToString());
+            Logger.Error("Is Marked Handled: " + isHandled.ToString());
+            Logger.Error("Raw Sender: " + sender.TextValue);
+            Logger.Error("Parsed Sender: " + parsedSenderName);
+        }
+        else
+        {
+            Logger.Debug("NEW CHAT MESSAGE RECEIVED");
+            Logger.Debug("=======================================================");
+            Logger.Debug("Message Type: " + type.ToString());
+            Logger.Debug("Is Marked Handled: " + isHandled.ToString());
+            Logger.Debug("Raw Sender: " + sender.TextValue);
+            Logger.Debug("Parsed Sender: " + parsedSenderName);
+        }
+
+        if (sender.Payloads.Count > 0)
+        {
+            Logger.Verbose("");
+            Logger.Verbose("SenderPayloads");
+            foreach (var payload in sender.Payloads)
+            {
+                Logger.Verbose("Type: " + payload.Type.ToString());
+                Logger.Verbose(payload.ToString() ?? "");
+            }
+        }
+
+        Logger.Verbose("");
+        Logger.Verbose("Message: " + message.TextValue);
+
+        Logger.Verbose("");
+        Logger.Verbose("CMessage Json: ");
+        try
+        {
+            Logger.Verbose(JsonConvert.SerializeObject(message, Formatting.Indented));
+        }
+        catch (Exception ex)
+        {
+            Logger.Verbose("An error occurred during serialization.");
+            Logger.Verbose(ex.Message);
+        }
+
+        Logger.Verbose("Sender Json: ");
+        try
+        {
+            Logger.Verbose(JsonConvert.SerializeObject(sender, Formatting.Indented));
+        }
+        catch (Exception ex)
+        {
+            Logger.Verbose("An error occurred during serialization.");
+            Logger.Verbose(ex.Message);
+        }
     }
 }
