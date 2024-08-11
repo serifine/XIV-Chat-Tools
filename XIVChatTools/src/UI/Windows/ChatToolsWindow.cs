@@ -38,8 +38,6 @@ public class ChatToolsWindow : Window
         _windowManagerService = windowManagerService;
         _messagePanel = new(_plugin);
 
-        ImGui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-
         this.IsOpen = true;
 
         Size = new Vector2(450, 50);
