@@ -33,6 +33,7 @@ public class Plugin : IDalamudPlugin
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
     internal readonly PluginStateService PluginState;
+    internal readonly MessageService MessageService;
     internal readonly WindowManagerService WindowManagerService;
     internal readonly Configuration Configuration;
 
@@ -58,10 +59,12 @@ public class Plugin : IDalamudPlugin
             #region Register Services
 
             PluginState = PluginInterface.Create<PluginStateService>(this)!;
+            MessageService = PluginInterface.Create<MessageService>(this)!;
             WindowManagerService = PluginInterface.Create<WindowManagerService>(this)!;
 
-            if (PluginState == null) throw new Exception("Fatal Error: Failed to create PluginStateService.");
-            if (WindowManagerService == null) throw new Exception("Fatal Error: Failed to create WindowManagerService.");
+            if (PluginState == null) throw new Exception("Fatal Error - Failed to create service: PluginStateService");
+            if (MessageService == null) throw new Exception("Fatal Error - Failed to create service: MessageService");
+            if (WindowManagerService == null) throw new Exception("Fatal Error - Failed to create service: WindowManagerService");
 
             #endregion
 
@@ -127,6 +130,9 @@ public class Plugin : IDalamudPlugin
     private void DrawUI()
     {
         WindowManagerService.Draw();
+
+        // post draw events
+
     }
 
     private void OpenMainUI()
@@ -151,7 +157,7 @@ public class Plugin : IDalamudPlugin
 
         if (Configuration.MessageLog_PreserveOnLogout == false)
         {
-            PluginState.ClearMessageHistory();
+            MessageService.ClearMessageHistory();
         }
     }
 
@@ -261,7 +267,7 @@ public class Plugin : IDalamudPlugin
             }
         }
 
-        PluginState.AddChatMessage(new Models.ChatEntry()
+        MessageService.AddChatMessage(new Models.ChatEntry()
         {
             ChatType = type,
             OwnerId = PluginState.GetPlayerName(),

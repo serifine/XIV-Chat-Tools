@@ -23,6 +23,7 @@ public class MainWindow : Window
 
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
+    private MessageService MessageService => _plugin.MessageService;
     private IPluginLog Logger => Plugin.Logger;
     private float Scale => ImGui.GetIO().FontGlobalScale;
     private FocusTab customWindowFocusTab = new FocusTab("Private Window")
@@ -51,7 +52,7 @@ public class MainWindow : Window
 
         if (focusTarget != null)
         {
-            var messages = PluginState.GetMessagesForFocusTarget();
+            var messages = MessageService.GetMessagesForFocusTarget();
 
             if (messages != null && messages.Count > 0)
             {
@@ -70,7 +71,7 @@ public class MainWindow : Window
 
     public void DrawFocusTab(string tabId, FocusTab focusTab)
     {
-        var tabMessages = PluginState.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+        var tabMessages = MessageService.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
 
         if (tabMessages.Count > 0)
         {
@@ -154,7 +155,7 @@ public class MainWindow : Window
 
         ImGui.Separator();
 
-        var tabMessages = PluginState.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
+        var tabMessages = MessageService.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
 
         if (tabMessages.Count() > 0)
         {

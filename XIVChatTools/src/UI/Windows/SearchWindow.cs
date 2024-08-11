@@ -21,6 +21,7 @@ public class SearchWindow : Window
     private readonly MessagePanel _messagePanel;
 
     private PluginStateService PluginState => _plugin.PluginState;
+    private MessageService MessageService => _plugin.MessageService;
 
     private List<ChatEntry> searchMessages = [];
     private string searchText = "";
@@ -31,7 +32,7 @@ public class SearchWindow : Window
         _windowManagerService = windowManagerService;
         _messagePanel = new(_plugin);
 
-        searchMessages = PluginState.GetAllMessages();
+        searchMessages = MessageService.GetAllMessages();
 
         Size = new Vector2(450, 600);
         SizeConstraints = new WindowSizeConstraints() { MinimumSize = new Vector2(450, 600), MaximumSize = new Vector2(700, 1200) };
@@ -44,7 +45,7 @@ public class SearchWindow : Window
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if (ImGui.InputTextWithHint("", "Search Messages", ref searchText, 24096))
         {
-            searchMessages = PluginState.SearchMessages(searchText);
+            searchMessages = MessageService.SearchMessages(searchText);
         }
 
         ImGui.Separator();
