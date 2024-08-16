@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
@@ -24,6 +25,7 @@ public class SettingsWindow : Window
     private String[] InactiveChannels = [];
     private String[] ActiveChannels = [];
 
+
     internal SettingsWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Chat Tools Settings###ChatToolsSettingsWindow")
     {
         _plugin = plugin;
@@ -31,6 +33,8 @@ public class SettingsWindow : Window
         Size = new Vector2(400, 350);
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoDocking;
+
+        UpdateChannelsToLog();
     }
 
 
