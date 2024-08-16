@@ -22,7 +22,7 @@ public class ToolbarWindow : Window
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
     private int selectedWindowType = 0;
-    private string[] windowTypes = new string[] { "Watch Target", "Custom Window" };
+    private string[] windowTypes = new string[] { "Watch Target", "Watch Group" };
 
     internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base("Toolbar###ChatToolsToolbar")
     {
@@ -81,7 +81,12 @@ public class ToolbarWindow : Window
             // on click
         }
 
-        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Tab");
+        string addTabTooltip = "";
+
+        if (selectedWindowType == 0) addTabTooltip = "Add a new tab watching your selected character.";
+        else addTabTooltip = "Add a new configurable tab that you can use to watch a group of characters.";
+
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip(addTabTooltip);
 
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (117 * Scale));
 
