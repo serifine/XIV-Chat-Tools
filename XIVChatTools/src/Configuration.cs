@@ -63,10 +63,6 @@ public class Configuration : IPluginConfiguration
 
     #endregion
 
-
-    [NonSerialized]
-    public List<ChannelType> AllChannels = Constants.AllChannels;
-
     //
     // the below exist just to make saving less cumbersome
     //

@@ -30,6 +30,7 @@ public class Plugin : IDalamudPlugin
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
+    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
 
     internal readonly PluginStateService PluginState;
     internal readonly MessageService MessageService;
@@ -68,7 +69,7 @@ public class Plugin : IDalamudPlugin
             PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
 
-            ChatGui.ChatMessage += OnChatMessage;
+            ChatGui.ChatMessageUnhandled += OnChatMessageUnhandled;
 
             if (PluginInterface.IsDev)
             {
@@ -139,19 +140,18 @@ public class Plugin : IDalamudPlugin
         }
     }
 
-    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    private void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
     {
-        if (Enum.IsDefined(typeof(XivChatType), type) == false || Configuration.AllChannels.Any(t => t.ChatType == type) == false || isHandled || !Configuration.ActiveChannels.Any(t => t == type))
+        if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
         {
             return;
         }
 
         var parsedSenderName = ParseSenderName(type, sender);
 
-
         if (Configuration.DebugLogging)
         {
-            ChatDevLogging(type, timestamp, sender, message, isHandled, parsedSenderName);
+            ChatDevLogging(type, timestamp, sender, message, parsedSenderName);
         }
 
         var watchers = Configuration.MessageLog_Watchers.Split(",");
@@ -191,7 +191,7 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
 
-        ChatGui.ChatMessage -= OnChatMessage;
+        ChatGui.ChatMessageUnhandled -= OnChatMessageUnhandled;
 
         WindowManagerService?.Dispose();
 
@@ -240,7 +240,7 @@ public class Plugin : IDalamudPlugin
             return playerPayload.PlayerName;
         }
 
-        if (type == XivChatType.CustomEmote || type == XivChatType.StandardEmote)
+        if (type == XivChatType.StandardEmote)
         {
             payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
 
@@ -249,27 +249,7 @@ public class Plugin : IDalamudPlugin
                 return textPayload.Text;
             }
         }
-
-        if (type == XivChatType.TellOutgoing
-         || type == XivChatType.Party
-         || type == XivChatType.Say
-         || type == XivChatType.CrossLinkShell1
-         || type == XivChatType.CrossLinkShell2
-         || type == XivChatType.CrossLinkShell3
-         || type == XivChatType.CrossLinkShell4
-         || type == XivChatType.CrossLinkShell5
-         || type == XivChatType.CrossLinkShell6
-         || type == XivChatType.CrossLinkShell7
-         || type == XivChatType.CrossLinkShell8
-         || type == XivChatType.Ls1
-         || type == XivChatType.Ls2
-         || type == XivChatType.Ls3
-         || type == XivChatType.Ls4
-         || type == XivChatType.Ls5
-         || type == XivChatType.Ls6
-         || type == XivChatType.Ls7
-         || type == XivChatType.Ls8
-        )
+        else
         {
             return PluginState.GetPlayerName();
         }
@@ -277,14 +257,13 @@ public class Plugin : IDalamudPlugin
         return "N/A|BadType";
     }
 
-    private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, bool isHandled, string parsedSenderName)
+    private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, string parsedSenderName)
     {
         if (parsedSenderName == "N/A|BadType")
         {
             Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
             Logger.Error("=======================================================");
             Logger.Error("Message Type: " + type.ToString());
-            Logger.Error("Is Marked Handled: " + isHandled.ToString());
             Logger.Error("Raw Sender: " + sender.TextValue);
             Logger.Error("Parsed Sender: " + parsedSenderName);
         }
@@ -293,7 +272,6 @@ public class Plugin : IDalamudPlugin
             Logger.Debug("NEW CHAT MESSAGE RECEIVED");
             Logger.Debug("=======================================================");
             Logger.Debug("Message Type: " + type.ToString());
-            Logger.Debug("Is Marked Handled: " + isHandled.ToString());
             Logger.Debug("Raw Sender: " + sender.TextValue);
             Logger.Debug("Parsed Sender: " + parsedSenderName);
         }

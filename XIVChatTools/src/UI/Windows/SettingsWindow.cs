@@ -40,32 +40,39 @@ public class SettingsWindow : Window
 
     private void AddActiveChannel()
     {
-        var channel = Configuration.AllChannels.First(t => t.Name == InactiveChannels[ChannelLogging_InactiveSelection]);
+        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == InactiveChannels[ChannelLogging_InactiveSelection]);
 
-        Configuration.ActiveChannels.Add(channel.ChatType);
 
-        UpdateChannelsToLog();
-        Configuration.Save();
+        if (channel != null)
+        {
+            Configuration.ActiveChannels.Add(channel.ChatType);
+
+            UpdateChannelsToLog();
+            Configuration.Save();
+        }
     }
 
     private void RemoveActiveChannel()
     {
-        var channel = Configuration.AllChannels.First(t => t.Name == ActiveChannels[ChannelLogging_ActiveSelection]);
+        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == ActiveChannels[ChannelLogging_ActiveSelection]);
 
-        Configuration.ActiveChannels.Remove(channel.ChatType);
+        if (channel != null)
+        {
+            Configuration.ActiveChannels.Remove(channel.ChatType);
 
-        UpdateChannelsToLog();
-        Configuration.Save();
+            UpdateChannelsToLog();
+            Configuration.Save();
+        }
     }
 
     private void UpdateChannelsToLog()
     {
-        InactiveChannels = Configuration.AllChannels
+        InactiveChannels = Constants.ChatTypes.SupportedChannels
           .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == false)
           .Select(t => t.Name)
           .OrderBy(t => t)
           .ToArray();
-        ActiveChannels = Configuration.AllChannels
+        ActiveChannels = Constants.ChatTypes.SupportedChannels
           .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == true)
           .Select(t => t.Name)
           .OrderBy(t => t)
