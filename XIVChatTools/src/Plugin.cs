@@ -14,7 +14,6 @@ using Dalamud;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -24,7 +23,7 @@ namespace XIVChatTools;
 
 public class Plugin : IDalamudPlugin
 {
-    public static string Name => "Chat Scanner";
+    public static string Name => "Chat Tools";
 
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
@@ -36,6 +35,8 @@ public class Plugin : IDalamudPlugin
     internal readonly MessageService MessageService;
     internal readonly WindowManagerService WindowManagerService;
     internal readonly Configuration Configuration;
+
+    private readonly AdvancedDebugLogger? advancedDebugLogger = null;
 
     private readonly List<string> commandAliases = [
         "/chattools",
@@ -69,12 +70,18 @@ public class Plugin : IDalamudPlugin
 
             ChatGui.ChatMessage += OnChatMessage;
 
+            if (PluginInterface.IsDev)
+            {
+                Logger.Debug("Chat Tools is running in development mode.");
+                advancedDebugLogger = new AdvancedDebugLogger(this);
+            }
+
             foreach (string commandAlias in commandAliases)
             {
                 CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
                 {
                     HelpMessage = commandAliases.First() == commandAlias ?
-                      "Opens the Chat Scanner window." : "Alias for /chattools."
+                      "Opens the Chat Tools window." : "Alias for /chattools."
                 });
             }
         }
@@ -291,41 +298,19 @@ public class Plugin : IDalamudPlugin
             Logger.Debug("Parsed Sender: " + parsedSenderName);
         }
 
-        if (sender.Payloads.Count > 0)
-        {
-            Logger.Verbose("");
-            Logger.Verbose("SenderPayloads");
-            foreach (var payload in sender.Payloads)
-            {
-                Logger.Verbose("Type: " + payload.Type.ToString());
-                Logger.Verbose(payload.ToString() ?? "");
-            }
-        }
 
-        Logger.Verbose("");
-        Logger.Verbose("Message: " + message.TextValue);
+        if (PluginInterface.IsDev && advancedDebugLogger != null)
+        {
+            SeString modifiedSender = sender;
 
-        Logger.Verbose("");
-        Logger.Verbose("CMessage Json: ");
-        try
-        {
-            Logger.Verbose(JsonConvert.SerializeObject(message, Formatting.Indented));
-        }
-        catch (Exception ex)
-        {
-            Logger.Verbose("An error occurred during serialization.");
-            Logger.Verbose(ex.Message);
-        }
-
-        Logger.Verbose("Sender Json: ");
-        try
-        {
-            Logger.Verbose(JsonConvert.SerializeObject(sender, Formatting.Indented));
-        }
-        catch (Exception ex)
-        {
-            Logger.Verbose("An error occurred during serialization.");
-            Logger.Verbose(ex.Message);
+            advancedDebugLogger.AddNewMessage(new () {
+                ChatType = type.ToString(),
+                Timestamp = timestamp,
+                TextValue = message.TextValue,
+                ParsedSender = parsedSenderName,
+                Sender = sender,
+                Message = message
+            });
         }
     }
 }
