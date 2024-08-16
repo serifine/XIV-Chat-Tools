@@ -135,23 +135,6 @@ public class MessageService : IDisposable
           .ToList();
     }
 
-    public IPlayerCharacter? GetCurrentOrMouseoverTarget()
-    {
-        IGameObject? focusTarget = TargetManager.Target;
-
-        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
-        {
-            focusTarget = TargetManager.MouseOverTarget;
-        }
-
-        if (focusTarget != null && focusTarget.ObjectKind != ObjectKind.Player)
-        {
-            focusTarget = null;
-        }
-
-        return focusTarget as IPlayerCharacter;
-    }
-
     public List<ChatEntry> GetAllMessages()
     {
         return this._chatEntries
@@ -161,7 +144,7 @@ public class MessageService : IDisposable
 
     public List<ChatEntry> GetMessagesForFocusTarget()
     {
-        IPlayerCharacter? focusTarget = this.GetCurrentOrMouseoverTarget();
+        IPlayerCharacter? focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
         if (focusTarget == null)
         {
