@@ -1,6 +1,7 @@
 name: Chat Tools
 author: serifine
 punchline: Filter messages in crowded environments, bringing some sanity back to RP.
+IconUrl: https://raw.githubusercontent.com/serifine/XIV-Chat-Scanner/main/XIVChatTools/images/icon.png
 description: |-
   Chat Tools was developed to cut through the cluttered chat that can happen at large RP events, or in crowded environments.
   
