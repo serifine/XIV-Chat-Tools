@@ -25,6 +25,8 @@ using System.Text.Json.Serialization;
 using System.IO;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace XIVChatTools.Services;
 
@@ -34,8 +36,11 @@ public class MessageService : IDisposable
     private readonly Plugin _plugin;
     private readonly List<ChatEntry> _chatEntries;
 
-    private string directoryPath => _plugin.Configuration.MessageLog_FilePath;
-    private string fullFilePath => Path.Combine(_plugin.Configuration.MessageLog_FilePath, _plugin.Configuration.MessageLog_FileName);
+    private Configuration Configuration => _plugin.Configuration;
+    private PluginStateService PluginState => _plugin.PluginState;
+    
+    private string directoryPath => Configuration.MessageLog_FilePath;
+    private string fullFilePath => Path.Combine(Configuration.MessageLog_FilePath, Configuration.MessageLog_FileName);
 
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
@@ -43,10 +48,18 @@ public class MessageService : IDisposable
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
+    private readonly AdvancedDebugLogger? advancedDebugLogger = null;
+
     public MessageService(Plugin plugin)
     {
         _plugin = plugin;
         _chatEntries = TryRestoreChatEntries();
+
+        if (PluginInterface.IsDev)
+        {
+            Logger.Debug("Chat Tools is running in development mode.");
+            advancedDebugLogger = new AdvancedDebugLogger(plugin);
+        }
     }
 
     private List<ChatEntry> TryRestoreChatEntries()
@@ -114,7 +127,47 @@ public class MessageService : IDisposable
 
     }
 
-    public string GetPlayerName()
+    internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
+    {
+        if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
+        {
+            return;
+        }
+
+        var parsedSenderName = ParseSenderName(type, sender);
+
+        if (Configuration.DebugLogging)
+        {
+            ChatDevLogging(type, timestamp, sender, message, parsedSenderName);
+        }
+
+        var watchers = Configuration.MessageLog_Watchers.Split(",");
+        var messageText = message.TextValue;
+
+        if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
+        {
+            try
+            {
+                UIModule.PlayChatSoundEffect(2);
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("Error playing sound via Dalamud.");
+                Logger.Debug(ex.Message);
+            }
+        }
+
+        AddChatMessage(new Models.ChatEntry()
+        {
+            ChatType = type,
+            OwnerId = PluginState.GetPlayerName(),
+            Message = message.TextValue,
+            Timestamp = timestamp,
+            SenderName = parsedSenderName
+        });
+    }
+
+    private string GetPlayerName()
     {
         if (ClientState.LocalPlayer != null)
         {
@@ -126,7 +179,7 @@ public class MessageService : IDisposable
         }
     }
 
-    public List<IPlayerCharacter> GetNearbyPlayers()
+    private List<IPlayerCharacter> GetNearbyPlayers()
     {
         return ObjectTable
           .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
@@ -135,14 +188,14 @@ public class MessageService : IDisposable
           .ToList();
     }
 
-    public List<ChatEntry> GetAllMessages()
+    internal List<ChatEntry> GetAllMessages()
     {
         return this._chatEntries
           .Where(t => t.OwnerId == GetPlayerName())
           .ToList();
     }
 
-    public List<ChatEntry> GetMessagesForFocusTarget()
+    internal List<ChatEntry> GetMessagesForFocusTarget()
     {
         IPlayerCharacter? focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
@@ -157,7 +210,7 @@ public class MessageService : IDisposable
           .ToList();
     }
 
-    public List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
+    internal List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
     {
         return this._chatEntries
           .Where(t => t.OwnerId == GetPlayerName())
@@ -165,7 +218,7 @@ public class MessageService : IDisposable
           .ToList();
     }
 
-    public List<ChatEntry> SearchMessages(string searchText)
+    internal List<ChatEntry> SearchMessages(string searchText)
     {
         if (searchText == string.Empty)
         {
@@ -179,7 +232,7 @@ public class MessageService : IDisposable
             .ToList();
     }
 
-    public void AddChatMessage(ChatEntry chatEntry)
+    private void AddChatMessage(ChatEntry chatEntry)
     {
         this._chatEntries.Add(chatEntry);
 
@@ -189,7 +242,7 @@ public class MessageService : IDisposable
         }
     }
 
-    public void ClearMessageHistory()
+    internal void ClearMessageHistory()
     {
         this._chatEntries.Clear();
     }
@@ -210,6 +263,68 @@ public class MessageService : IDisposable
         catch (Exception ex)
         {
             Logger.Error("An error has occurred while trying to save chat history:" + ex.Message);
+        }
+    }
+
+    private string ParseSenderName(XivChatType type, SeString sender)
+    {
+        Payload? payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
+
+        if (payload is PlayerPayload playerPayload)
+        {
+            return playerPayload.PlayerName;
+        }
+
+        if (type == XivChatType.StandardEmote)
+        {
+            payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
+
+            if (payload is TextPayload textPayload && textPayload.Text != null)
+            {
+                return textPayload.Text;
+            }
+        }
+        else
+        {
+            return PluginState.GetPlayerName();
+        }
+
+        return "N/A|BadType";
+    }
+
+    private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, string parsedSenderName)
+    {
+        if (parsedSenderName == "N/A|BadType")
+        {
+            Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
+            Logger.Error("=======================================================");
+            Logger.Error("Message Type: " + type.ToString());
+            Logger.Error("Raw Sender: " + sender.TextValue);
+            Logger.Error("Parsed Sender: " + parsedSenderName);
+        }
+        else
+        {
+            Logger.Debug("NEW CHAT MESSAGE RECEIVED");
+            Logger.Debug("=======================================================");
+            Logger.Debug("Message Type: " + type.ToString());
+            Logger.Debug("Raw Sender: " + sender.TextValue);
+            Logger.Debug("Parsed Sender: " + parsedSenderName);
+        }
+
+
+        if (PluginInterface.IsDev && advancedDebugLogger != null)
+        {
+            SeString modifiedSender = sender;
+
+            advancedDebugLogger.AddNewMessage(new()
+            {
+                ChatType = type.ToString(),
+                Timestamp = timestamp,
+                TextValue = message.TextValue,
+                ParsedSender = parsedSenderName,
+                Sender = sender,
+                Message = message
+            });
         }
     }
 }

@@ -41,8 +41,6 @@ public class Plugin : IDalamudPlugin
     internal readonly WindowManagerService WindowManagerService;
     internal readonly Configuration Configuration;
 
-    private readonly AdvancedDebugLogger? advancedDebugLogger = null;
-
     private readonly List<string> commandAliases = [
         "/chattools",
         "/ctools",
@@ -65,6 +63,7 @@ public class Plugin : IDalamudPlugin
             PluginState = RegisterService<PluginStateService>();
             MessageService = RegisterService<MessageService>();
             WindowManagerService = RegisterService<WindowManagerService>();
+
             WorldSheet = DataManager.GetExcelSheet<World>()!;
 
             ClientState.Login += OnLogin;
@@ -74,13 +73,7 @@ public class Plugin : IDalamudPlugin
             PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
 
-            ChatGui.ChatMessageUnhandled += OnChatMessageUnhandled;
-
-            if (PluginInterface.IsDev)
-            {
-                Logger.Debug("Chat Tools is running in development mode.");
-                advancedDebugLogger = new AdvancedDebugLogger(this);
-            }
+            ChatGui.ChatMessageUnhandled += MessageService.OnChatMessageUnhandled;
 
             foreach (string commandAlias in commandAliases)
             {
@@ -145,46 +138,6 @@ public class Plugin : IDalamudPlugin
         }
     }
 
-    private void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
-    {
-        if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
-        {
-            return;
-        }
-
-        var parsedSenderName = ParseSenderName(type, sender);
-
-        if (Configuration.DebugLogging)
-        {
-            ChatDevLogging(type, timestamp, sender, message, parsedSenderName);
-        }
-
-        var watchers = Configuration.MessageLog_Watchers.Split(",");
-        var messageText = message.TextValue;
-
-        if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
-        {
-            try
-            {
-                UIModule.PlayChatSoundEffect(2);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("Error playing sound via Dalamud.");
-                Logger.Debug(ex.Message);
-            }
-        }
-
-        MessageService.AddChatMessage(new Models.ChatEntry()
-        {
-            ChatType = type,
-            OwnerId = PluginState.GetPlayerName(),
-            Message = message.TextValue,
-            Timestamp = timestamp,
-            SenderName = parsedSenderName
-        });
-    }
-
     #endregion
 
     public void Dispose()
@@ -196,8 +149,10 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
 
-        ChatGui.ChatMessageUnhandled -= OnChatMessageUnhandled;
+        ChatGui.ChatMessageUnhandled -= MessageService.OnChatMessageUnhandled;
 
+        PluginState?.Dispose();
+        MessageService?.Dispose();
         WindowManagerService?.Dispose();
 
         foreach (string commandAlias in commandAliases)
@@ -234,66 +189,5 @@ public class Plugin : IDalamudPlugin
     private void PostDrawEvents()
     {
 
-    }
-
-    private string ParseSenderName(XivChatType type, SeString sender)
-    {
-        Payload? payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
-
-        if (payload is PlayerPayload playerPayload)
-        {
-            return playerPayload.PlayerName;
-        }
-
-        if (type == XivChatType.StandardEmote)
-        {
-            payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.RawText);
-
-            if (payload is TextPayload textPayload && textPayload.Text != null)
-            {
-                return textPayload.Text;
-            }
-        }
-        else
-        {
-            return PluginState.GetPlayerName();
-        }
-
-        return "N/A|BadType";
-    }
-
-    private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, string parsedSenderName)
-    {
-        if (parsedSenderName == "N/A|BadType")
-        {
-            Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
-            Logger.Error("=======================================================");
-            Logger.Error("Message Type: " + type.ToString());
-            Logger.Error("Raw Sender: " + sender.TextValue);
-            Logger.Error("Parsed Sender: " + parsedSenderName);
-        }
-        else
-        {
-            Logger.Debug("NEW CHAT MESSAGE RECEIVED");
-            Logger.Debug("=======================================================");
-            Logger.Debug("Message Type: " + type.ToString());
-            Logger.Debug("Raw Sender: " + sender.TextValue);
-            Logger.Debug("Parsed Sender: " + parsedSenderName);
-        }
-
-
-        if (PluginInterface.IsDev && advancedDebugLogger != null)
-        {
-            SeString modifiedSender = sender;
-
-            advancedDebugLogger.AddNewMessage(new () {
-                ChatType = type.ToString(),
-                Timestamp = timestamp,
-                TextValue = message.TextValue,
-                ParsedSender = parsedSenderName,
-                Sender = sender,
-                Message = message
-            });
-        }
     }
 }
