@@ -26,7 +26,7 @@ public class SettingsWindow : Window
     private String[] ActiveChannels = [];
 
 
-    internal SettingsWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Chat Tools Settings###ChatToolsSettingsWindow")
+    internal SettingsWindow(Plugin plugin) : base($"Chat Tools Settings###ChatToolsSettingsWindow")
     {
         _plugin = plugin;
 

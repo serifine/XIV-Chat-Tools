@@ -16,7 +16,8 @@ namespace XIVChatTools.UI.Windows;
 public class ToolbarWindow : Window
 {
     private readonly Plugin _plugin;
-    private readonly WindowManagerService _windowManagerService;
+    
+    private WindowManagerService WindowManager => _plugin.WindowManagerService;
 
     private Configuration Configuration => _plugin.Configuration;
     private float Scale => ImGui.GetIO().FontGlobalScale;
@@ -24,10 +25,9 @@ public class ToolbarWindow : Window
     private int selectedWindowType = 0;
     private string[] windowTypes = new string[] { "Watch Target", "Watch Group" };
 
-    internal ToolbarWindow(Plugin plugin, WindowManagerService windowManagerService) : base("Toolbar###ChatToolsToolbar")
+    internal ToolbarWindow(Plugin plugin) : base("Toolbar###ChatToolsToolbar")
     {
         _plugin = plugin;
-        _windowManagerService = windowManagerService;
 
         Size = new Vector2(450 * Scale, 40 * Scale);
         SizeCondition = ImGuiCond.Always;
@@ -90,16 +90,16 @@ public class ToolbarWindow : Window
 
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (117 * Scale));
 
-        if (ImGuiComponents.IconButton(_windowManagerService.MainWindow.IsOpen ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye))
-            _windowManagerService.MainWindow.Toggle();
+        if (ImGuiComponents.IconButton(WindowManager.MainWindow.IsOpen ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye))
+            WindowManager.MainWindow.Toggle();
 
         if (ImGui.IsItemHovered())
-            ImGui.SetTooltip(_windowManagerService.MainWindow.IsOpen ? "Hide Main Window" : "Show Main Window");
+            ImGui.SetTooltip(WindowManager.MainWindow.IsOpen ? "Hide Main Window" : "Show Main Window");
 
         ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Search))
-            _windowManagerService.SearchWindow.Toggle();
+            WindowManager.SearchWindow.Toggle();
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Search Messages");
@@ -115,7 +115,7 @@ public class ToolbarWindow : Window
         ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-            _windowManagerService.SettingsWindow.Toggle();
+            WindowManager.SettingsWindow.Toggle();
 
         if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Settings");

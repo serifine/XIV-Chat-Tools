@@ -51,10 +51,10 @@ public class WindowManagerService : IDisposable
         _plugin = plugin;
         _windowSystem = new(Plugin.Name);
 
-        ToolbarWindow = new(_plugin, this);
-        SearchWindow = new(_plugin, this);
-        SettingsWindow = new(_plugin, this);
-        MainWindow = new(_plugin, this);
+        ToolbarWindow = new(_plugin);
+        SearchWindow = new(_plugin);
+        SettingsWindow = new(_plugin);
+        MainWindow = new(_plugin);
 
         _windowSystem.AddWindow(ToolbarWindow);
         _windowSystem.AddWindow(SearchWindow);

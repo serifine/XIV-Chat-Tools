@@ -17,7 +17,6 @@ namespace XIVChatTools.UI.Windows;
 public class SearchWindow : Window
 {
     private readonly Plugin _plugin;
-    private readonly WindowManagerService _windowManagerService;
     private readonly MessagePanel _messagePanel;
 
     private PluginStateService PluginState => _plugin.PluginState;
@@ -26,10 +25,9 @@ public class SearchWindow : Window
     private List<ChatEntry> searchMessages = [];
     private string searchText = "";
 
-    internal SearchWindow(Plugin plugin, WindowManagerService windowManagerService) : base($"Search###ChatToolsSearchWindow")
+    internal SearchWindow(Plugin plugin) : base($"Search###ChatToolsSearchWindow")
     {
         _plugin = plugin;
-        _windowManagerService = windowManagerService;
         _messagePanel = new(_plugin);
 
         searchMessages = MessageService.GetAllMessages();
