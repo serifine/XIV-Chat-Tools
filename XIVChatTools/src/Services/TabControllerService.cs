@@ -26,24 +26,27 @@ using System.IO;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using System.Collections.ObjectModel;
+using XIVChatTools.Models.Tabs;
 
 namespace XIVChatTools.Services;
 
 [PluginInterface]
-public class PluginStateService : IDisposable
+internal class TabControllerService : IDisposable
 {
     private readonly Plugin _plugin;
+    private readonly List<Tab> _tabs = new();
 
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
-    public event EventHandler? TestEvent;
+    internal event EventHandler? TestEvent;
 
-    public PluginStateService(Plugin plugin)
+    internal TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
+
+        _tabs.Add(new FocusTab("Tessa Elran"));
     }
 
     public void Dispose()
@@ -56,21 +59,41 @@ public class PluginStateService : IDisposable
         TestEvent?.Invoke(this, e);
     }
 
-    public void TriggerTestEvent(string message) {
+    internal void TriggerTestEvent(string message) {
         OnTestEvent(new EventArgs());
     }
 
-    public string GetPlayerName()
+    internal List<FocusTab> GetFocusTabs()
     {
-        return ClientState.LocalPlayer?.Name.TextValue ?? "";
+        return this._tabs.OfType<FocusTab>().ToList();
     }
 
-    public List<IPlayerCharacter> GetNearbyPlayers()
+    internal void AddFocusTabFromTarget()
     {
-        return ObjectTable
-          .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-          .Cast<IPlayerCharacter>()
-          .OrderBy(t => t.Name.TextValue)
-          .ToList();
+        var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
+
+        if (focusTarget != null)
+        {
+            var focusTab = new FocusTab(focusTarget.Name.TextValue);
+
+            this._tabs.Add(focusTab);
+        }
+    }
+
+    internal void AddFocusTab(string name)
+    {
+        var focusTab = new FocusTab(name);
+
+        this._tabs.Add(focusTab);
+    }
+
+    internal void PostDrawEvents()
+    {
+        this._tabs.RemoveAll(t => t.ShouldCloseNextFrame);
+    }
+
+    internal void ClearAllTabs()
+    {
+        this._tabs.Clear();
     }
 }

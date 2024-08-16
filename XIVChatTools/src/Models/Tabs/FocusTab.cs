@@ -11,7 +11,7 @@ internal class FocusTab : Tab
 {
   internal List<string> focusTargets = new List<string>();
 
-  internal FocusTab(string title, string initialTarget) : base(title)
+  internal FocusTab(string initialTarget, string title = "New Watcher") : base(title)
   {
     if (this.focusTargets.Any(t => t == initialTarget) == false)
     {

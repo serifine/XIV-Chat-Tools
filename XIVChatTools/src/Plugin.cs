@@ -39,6 +39,7 @@ public class Plugin : IDalamudPlugin
     internal readonly PluginStateService PluginState;
     internal readonly MessageService MessageService;
     internal readonly WindowManagerService WindowManagerService;
+    internal readonly TabControllerService TabController;
     internal readonly Configuration Configuration;
 
     private readonly List<string> commandAliases = [
@@ -62,6 +63,7 @@ public class Plugin : IDalamudPlugin
 
             PluginState = RegisterService<PluginStateService>();
             MessageService = RegisterService<MessageService>();
+            TabController = RegisterService<TabControllerService>();
             WindowManagerService = RegisterService<WindowManagerService>();
 
             WorldSheet = DataManager.GetExcelSheet<World>()!;
@@ -129,8 +131,8 @@ public class Plugin : IDalamudPlugin
 
     private void OnLogout()
     {
+        TabController.ClearAllTabs();
         WindowManagerService.CloseAllWindows();
-        PluginState.ClearAllFocusTabs();
 
         if (Configuration.MessageLog_PreserveOnLogout == false)
         {
@@ -154,6 +156,7 @@ public class Plugin : IDalamudPlugin
         PluginState?.Dispose();
         MessageService?.Dispose();
         WindowManagerService?.Dispose();
+        TabController?.Dispose();
 
         foreach (string commandAlias in commandAliases)
         {
@@ -188,6 +191,6 @@ public class Plugin : IDalamudPlugin
 
     private void PostDrawEvents()
     {
-
+        TabController.PostDrawEvents();
     }
 }
