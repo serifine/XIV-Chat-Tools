@@ -9,7 +9,7 @@ namespace XIVChatTools.Models.Tabs;
 
 internal class FocusTab : Tab
 {
-  internal List<string> focusTargets = new List<string>();
+  private List<string> focusTargets = new List<string>();
 
   internal FocusTab(string initialTarget, string title = "New Watcher") : base(title)
   {
@@ -21,7 +21,7 @@ internal class FocusTab : Tab
 
   internal List<string> GetFocusTargets()
   {
-    return focusTargets.ToList();
+    return focusTargets;
   }
 
   internal void AddFocusTarget(string name)

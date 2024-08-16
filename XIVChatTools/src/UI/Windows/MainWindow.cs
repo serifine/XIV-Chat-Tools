@@ -27,7 +27,7 @@ public class MainWindow : Window
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
     private IPluginLog Logger => Plugin.Logger;
-    
+
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
     private string comboCurrentValue = "Focus Target";
@@ -75,72 +75,9 @@ public class MainWindow : Window
     {
         if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip))
         {
-            ImGui.Text("Hi");
-            if (ImGui.BeginTabItem("Focus Group 1"))
+            foreach (var tab in TabController.GetFocusTabs())
             {
-                if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
-                {
-                    TabController.GetFocusTabs();
-                    string value = string.Empty;
-                    ImGui.InputTextWithHint("##tabInput", "Rename Window", ref value, 30);
-
-                    ImGui.BeginDisabled();
-                    
-                    if (ImGui.Button("Close"))
-                        ImGui.CloseCurrentPopup();
-
-                    ImGui.EndDisabled();
-                    ImGui.EndPopup();
-                }
-
-                float windowHeight = ImGui.GetContentRegionAvail().Y;
-                float item_height = ImGui.GetTextLineHeightWithSpacing();
-                float item_width = 250f;
-
-                if (ImGui.BeginListBox("##listbox 2", new Vector2(item_width, windowHeight)))
-                {
-                    ImGui.Selectable("Aureliaux Beladieu", false, ImGuiSelectableFlags.None, new Vector2(item_width, item_height));
-                    if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
-                    {
-                        ImGui.MenuItem("Create Watch Tab From Player");
-                        if (ImGui.MenuItem("Remove Player From Group"))
-                        {
-                            ImGui.CloseCurrentPopup();
-                        }
-                        ImGui.EndPopup();
-                    }
-
-                    ImGui.Selectable("Tessa Elran (you)", false, ImGuiSelectableFlags.None, new Vector2(item_width, item_height));
-                    if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
-                    {
-                        ImGui.Text("This a popup 2");
-                        if (ImGui.Button("Close"))
-                            ImGui.CloseCurrentPopup();
-                        ImGui.EndPopup();
-                    }
-
-                    ImGui.Selectable("Item 3", false, ImGuiSelectableFlags.None, new Vector2(item_width, item_height));
-                    // if (ImGui.IsItemHovered()) {
-                    //     ImGui.SetTooltip("Item 3 is hovered");
-                    // }
-
-                    if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
-                    {
-                        ImGui.Text("This a popup");
-                        if (ImGui.Button("Close"))
-                            ImGui.CloseCurrentPopup();
-                        ImGui.EndPopup();
-                    }
-
-                    ImGui.EndListBox();
-                }
-
-                ImGui.SameLine();
-
-                var messages = MessageService.GetAllMessages();
-                _messagePanel.Draw(messages);
-
-                ImGui.EndTabItem();
+                DrawFocusTab(tab);
             }
 
             if (ImGui.BeginTabItem("Current Target"))
@@ -151,6 +88,10 @@ public class MainWindow : Window
 
             ImGui.EndTabItem();
         }
+
+
+
+
         // var currentItem = -1;
 
         // ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
@@ -208,17 +149,57 @@ public class MainWindow : Window
         }
     }
 
-    private void DrawFocusTab(string tabId, FocusTab focusTab)
+    private void DrawFocusTab(FocusTab focusTab)
     {
-        var tabMessages = MessageService.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+        var open = true;
 
-        if (tabMessages.Count > 0)
+        if (ImGui.BeginTabItem(focusTab.Title, ref open))
         {
-            _messagePanel.Draw(tabMessages);
+            float windowHeight = ImGui.GetContentRegionAvail().Y;
+            float item_height = ImGui.GetTextLineHeightWithSpacing();
+            float item_width = 250f;
+
+            if (ImGui.BeginListBox("##WatchTargetBox", new Vector2(item_width, windowHeight)))
+            {
+                foreach (var focusTarget in focusTab.GetFocusTargets())
+                {
+                    ImGui.Selectable(focusTarget, false, ImGuiSelectableFlags.None, new Vector2(item_width, item_height));
+                    if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
+                    {
+                        ImGui.MenuItem("Create Watch Tab From Player");
+                        if (ImGui.MenuItem("Remove Player From Group"))
+                        {
+                            ImGui.CloseCurrentPopup();
+                        }
+                        ImGui.EndPopup();
+                    }
+                }
+
+                ImGui.EndListBox();
+            }
+
+            ImGui.SameLine();
+
+            var messages = MessageService.GetAllMessages();
+            _messagePanel.Draw(messages);
+
+            var tabMessages = MessageService.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
+
+            if (tabMessages.Count > 0)
+            {
+                _messagePanel.Draw(tabMessages);
+            }
+            else
+            {
+                ImGui.Text("No messages to display.");
+            }
+
+            ImGui.EndTabItem();
         }
-        else
+
+        if (!open)
         {
-            ImGui.Text("No messages to display.");
+            focusTab.Close();
         }
     }
 

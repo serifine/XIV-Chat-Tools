@@ -45,8 +45,12 @@ public class TabControllerService : IDisposable
     public TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
+        
+        FocusTab focusTab = new("Aureliaux Beladieu");
 
-        _tabs.Add(new FocusTab("Tessa Elran"));
+        focusTab.AddFocusTarget("Tessa Elran");
+
+        _tabs.Add(focusTab);
     }
 
     public void Dispose()
