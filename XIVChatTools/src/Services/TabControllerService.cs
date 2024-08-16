@@ -31,7 +31,7 @@ using XIVChatTools.Models.Tabs;
 namespace XIVChatTools.Services;
 
 [PluginInterface]
-internal class TabControllerService : IDisposable
+public class TabControllerService : IDisposable
 {
     private readonly Plugin _plugin;
     private readonly List<Tab> _tabs = new();
@@ -42,7 +42,7 @@ internal class TabControllerService : IDisposable
 
     internal event EventHandler? TestEvent;
 
-    internal TabControllerService(Plugin plugin)
+    public TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
 
