@@ -8,14 +8,16 @@ internal class Tab
 {
     internal readonly Guid TabId;
 
+    private string _title { get; set; }
+
     internal bool ShouldCloseNextFrame { get; private set; }
     internal bool IsPoppedOut { get; private set; }
-    internal string Title;
+    internal string Title { get => $"{_title}###{TabId.ToString()}"; set => _title = value; }
 
     internal Tab(string title = "")
     {
         TabId = Guid.NewGuid();
-        Title = title;
+        _title = title;
     }
 
     internal void Close()

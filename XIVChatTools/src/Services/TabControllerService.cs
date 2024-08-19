@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using System.Collections.ObjectModel;
 using XIVChatTools.Models.Tabs;
+using System.Runtime.CompilerServices;
 
 namespace XIVChatTools.Services;
 
@@ -51,6 +52,9 @@ public class TabControllerService : IDisposable
         focusTab.AddFocusTarget("Tessa Elran");
 
         _tabs.Add(focusTab);
+        AddFocusTab("Tessa Elran");
+        AddFocusTab("Aureliaux Beladieu");
+        AddFocusTab("Saya Aikawa");
     }
 
     public void Dispose()
@@ -78,15 +82,17 @@ public class TabControllerService : IDisposable
 
         if (focusTarget != null)
         {
-            var focusTab = new FocusTab(focusTarget.Name.TextValue);
-
-            this._tabs.Add(focusTab);
+            AddFocusTab(focusTarget.Name.TextValue);
         }
     }
 
     internal void AddFocusTab(string name)
     {
-        var focusTab = new FocusTab(name);
+        if (_tabs.Any(t => t.Title == name)) {
+            name = name + " (2)";
+        }
+
+        var focusTab = new FocusTab(name, name);
 
         this._tabs.Add(focusTab);
     }

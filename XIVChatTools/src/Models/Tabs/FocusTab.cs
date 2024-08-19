@@ -21,7 +21,7 @@ internal class FocusTab : Tab
 
   internal List<string> GetFocusTargets()
   {
-    return focusTargets;
+    return focusTargets.ToList();
   }
 
   internal void AddFocusTarget(string name)

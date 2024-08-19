@@ -1,6 +1,7 @@
 
 
 using System.Collections.Generic;
+using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
@@ -23,7 +24,11 @@ public class MessagePanel {
 
     public void Draw(List<ChatEntry> messages)
     {
-        ImGui.BeginChild("Messages");
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(16, 8));
+
+        var contentRegionAvail = ImGui.GetContentRegionAvail();
+
+        ImGui.BeginChild("Messages", new Vector2(contentRegionAvail.X, contentRegionAvail.Y), true, ImGuiWindowFlags.None);
 
         var isChatAtBottom = ImGui.GetScrollY() == ImGui.GetScrollMaxY();
 
@@ -66,6 +71,8 @@ public class MessagePanel {
         }
 
         ImGui.EndChild();
+
+        ImGui.PopStyleVar();
     }
     
     private void SetNameColor(ChatEntry chatEntry)

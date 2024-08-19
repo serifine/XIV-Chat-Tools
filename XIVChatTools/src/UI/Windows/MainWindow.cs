@@ -13,6 +13,7 @@ using ImGuiNET;
 using XIVChatTools.Models;
 using XIVChatTools.Models.Tabs;
 using XIVChatTools.Services;
+using XIVChatTools.UI.Components;
 
 namespace XIVChatTools.UI.Windows;
 
@@ -28,9 +29,7 @@ public class MainWindow : Window
     private MessageService MessageService => _plugin.MessageService;
     private IPluginLog Logger => Plugin.Logger;
 
-    private float Scale => ImGui.GetIO().FontGlobalScale;
-
-    private string comboCurrentValue = "Focus Target";
+    private FocusTabComponent FocusTabComponent;
 
     internal MainWindow(Plugin plugin) : base($"Chat Tools###ChatToolsMainWindow")
     {
@@ -42,6 +41,15 @@ public class MainWindow : Window
         Size = new Vector2(450, 50);
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking;
+        
+        FocusTabComponent = new(plugin);
+    }
+
+    public override void PreDraw()
+    {
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+
+        base.PreDraw();
     }
 
     public override void Draw()
@@ -58,73 +66,32 @@ public class MainWindow : Window
         }
     }
 
-    public override void PreDraw()
-    {
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-
-        base.PreDraw();
-    }
-
     public override void PostDraw()
     {
-
         base.PostDraw();
     }
 
     private void DrawInterface()
     {
-        if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip))
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
+        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
+        if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip | ImGuiTabBarFlags.Reorderable))
         {
-            foreach (var tab in TabController.GetFocusTabs())
-            {
-                DrawFocusTab(tab);
-            }
-
             if (ImGui.BeginTabItem("Current Target"))
             {
                 DrawSelectedTargetTab();
                 ImGui.EndTabItem();
             }
+            
+            foreach (var tab in TabController.GetFocusTabs())
+            {
+                FocusTabComponent.Draw(tab);
+            }
 
-            ImGui.EndTabItem();
+            ImGui.EndTabBar();
         }
-
-
-
-
-        // var currentItem = -1;
-
-        // ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
-
-        // ImGui.ListBox("", ref currentItem, ["Hi", "Hello"], 2, 5);
-
-        // ImGui.PopStyleVar();
-
-
-        // Custom size: use all width, 5 items tall
-
-
-        // ImGui.TabItemButton("Test", ImGuiTabItemFlags.NoCloseWithMiddleMouseButton);
-
-        // DrawSelectedTargetTab();
-        // DrawCustomTab("DefaultCustom");
-
-        // uint dockspaceId = ImGui.GetID("ChatToolsDockspace");
-        // ImGui.DockSpace(dockspaceId);
-
-
-        // foreach (var focusTab in PluginState.GetFocusTabs())
-        // {
-        //     ImGui.SetNextWindowDockID(dockspaceId, ImGuiCond.Appearing);
-        //     if (ImGui.Begin(focusTab.Name, ref focusTab.Open))
-        //     {
-        //         DrawFocusTab(focusTab.FocusTabId.ToString(), focusTab);
-
-        //         ImGui.End();
-        //     }
-        // }
-
-        // PluginState.RemoveClosedFocusTabs();
+        ImGui.PopStyleColor();
+        ImGui.PopStyleVar();
     }
 
     private void DrawSelectedTargetTab()
@@ -148,142 +115,4 @@ public class MainWindow : Window
             ImGui.Text("No messages found for " + focusTarget.Name + ".");
         }
     }
-
-    private void DrawFocusTab(FocusTab focusTab)
-    {
-        var open = true;
-
-        if (ImGui.BeginTabItem(focusTab.Title, ref open))
-        {
-            float windowHeight = ImGui.GetContentRegionAvail().Y;
-            float item_height = ImGui.GetTextLineHeightWithSpacing();
-            float item_width = 250f;
-
-            if (ImGui.BeginListBox("##WatchTargetBox", new Vector2(item_width, windowHeight)))
-            {
-                foreach (var focusTarget in focusTab.GetFocusTargets())
-                {
-                    ImGui.Selectable(focusTarget, false, ImGuiSelectableFlags.None, new Vector2(item_width, item_height));
-                    if (ImGui.BeginPopupContextItem()) // <-- use last item id as popup id
-                    {
-                        ImGui.MenuItem("Create Watch Tab From Player");
-                        if (ImGui.MenuItem("Remove Player From Group"))
-                        {
-                            ImGui.CloseCurrentPopup();
-                        }
-                        ImGui.EndPopup();
-                    }
-                }
-
-                ImGui.EndListBox();
-            }
-
-            ImGui.SameLine();
-
-            var messages = MessageService.GetAllMessages();
-            _messagePanel.Draw(messages);
-
-            var tabMessages = MessageService.GetMessagesByPlayerNames(focusTab.GetFocusTargets());
-
-            if (tabMessages.Count > 0)
-            {
-                _messagePanel.Draw(tabMessages);
-            }
-            else
-            {
-                ImGui.Text("No messages to display.");
-            }
-
-            ImGui.EndTabItem();
-        }
-
-        if (!open)
-        {
-            focusTab.Close();
-        }
-    }
-
-    // private void DrawCustomTab(string tabId)
-    // {
-    //     if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
-    //     {
-    //         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-    //         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-    //         foreach (var name in customWindowFocusTab.GetFocusTargets())
-    //         {
-    //             ImGui.TableNextRow();
-    //             ImGui.TableSetColumnIndex(0);
-
-    //             if (ImGui.SmallButton("Remove##" + tabId + name))
-    //             {
-    //                 customWindowFocusTab.RemoveFocusTarget(name);
-    //             }
-
-    //             ImGui.TableSetColumnIndex(1);
-    //             ImGui.Text(name);
-    //         }
-    //         ImGui.EndTable();
-    //     }
-
-
-    //     ImGui.SameLine(ImGui.GetContentRegionAvail().X - (300 * Scale));
-    //     ImGui.SetNextItemWidth(200);
-    //     if (ImGui.BeginCombo(" ", comboCurrentValue))
-    //     {
-    //         if (ImGui.Selectable("Focus Target"))
-    //         {
-    //             comboCurrentValue = "Focus Target";
-    //         }
-
-    //         if (ImGui.Selectable(PluginState.GetPlayerName() + " (you)"))
-    //         {
-    //             // focusTab.AddFocusTarget(StateRepository.GetPlayerName());
-    //             comboCurrentValue = PluginState.GetPlayerName();
-    //         }
-
-    //         ImGui.Separator();
-
-    //         foreach (var actor in PluginState.GetNearbyPlayers())
-    //         {
-    //             if (ImGui.Selectable(actor.Name.TextValue))
-    //             {
-    //                 comboCurrentValue = actor.Name.TextValue;
-    //             }
-    //         }
-
-    //         ImGui.EndCombo();
-    //     }
-    //     ImGui.SameLine();
-    //     if (ImGui.Button("Add To Group"))
-    //     {
-    //         if (comboCurrentValue == "Focus Target")
-    //         {
-    //             var focusTarget = PluginState.GetCurrentOrMouseoverTarget();
-
-    //             if (focusTarget != null)
-    //             {
-    //                 customWindowFocusTab.AddFocusTarget(focusTarget.Name.TextValue);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             customWindowFocusTab.AddFocusTarget(comboCurrentValue);
-    //         }
-
-    //         comboCurrentValue = "Focus Target";
-    //     }
-
-    //     ImGui.Separator();
-
-    //     var tabMessages = MessageService.GetMessagesByPlayerNames(customWindowFocusTab.GetFocusTargets());
-
-    //     if (tabMessages.Count() > 0)
-    //     {
-    //         _messagePanel.Draw(tabMessages);
-    //     }
-    //     else
-    //     {
-    //         ImGui.Text("No messages to display.");
-    //     }
-    // }
 }

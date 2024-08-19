@@ -18,6 +18,7 @@ public class ToolbarWindow : Window
     private readonly Plugin _plugin;
     
     private WindowManagerService WindowManager => _plugin.WindowManagerService;
+    private TabControllerService TabController => _plugin.TabController;
 
     private Configuration Configuration => _plugin.Configuration;
     private float Scale => ImGui.GetIO().FontGlobalScale;
@@ -78,7 +79,12 @@ public class ToolbarWindow : Window
         ImGui.SameLine();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.PlusCircle)) {
-            // on click
+            var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
+            
+            if (focusTarget != null)
+            {
+                TabController.AddFocusTab(focusTarget.Name.TextValue);
+            }
         }
 
         string addTabTooltip = "";
