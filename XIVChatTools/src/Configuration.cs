@@ -25,6 +25,7 @@ public class Configuration : IPluginConfiguration
     public bool SplitDateAndNames = true;
 
     #region Chat Log Settings
+    public string MessageDb_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
 
     public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
     public string MessageLog_FileName = "ChatLogs.json";

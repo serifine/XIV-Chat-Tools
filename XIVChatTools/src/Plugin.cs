@@ -20,6 +20,10 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using XIVChatTools.Services;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Excel;
+using XIVChatTools.Database;
+using Microsoft.EntityFrameworkCore;
+using XIVChatTools.Database.Models;
+using System.Threading.Tasks;
 
 namespace XIVChatTools;
 
@@ -41,6 +45,7 @@ public class Plugin : IDalamudPlugin
     internal readonly WindowManagerService WindowManagerService;
     internal readonly TabControllerService TabController;
     internal readonly Configuration Configuration;
+    internal readonly ChatToolsDbContext DbContext;
 
     private readonly List<string> commandAliases = [
         "/chattools",
@@ -60,6 +65,8 @@ public class Plugin : IDalamudPlugin
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             // to be removed later
             Configuration.Initialize(PluginInterface);
+
+            DbContext = InitializeDbContext();
 
             PluginState = RegisterService<PluginStateService>();
             MessageService = RegisterService<MessageService>();
@@ -151,7 +158,9 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
 
-        ChatGui.ChatMessageUnhandled -= MessageService.OnChatMessageUnhandled;
+        if (MessageService != null) {
+            ChatGui.ChatMessageUnhandled -= MessageService.OnChatMessageUnhandled;
+        }
 
         PluginState?.Dispose();
         MessageService?.Dispose();
@@ -187,6 +196,18 @@ public class Plugin : IDalamudPlugin
 
             throw;
         }
+    }
+
+    private ChatToolsDbContext InitializeDbContext()
+    {
+        Logger.Debug("Initializing EF Sqllite Database Context");
+        
+        ChatToolsDbContext dbContext = new ChatToolsDbContext(Configuration.MessageDb_FilePath);
+        dbContext.Database.EnsureCreated();
+
+        Logger.Debug("EF Sqllite Database Context Initialized");
+
+        return dbContext;
     }
 
     private void PostDrawEvents()
