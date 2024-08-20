@@ -40,7 +40,7 @@ public class MessageService : IDisposable
     private ChatToolsDbContext _dbContext => _plugin.DbContext;
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
-    
+
     private string directoryPath => Configuration.MessageLog_FilePath;
     private string fullFilePath => Path.Combine(Configuration.MessageLog_FilePath, Configuration.MessageLog_FileName);
 
@@ -111,18 +111,6 @@ public class MessageService : IDisposable
         _dbContext.SaveChanges();
     }
 
-    private string GetPlayerName()
-    {
-        if (ClientState.LocalPlayer != null)
-        {
-            return ClientState.LocalPlayer.Name.TextValue;
-        }
-        else
-        {
-            return "";
-        }
-    }
-
     internal List<Message> GetAllMessages()
     {
         return this._dbContext.Messages
@@ -139,7 +127,7 @@ public class MessageService : IDisposable
 
         return this._dbContext.Messages
           .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => t.SenderName == focusTarget.Name || t.SenderName.StartsWith(focusTarget.Name))
+          .Where(t => t.SenderName == focusTarget.Name)
           .ToList();
     }
 
@@ -147,7 +135,7 @@ public class MessageService : IDisposable
     {
         return this._dbContext.Messages
           .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
+          .Where(t => names.Any(name => t.SenderName == name))
           .ToList();
     }
 
@@ -183,7 +171,7 @@ public class MessageService : IDisposable
                 var result = Helpers.NearbyPlayers.SearchForPlayerByName(textPayload.Text);
             }
         }
-        
+
         return Helpers.PlayerCharacter.GetPlayerIdentifier();
     }
 

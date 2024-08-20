@@ -12,7 +12,8 @@ using XIVChatTools.Services;
 
 namespace XIVChatTools.UI;
 
-public class MessagePanel {
+public class MessagePanel
+{
     private readonly Plugin _plugin;
 
     private Configuration Configuration => _plugin.Configuration;
@@ -40,20 +41,26 @@ public class MessagePanel {
 
             foreach (var chatEntry in messages)
             {
+                string nameAppend = "";
+                string namePrepend = "";
+
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
 
                 SetNameColor(chatEntry);
 
-                if (Configuration.SplitDateAndNames == true)
+                if (chatEntry.ChatType == XivChatType.TellOutgoing)
                 {
-                    ImGui.Text(chatEntry.SenderName);
-                    ImGui.Text(chatEntry.Timestamp.ToShortTimeString());
+                    namePrepend = ">>";
                 }
-                else
+
+                if (chatEntry.ChatType == XivChatType.TellIncoming)
                 {
-                    ImGui.Text(chatEntry.Timestamp.ToShortTimeString() + " " + chatEntry.SenderName + ": ");
+                    nameAppend = ">>";
                 }
+
+                ImGui.Text($"{chatEntry.Timestamp.ToShortTimeString()} {namePrepend}{chatEntry.SenderName}{nameAppend}: ");
+
                 ImGui.PopStyleColor();
 
                 ImGui.TableSetColumnIndex(1);
@@ -75,7 +82,7 @@ public class MessagePanel {
 
         ImGui.PopStyleVar();
     }
-    
+
     private void SetNameColor(Message message)
     {
         if (message.SenderName == Helpers.PlayerCharacter.Name)
