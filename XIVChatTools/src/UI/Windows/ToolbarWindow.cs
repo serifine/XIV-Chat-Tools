@@ -83,7 +83,7 @@ public class ToolbarWindow : Window
             
             if (focusTarget != null)
             {
-                TabController.AddFocusTab(focusTarget.Name.TextValue);
+                TabController.AddFocusTab(focusTarget.Name);
             }
         }
 

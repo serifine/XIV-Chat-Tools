@@ -201,7 +201,7 @@ internal class FocusTabComponent
 
                 if (focusTarget != null)
                 {
-                    focusTab.AddFocusTarget(focusTarget.Name.TextValue);
+                    focusTab.AddFocusTarget(focusTarget.Name);
                 }
             }
             else

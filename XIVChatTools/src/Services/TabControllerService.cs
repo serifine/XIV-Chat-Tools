@@ -82,7 +82,7 @@ public class TabControllerService : IDisposable
 
         if (focusTarget != null)
         {
-            AddFocusTab(focusTarget.Name.TextValue);
+            AddFocusTab(focusTarget.Name);
         }
     }
 

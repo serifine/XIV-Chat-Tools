@@ -188,7 +188,7 @@ public class MessageService : IDisposable
 
     internal List<ChatEntry> GetMessagesForFocusTarget()
     {
-        IPlayerCharacter? focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
+        PlayerIdentifier? focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
         if (focusTarget == null)
         {
@@ -197,7 +197,7 @@ public class MessageService : IDisposable
 
         return this._chatEntries
           .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
-          .Where(t => t.SenderName == focusTarget.Name.TextValue || t.SenderName.StartsWith(focusTarget.Name.TextValue))
+          .Where(t => t.SenderName == focusTarget.Name || t.SenderName.StartsWith(focusTarget.Name))
           .ToList();
     }
 
