@@ -37,7 +37,7 @@ public class AdvancedDebugLogger
     private string fileName => "chat-tools-debug-log.json";
     private string fullFilePath => Path.Combine(directoryPath, fileName);
 
-    private IPluginLog Logger => Plugin.Logger;
+    private IPluginLog _logger => Plugin.Logger;
 
     public AdvancedDebugLogger(Plugin plugin)
     {
@@ -56,7 +56,7 @@ public class AdvancedDebugLogger
             }
             catch (Exception e)
             {
-                Logger.Error(e, "Could not create new chat log directory.");
+                _logger.Error(e, "Could not create new chat log directory.");
             }
         }
 
@@ -68,7 +68,7 @@ public class AdvancedDebugLogger
             }
             catch (Exception e)
             {
-                Logger.Error(e, "Could not create new debug log file.");
+                _logger.Error(e, "Could not create new debug log file.");
             }
         }
     }
@@ -102,7 +102,7 @@ public class AdvancedDebugLogger
         }
         catch (Exception ex)
         {
-            Logger.Error("An error has occurred while trying to update chat log history: " + ex.Message);
+            _logger.Error("An error has occurred while trying to update chat log history: " + ex.Message);
         }
     }
 

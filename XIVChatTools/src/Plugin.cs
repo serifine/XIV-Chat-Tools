@@ -141,11 +141,6 @@ public class Plugin : IDalamudPlugin
     {
         TabController.ClearAllTabs();
         WindowManagerService.CloseAllWindows();
-
-        if (Configuration.MessageLog_PreserveOnLogout == false)
-        {
-            MessageService.ClearMessageHistory();
-        }
     }
 
     #endregion

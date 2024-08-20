@@ -13,14 +13,14 @@ namespace XIVChatTools.Helpers;
 /// </summary>
 internal static class NearbyPlayers
 {
-    private static IObjectTable ObjectTable = Plugin.ObjectTable;
+    private static IObjectTable _objectTable = Plugin.ObjectTable;
 
     /// <summary>
     /// Returns the a list of nearby players.
     /// </summary>
     internal static List<IPlayerCharacter> GetNearbyPlayers()
     {
-        return ObjectTable
+        return _objectTable
           .Where(t => t.Name.TextValue != Helpers.PlayerCharacter.Name && t.ObjectKind == ObjectKind.Player)
           .Cast<IPlayerCharacter>()
           .OrderBy(t => t.Name.TextValue)
@@ -30,16 +30,11 @@ internal static class NearbyPlayers
     /// <summary>
     /// Searches for a specific player from the object table.
     /// </summary>
-    internal static IPlayerCharacter? SearchForPlayer(string playerName, string? world)
+    internal static IPlayerCharacter? SearchForPlayerByName(string playerName)
     {
-        var results = ObjectTable
+        var results = _objectTable
           .Where(t => t.ObjectKind == ObjectKind.Player && t.Name.TextValue != playerName)
           .Cast<IPlayerCharacter>();
-          
-        if (world != null)
-        {
-            results = results.Where(t => t.HomeWorld.GameData != null && t.HomeWorld.GameData.Name == world);
-        }
 
         return results.FirstOrDefault();
     }

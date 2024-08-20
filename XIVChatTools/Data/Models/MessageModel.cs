@@ -14,15 +14,11 @@ public class Message
     [Key]
     public int Id { get; set; }
 
-    public required DateTime Timestamp { get; set; }
-    public required XivChatType MessageType { get; set; }
-    public required string MessageContents { get; set; }
-
     public required Player OwningPlayer { get; set; }
 
     public required string SenderName { get; set; }
     public required string SenderWorld { get; set; }
-    public string? RecipientName { get; set; }
-    public string? RecipientWorld { get; set; }
-
+    public required DateTime Timestamp { get; set; }
+    public required XivChatType ChatType { get; set; }
+    public required string MessageContents { get; set; }
 }

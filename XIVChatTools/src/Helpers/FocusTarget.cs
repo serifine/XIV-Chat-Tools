@@ -11,18 +11,18 @@ namespace XIVChatTools.Helpers;
 /// </summary>
 internal static class FocusTarget
 {
-    private static ITargetManager TargetManager = Plugin.TargetManager;
+    private static ITargetManager _targetManager = Plugin.TargetManager;
 
     /// <summary>
     /// Returns the players current target or mouseover target if it is a player.
     /// </summary>
     internal static PlayerIdentifier? GetTargetedOrHoveredPlayer()
     {
-        IGameObject? focusTarget = TargetManager.Target;
+        IGameObject? focusTarget = _targetManager.Target;
 
         if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
         {
-            focusTarget = TargetManager.MouseOverTarget;
+            focusTarget = _targetManager.MouseOverTarget;
         }
 
         if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)

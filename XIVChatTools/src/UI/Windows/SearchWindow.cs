@@ -9,6 +9,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
 using XIVChatTools.Services;
 
@@ -22,7 +23,7 @@ public class SearchWindow : Window
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
 
-    private List<ChatEntry> searchMessages = [];
+    private List<Message> searchMessages = [];
     private string searchText = "";
 
     internal SearchWindow(Plugin plugin) : base($"Search###ChatToolsSearchWindow")

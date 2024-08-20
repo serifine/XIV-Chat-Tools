@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using XIVChatTools.Database.Models;
 
@@ -28,5 +30,22 @@ public class ChatToolsDbContext : DbContext
         modelBuilder.Entity<Message>()
             .HasOne(e => e.OwningPlayer)
             .WithMany(e => e.OwnedMessages);
+    }
+
+    internal Player GetLoggedInPlayer() {
+        if (Plugin.ClientState.IsLoggedIn == false) {
+            throw new InvalidOperationException("Must be logged in to access logged in player.");
+        }
+
+        var results = this.Players.FirstOrDefault(t => t.Name == Helpers.PlayerCharacter.Name && t.World == Helpers.PlayerCharacter.World);
+
+        if (results != null) {
+            return results;
+        }
+
+        return new Player() {
+            Name = Helpers.PlayerCharacter.Name,
+            World = Helpers.PlayerCharacter.World
+        };
     }
 }

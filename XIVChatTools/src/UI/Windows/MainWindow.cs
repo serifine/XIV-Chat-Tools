@@ -27,7 +27,7 @@ public class MainWindow : Window
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
-    private IPluginLog Logger => Plugin.Logger;
+    private IPluginLog _logger => Plugin.Logger;
 
     private FocusTabComponent FocusTabComponent;
 
@@ -62,7 +62,7 @@ public class MainWindow : Window
         }
         catch (Exception e)
         {
-            Logger.Error(e, "Error drawing Chat Tools window.");
+            _logger.Error(e, "Error drawing Chat Tools window.");
         }
     }
 
@@ -104,7 +104,7 @@ public class MainWindow : Window
             return;
         }
 
-        var messages = MessageService.GetMessagesForFocusTarget();
+        var messages = MessageService.GetMessagesForFocusTarget(focusTarget);
 
         if (messages != null && messages.Count > 0)
         {

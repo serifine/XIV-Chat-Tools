@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using XIVChatTools.Database;
+using XIVChatTools.Database.Models;
 
 namespace XIVChatTools.Services;
 
@@ -34,8 +36,8 @@ namespace XIVChatTools.Services;
 public class MessageService : IDisposable
 {
     private readonly Plugin _plugin;
-    private readonly List<ChatEntry> _chatEntries;
 
+    private ChatToolsDbContext _dbContext => _plugin.DbContext;
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
     
@@ -44,8 +46,6 @@ public class MessageService : IDisposable
 
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
-    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
     private readonly AdvancedDebugLogger? advancedDebugLogger = null;
@@ -53,73 +53,12 @@ public class MessageService : IDisposable
     public MessageService(Plugin plugin)
     {
         _plugin = plugin;
-        _chatEntries = TryRestoreChatEntries();
 
         if (PluginInterface.IsDev)
         {
             Logger.Debug("Chat Tools is running in development mode.");
             advancedDebugLogger = new AdvancedDebugLogger(plugin);
         }
-    }
-
-    private List<ChatEntry> TryRestoreChatEntries()
-    {
-        if (Directory.Exists(directoryPath) == false)
-        {
-            try
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e, "Could not create new chat log directory.");
-            }
-        }
-
-        if (File.Exists(fullFilePath) == false)
-        {
-            try
-            {
-                File.WriteAllLines(fullFilePath, ["[", "", "]"]);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e, "Could not create new chat log file.");
-            }
-        }
-
-        if (_plugin.Configuration.MessageLog_PreserveOnLogout && File.Exists(fullFilePath))
-        {
-            try
-            {
-                var FileResult = File.ReadAllText(fullFilePath);
-                var options = new JsonSerializerOptions
-                {
-                    IncludeFields = true
-                };
-
-                List<ChatEntry> ChatEntries = JsonSerializer.Deserialize<List<ChatEntry>>(FileResult, options) ?? [];
-
-                if (_plugin.Configuration.MessageLog_DeleteOldMessages)
-                {
-                    ChatEntries = ChatEntries
-                      .Where(t => (DateTime.Now - t.DateSent).TotalDays < _plugin.Configuration.MessageLog_DaysToKeepOldMessages)
-                      .ToList();
-                }
-
-                return ChatEntries;
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e, "Could not load Chat Logs.");
-            }
-        }
-        else
-        {
-            Logger.Information("Log file not found.");
-        }
-
-        return [];
     }
 
     public void Dispose()
@@ -134,12 +73,14 @@ public class MessageService : IDisposable
             return;
         }
 
-        var parsedSenderName = ParseSenderName(type, sender);
+        var parsedSender = ParseSender(type, sender);
 
         if (Configuration.DebugLogging)
         {
-            ChatDevLogging(type, timestamp, sender, message, parsedSenderName);
+            ChatDevLogging(type, timestamp, sender, message, parsedSender.Name + "|" + parsedSender.World);
         }
+
+        //todo: split watcher logic into its own method
 
         var watchers = Configuration.MessageLog_Watchers.Split(",");
         var messageText = message.TextValue;
@@ -157,14 +98,17 @@ public class MessageService : IDisposable
             }
         }
 
-        AddChatMessage(new Models.ChatEntry()
+        _dbContext.Messages.Add(new Message()
         {
+            Timestamp = DateTime.Now,
+            MessageContents = message.TextValue,
             ChatType = type,
-            OwnerId = Helpers.PlayerCharacter.Name,
-            Message = message.TextValue,
-            Timestamp = timestamp,
-            SenderName = parsedSenderName
+            OwningPlayer = _dbContext.GetLoggedInPlayer(),
+            SenderName = parsedSender.Name,
+            SenderWorld = parsedSender.World
         });
+
+        _dbContext.SaveChanges();
     }
 
     private string GetPlayerName()
@@ -179,91 +123,55 @@ public class MessageService : IDisposable
         }
     }
 
-    internal List<ChatEntry> GetAllMessages()
+    internal List<Message> GetAllMessages()
     {
-        return this._chatEntries
-          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
+        return this._dbContext.Messages
+          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
           .ToList();
     }
 
-    internal List<ChatEntry> GetMessagesForFocusTarget()
+    internal List<Message> GetMessagesForFocusTarget(PlayerIdentifier focusTarget)
     {
-        PlayerIdentifier? focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
-
         if (focusTarget == null)
         {
             return [];
         }
 
-        return this._chatEntries
-          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
+        return this._dbContext.Messages
+          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
           .Where(t => t.SenderName == focusTarget.Name || t.SenderName.StartsWith(focusTarget.Name))
           .ToList();
     }
 
-    internal List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
+    internal List<Message> GetMessagesByPlayerNames(List<string> names)
     {
-        return this._chatEntries
-          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
+        return this._dbContext.Messages
+          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
           .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
           .ToList();
     }
 
-    internal List<ChatEntry> SearchMessages(string searchText)
+    internal List<Message> SearchMessages(string searchText)
     {
         if (searchText == string.Empty)
         {
-            return this._chatEntries.ToList();
+            return this._dbContext.Messages.ToList();
         }
 
-        return this._chatEntries
+        return this._dbContext.Messages
             .Where(t =>
-                t.Message.ToLower().Contains(searchText.ToLower()) ||
+                t.MessageContents.ToLower().Contains(searchText.ToLower()) ||
                 t.SenderName.ToLower().Contains(searchText.ToLower()))
             .ToList();
     }
 
-    private void AddChatMessage(ChatEntry chatEntry)
-    {
-        this._chatEntries.Add(chatEntry);
-
-        if (_plugin.Configuration.MessageLog_PreserveOnLogout)
-        {
-            PersistMessages();
-        }
-    }
-
-    internal void ClearMessageHistory()
-    {
-        this._chatEntries.Clear();
-    }
-
-    private async void PersistMessages()
-    {
-        try
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                IncludeFields = true
-            };
-            var jsonData = JsonSerializer.Serialize(this._chatEntries.ToArray(), options);
-
-            await File.WriteAllTextAsync(fullFilePath, jsonData);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error("An error has occurred while trying to save chat history:" + ex.Message);
-        }
-    }
-
-    private string ParseSenderName(XivChatType type, SeString sender)
+    private PlayerIdentifier ParseSender(XivChatType type, SeString sender)
     {
         Payload? payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 
         if (payload is PlayerPayload playerPayload)
         {
-            return playerPayload.PlayerName;
+            return new PlayerIdentifier(playerPayload);
         }
 
         if (type == XivChatType.StandardEmote)
@@ -272,15 +180,11 @@ public class MessageService : IDisposable
 
             if (payload is TextPayload textPayload && textPayload.Text != null)
             {
-                return textPayload.Text;
+                var result = Helpers.NearbyPlayers.SearchForPlayerByName(textPayload.Text);
             }
         }
-        else
-        {
-            return Helpers.PlayerCharacter.Name;
-        }
-
-        return "N/A|BadType";
+        
+        return Helpers.PlayerCharacter.GetPlayerIdentifier();
     }
 
     private void ChatDevLogging(XivChatType type, int timestamp, SeString sender, SeString message, string parsedSenderName)

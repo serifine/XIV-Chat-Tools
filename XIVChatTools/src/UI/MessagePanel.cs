@@ -6,6 +6,7 @@ using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using XIVChatTools;
+using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
 using XIVChatTools.Services;
 
@@ -22,7 +23,7 @@ public class MessagePanel {
         _plugin = plugin;
     }
 
-    public void Draw(List<ChatEntry> messages)
+    public void Draw(List<Message> messages)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(16, 8));
 
@@ -47,18 +48,18 @@ public class MessagePanel {
                 if (Configuration.SplitDateAndNames == true)
                 {
                     ImGui.Text(chatEntry.SenderName);
-                    ImGui.Text(chatEntry.DateSent.ToShortTimeString());
+                    ImGui.Text(chatEntry.Timestamp.ToShortTimeString());
                 }
                 else
                 {
-                    ImGui.Text(chatEntry.DateSent.ToShortTimeString() + " " + chatEntry.SenderName + ": ");
+                    ImGui.Text(chatEntry.Timestamp.ToShortTimeString() + " " + chatEntry.SenderName + ": ");
                 }
                 ImGui.PopStyleColor();
 
                 ImGui.TableSetColumnIndex(1);
 
                 SetMessageColor(chatEntry);
-                ImGuiHelpers.SafeTextWrapped(chatEntry.Message);
+                ImGuiHelpers.SafeTextWrapped(chatEntry.MessageContents);
                 ImGui.PopStyleColor();
             }
 
@@ -75,9 +76,9 @@ public class MessagePanel {
         ImGui.PopStyleVar();
     }
     
-    private void SetNameColor(ChatEntry chatEntry)
+    private void SetNameColor(Message message)
     {
-        if (chatEntry.SenderName == Helpers.PlayerCharacter.Name)
+        if (message.SenderName == Helpers.PlayerCharacter.Name)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.CharacterNameColor);
         }
@@ -87,21 +88,21 @@ public class MessagePanel {
         }
     }
 
-    private void SetMessageColor(ChatEntry chatEntry)
+    private void SetMessageColor(Message message)
     {
         if (Configuration.DisableCustomChatColors)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
         }
-        else if (chatEntry.ChatType == XivChatType.CustomEmote || chatEntry.ChatType == XivChatType.StandardEmote)
+        else if (message.ChatType == XivChatType.CustomEmote || message.ChatType == XivChatType.StandardEmote)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.EmoteColor);
         }
-        else if (chatEntry.ChatType == XivChatType.TellIncoming || chatEntry.ChatType == XivChatType.TellOutgoing)
+        else if (message.ChatType == XivChatType.TellIncoming || message.ChatType == XivChatType.TellOutgoing)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.TellColor);
         }
-        else if (chatEntry.ChatType == XivChatType.Party)
+        else if (message.ChatType == XivChatType.Party)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.PartyColor);
         }

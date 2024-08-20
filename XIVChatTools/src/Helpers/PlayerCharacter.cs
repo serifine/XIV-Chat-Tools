@@ -5,6 +5,8 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
+using XIVChatTools.Database;
+using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
 
 namespace XIVChatTools.Helpers;
@@ -26,12 +28,7 @@ internal static class PlayerCharacter
     /// </summary>
     internal static string World => _clientState.LocalPlayer?.HomeWorld.GameData?.Name ?? "";
 
-    internal static PlayerIdentifier? GetPlayerIdentifier() {
-        if (_clientState.LocalPlayer != null)
-        {
-            return new PlayerIdentifier(Name, World);
-        }
-
-        return null;
+    internal static PlayerIdentifier GetPlayerIdentifier() {
+        return new PlayerIdentifier(Name, World);
     }
 }

@@ -19,10 +19,8 @@ internal class FocusTabComponent
     private readonly float Item_Height = 24f;
     private readonly float Item_Width = 250f;
 
-    private PluginStateService PluginState => _plugin.PluginState;
     private TabControllerService TabController => _plugin.TabController;
     private MessageService MessageService => _plugin.MessageService;
-    private IPluginLog Logger => Plugin.Logger;
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
     private string comboCurrentValue = "Focus Target";
