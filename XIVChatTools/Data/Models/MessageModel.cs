@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Dalamud.Game.Text;
 using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Database.Models;
@@ -14,6 +15,7 @@ public class Message
     public int Id { get; set; }
 
     public required DateTime Timestamp { get; set; }
+    public required XivChatType MessageType { get; set; }
     public required string MessageContents { get; set; }
 
     public required Player OwningPlayer { get; set; }
