@@ -35,7 +35,6 @@ public class PluginStateService : IDisposable
     private readonly Plugin _plugin;
 
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
@@ -58,19 +57,5 @@ public class PluginStateService : IDisposable
 
     public void TriggerTestEvent(string message) {
         OnTestEvent(new EventArgs());
-    }
-
-    public string GetPlayerName()
-    {
-        return ClientState.LocalPlayer?.Name.TextValue ?? "";
-    }
-
-    public List<IPlayerCharacter> GetNearbyPlayers()
-    {
-        return ObjectTable
-          .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-          .Cast<IPlayerCharacter>()
-          .OrderBy(t => t.Name.TextValue)
-          .ToList();
     }
 }

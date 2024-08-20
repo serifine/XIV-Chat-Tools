@@ -160,7 +160,7 @@ public class MessageService : IDisposable
         AddChatMessage(new Models.ChatEntry()
         {
             ChatType = type,
-            OwnerId = PluginState.GetPlayerName(),
+            OwnerId = Helpers.PlayerCharacter.Name,
             Message = message.TextValue,
             Timestamp = timestamp,
             SenderName = parsedSenderName
@@ -179,19 +179,10 @@ public class MessageService : IDisposable
         }
     }
 
-    private List<IPlayerCharacter> GetNearbyPlayers()
-    {
-        return ObjectTable
-          .Where(t => t.Name.TextValue != GetPlayerName() && t.ObjectKind == ObjectKind.Player)
-          .Cast<IPlayerCharacter>()
-          .OrderBy(t => t.Name.TextValue)
-          .ToList();
-    }
-
     internal List<ChatEntry> GetAllMessages()
     {
         return this._chatEntries
-          .Where(t => t.OwnerId == GetPlayerName())
+          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
           .ToList();
     }
 
@@ -205,7 +196,7 @@ public class MessageService : IDisposable
         }
 
         return this._chatEntries
-          .Where(t => t.OwnerId == GetPlayerName())
+          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
           .Where(t => t.SenderName == focusTarget.Name.TextValue || t.SenderName.StartsWith(focusTarget.Name.TextValue))
           .ToList();
     }
@@ -213,7 +204,7 @@ public class MessageService : IDisposable
     internal List<ChatEntry> GetMessagesByPlayerNames(List<string> names)
     {
         return this._chatEntries
-          .Where(t => t.OwnerId == GetPlayerName())
+          .Where(t => t.OwnerId == Helpers.PlayerCharacter.Name)
           .Where(t => names.Any(name => t.SenderName == name || t.SenderName.StartsWith(name)))
           .ToList();
     }
@@ -286,7 +277,7 @@ public class MessageService : IDisposable
         }
         else
         {
-            return PluginState.GetPlayerName();
+            return Helpers.PlayerCharacter.Name;
         }
 
         return "N/A|BadType";

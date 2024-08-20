@@ -164,14 +164,14 @@ internal class FocusTabComponent
                 comboCurrentValue = "Focus Target";
             }
 
-            if (ImGui.Selectable(PluginState.GetPlayerName() + " (you)"))
+            if (ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
             {
-                comboCurrentValue = PluginState.GetPlayerName();
+                comboCurrentValue = Helpers.PlayerCharacter.Name;
             }
 
             ImGui.Separator();
 
-            foreach (var actor in PluginState.GetNearbyPlayers())
+            foreach (var actor in Helpers.NearbyPlayers.GetNearbyPlayers())
             {
                 if (ImGui.Selectable(actor.Name.TextValue))
                 {

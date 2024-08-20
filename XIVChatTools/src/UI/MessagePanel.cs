@@ -77,7 +77,7 @@ public class MessagePanel {
     
     private void SetNameColor(ChatEntry chatEntry)
     {
-        if (chatEntry.SenderName == PluginState.GetPlayerName())
+        if (chatEntry.SenderName == Helpers.PlayerCharacter.Name)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, Configuration.CharacterNameColor);
         }
