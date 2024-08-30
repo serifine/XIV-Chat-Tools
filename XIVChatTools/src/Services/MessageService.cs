@@ -33,7 +33,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Services;
 
-internal delegate void MessageAddedHandler(PlayerIdentifier sender, string message);
+internal delegate void MessageAddedHandler(PlayerIdentifier sender, Message message);
 
 [PluginInterface]
 public class MessageService : IDisposable
@@ -67,17 +67,17 @@ public class MessageService : IDisposable
 
     public void Dispose()
     {
-        
+
     }
 
-    private void TriggerMessageAddedEvent(PlayerIdentifier sender, string message)
+    private void TriggerMessageAddedEvent(PlayerIdentifier sender, Message message)
     {
         MessageAdded?.Invoke(sender, message);
     }
 
-    private void OnMessageAdded(PlayerIdentifier sender, string message)
+    private void OnMessageAdded(PlayerIdentifier sender, Message message)
     {
-        keywordWatcher.HandleMessage(message);
+        keywordWatcher.HandleMessage(message.MessageContents);
     }
 
     internal void HandleChatMessage(XivChatType type, int timestamp, SeString sender, SeString message)
@@ -89,26 +89,27 @@ public class MessageService : IDisposable
 
         var parsedSender = ParseSender(type, sender);
 
+        var newMessage = new Message()
+        {
+            Timestamp = DateTime.Now,
+            MessageContents = message.TextValue,
+            ChatType = type,
+            OwningPlayer = _dbContext.GetLoggedInPlayer(),
+            SenderName = parsedSender.Name,
+            SenderWorld = parsedSender.World
+        };
+
         try
         {
-            _dbContext.Messages.Add(new Message()
-            {
-                Timestamp = DateTime.Now,
-                MessageContents = message.TextValue,
-                ChatType = type,
-                OwningPlayer = _dbContext.GetLoggedInPlayer(),
-                SenderName = parsedSender.Name,
-                SenderWorld = parsedSender.World
-            });
-
+            _dbContext.Messages.Add(newMessage);
             _dbContext.SaveChanges();
-
-            TriggerMessageAddedEvent(parsedSender, message.TextValue);
         }
         catch (DbUpdateException ex)
         {
             Logger.Error($"Error saving message to database: {ex.Message}");
         }
+
+        TriggerMessageAddedEvent(parsedSender, newMessage);
 
         if (Configuration.DebugLogging)
         {
@@ -119,8 +120,8 @@ public class MessageService : IDisposable
     internal List<Message> GetAllMessages()
     {
         return this._dbContext.Messages
-          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .ToList();
+            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
+            .ToList();
     }
 
     internal List<Message> GetMessagesForPlayer(PlayerIdentifier player)
@@ -131,17 +132,19 @@ public class MessageService : IDisposable
         }
 
         return this._dbContext.Messages
-          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
-          .ToList();
+            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
+            .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
+            .ToList();
     }
 
     internal List<Message> GetMessagesForPlayers(List<PlayerIdentifier> players)
     {
+        List<string> playerIdentifiers = players.Select(t => $"{t.Name}@{t.World}").ToList();
+
         return this._dbContext.Messages
-          .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => players.Any(player => t.SenderName == player.Name && t.SenderWorld == player.World))
-          .ToList();
+            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
+            .Where(t => playerIdentifiers.Contains(t.SenderName + "@" + t.SenderWorld))
+            .ToList();
     }
 
     internal List<Message> SearchMessages(string searchText)

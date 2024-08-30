@@ -4,47 +4,72 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.Text;
+using XIVChatTools.Database.Models;
+using XIVChatTools.Services;
 
 namespace XIVChatTools.Models.Tabs;
 
 internal class FocusTab : Tab
 {
-    private List<PlayerIdentifier> focusTargets = new List<PlayerIdentifier>();
+    private List<PlayerIdentifier> _focusTargets;
 
-    internal FocusTab(PlayerIdentifier initialTarget, string title = "New Watcher") : base(title)
+    private MessageService _messageService => _plugin.MessageService;
+    
+    internal List<Message> messages = new List<Message>();
+
+    internal FocusTab(Plugin plugin, PlayerIdentifier initialTarget, string title = "New Watcher") : base(plugin, title)
     {
-        if (this.focusTargets.Any(t => t.Equals(initialTarget)) == false)
+        _focusTargets = new List<PlayerIdentifier>() { initialTarget};
+
+        _messageService.MessageAdded += OnMessageAdded;
+
+        UpdateMessagesFromDB();
+    }
+
+    public override void Dispose()
+    {
+        _messageService.MessageAdded -= OnMessageAdded;
+    }
+
+    internal void OnMessageAdded(PlayerIdentifier sender, Message message)
+    {
+        if (_focusTargets.Any(t => t.Equals(sender)))
         {
-            this.focusTargets.Add(initialTarget);
+            messages.Add(message);
         }
+    }
+
+    internal void UpdateMessagesFromDB()
+    {
+        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
     }
 
     internal List<PlayerIdentifier> GetFocusTargets()
     {
-        return focusTargets.ToList();
+        return _focusTargets.ToList();
     }
 
     internal void AddFocusTarget(PlayerIdentifier target)
     {
-        if (this.focusTargets.Any(t => t.Equals(target)) == false)
+        if (this._focusTargets.Any(t => t.Equals(target)) == false)
         {
-            this.focusTargets.Add(target);
+            this._focusTargets.Add(target);
         }
     }
 
     internal void RemoveFocusTarget(PlayerIdentifier target)
     {
-        var selectedTarget = this.focusTargets.FirstOrDefault(t => t.Equals(target));
+        var selectedTarget = this._focusTargets.FirstOrDefault(t => t.Equals(target));
 
         if (selectedTarget != null)
         {
-            this.focusTargets.Remove(selectedTarget);
+            this._focusTargets.Remove(selectedTarget);
         }
     }
 
     internal bool IsPlayerAdded(PlayerIdentifier target)
     {
-        return this.focusTargets.Any(t => t.Equals(target));
+        return this._focusTargets.Any(t => t.Equals(target));
     }
 }
 

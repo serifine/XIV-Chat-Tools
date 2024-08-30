@@ -69,18 +69,25 @@ public class TabControllerService : IDisposable
     {
         string tabName = target.Name;
 
-        if (_tabs.Any(t => t.Title == tabName)) {
+        if (_tabs.Any(t => t.Title == tabName))
+        {
             tabName = $"{tabName} (2)";
         }
 
-        var focusTab = new FocusTab(target, tabName);
+        var focusTab = new FocusTab(_plugin, target, tabName);
 
         this._tabs.Add(focusTab);
     }
 
     internal void PostDrawEvents()
     {
-        this._tabs.RemoveAll(t => t.ShouldCloseNextFrame);
+        List<Tab> tabsToClose = this._tabs.FindAll(t => t.ShouldCloseNextFrame);
+
+        foreach (var tab in tabsToClose)
+        {
+            tab.Dispose();
+            this._tabs.Remove(tab);
+        }
     }
 
     internal void ClearAllTabs()

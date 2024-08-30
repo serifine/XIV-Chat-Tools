@@ -21,7 +21,6 @@ internal class FocusTabComponent
     private readonly float Item_Width = 250f;
 
     private TabControllerService TabController => _plugin.TabController;
-    private MessageService MessageService => _plugin.MessageService;
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
     private PlayerIdentifier comboCurrentValue = new PlayerIdentifier("Focus Target", "");
@@ -62,11 +61,10 @@ internal class FocusTabComponent
                 }
 
                 ImGui.TableSetColumnIndex(1);
-                var tabMessages = MessageService.GetMessagesForPlayers(focusTargets);
-
-                if (tabMessages.Count > 0)
+                
+                if (focusTab.messages.Count > 0)
                 {
-                    _messagePanel.Draw(tabMessages);
+                    _messagePanel.Draw(focusTab.messages);
                 }
                 else
                 {
