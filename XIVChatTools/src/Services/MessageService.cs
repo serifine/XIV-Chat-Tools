@@ -58,6 +58,7 @@ public class MessageService : IDisposable
     public MessageService(Plugin plugin)
     {
         _plugin = plugin;
+        MessageAdded += OnMessageAdded;
 
         if (PluginInterface.IsDev)
         {
@@ -68,7 +69,7 @@ public class MessageService : IDisposable
 
     public void Dispose()
     {
-
+        
     }
 
     private void TriggerMessageAddedEvent(PlayerIdentifier sender, string message)
@@ -76,25 +77,20 @@ public class MessageService : IDisposable
         MessageAdded?.Invoke(sender, message);
     }
 
-    internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
+    private void OnMessageAdded(PlayerIdentifier sender, string message)
     {
-        if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
+        HandleWatchers(message);
+    }
+
+    private void HandleWatchers(string message) {
+        if (Configuration.MessageLog_Watchers.Trim() == "")
         {
             return;
         }
 
-        var parsedSender = ParseSender(type, sender);
+        IEnumerable<string> watchers = Configuration.MessageLog_Watchers.Split(",");
 
-        if (Configuration.DebugLogging)
-        {
-            ChatDevLogging(type, timestamp, sender, message, parsedSender.Name + "|" + parsedSender.World);
-        }
-
-        //todo: split watcher logic into its own method
-        var watchers = Configuration.MessageLog_Watchers.Split(",");
-        var messageText = message.TextValue;
-
-        if (Configuration.MessageLog_Watchers.Trim() != "" && watchers.Any(t => messageText.ToLower().Contains(t.ToLower().Trim())))
+        if (watchers.Any(t => message.ToLower().Contains(t.ToLower().Trim())))
         {
             try
             {
@@ -106,6 +102,16 @@ public class MessageService : IDisposable
                 Logger.Debug(ex.Message);
             }
         }
+    }
+
+    internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
+    {
+        if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
+        {
+            return;
+        }
+
+        var parsedSender = ParseSender(type, sender);
 
         try
         {
@@ -126,6 +132,11 @@ public class MessageService : IDisposable
         catch (DbUpdateException ex)
         {
             Logger.Error($"Error saving message to database: {ex.Message}");
+        }
+
+        if (Configuration.DebugLogging)
+        {
+            ChatDevLogging(type, timestamp, sender, message, parsedSender.Name + "|" + parsedSender.World);
         }
     }
 
