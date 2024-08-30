@@ -23,7 +23,7 @@ internal class FocusTab : Tab
 
         _messageService.MessageAdded += OnMessageAdded;
 
-        UpdateMessagesFromDB();
+        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
     }
 
     public override void Dispose()
@@ -37,11 +37,6 @@ internal class FocusTab : Tab
         {
             messages.Add(message);
         }
-    }
-
-    internal void UpdateMessagesFromDB()
-    {
-        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
     }
 
     internal List<PlayerIdentifier> GetFocusTargets()
