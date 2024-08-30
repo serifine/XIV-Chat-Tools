@@ -34,9 +34,9 @@ public class PluginStateService : IDisposable
 {
     private readonly Plugin _plugin;
 
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
+    private IClientState ClientState => Plugin.ClientState;
+    private ITargetManager TargetManager => Plugin.TargetManager;
+    private IPluginLog Logger => Plugin.Logger;
 
     public PluginStateService(Plugin plugin)
     {
