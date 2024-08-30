@@ -37,8 +37,6 @@ public class TabControllerService : IDisposable
     private readonly Plugin _plugin;
     private readonly List<Tab> _tabs = new();
 
-    internal event EventHandler? TestEvent;
-
     public TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
@@ -56,15 +54,6 @@ public class TabControllerService : IDisposable
     public void Dispose()
     {
 
-    }
-
-    protected void OnTestEvent(EventArgs e)
-    {
-        TestEvent?.Invoke(this, e);
-    }
-
-    internal void TriggerTestEvent(string message) {
-        OnTestEvent(new EventArgs());
     }
 
     internal List<FocusTab> GetFocusTabs()
