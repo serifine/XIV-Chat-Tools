@@ -69,10 +69,10 @@ public class Plugin : IDalamudPlugin
 
             DbContext = InitializeDbContext();
 
-            PluginState = RegisterService<PluginStateService>();
-            MessageService = RegisterService<MessageService>();
-            TabController = RegisterService<TabControllerService>();
-            WindowManagerService = RegisterService<WindowManagerService>();
+            PluginState = new PluginStateService(this);
+            MessageService = new MessageService(this);
+            TabController = new TabControllerService(this);
+            WindowManagerService = new WindowManagerService(this);
 
             WorldSheet = DataManager.GetExcelSheet<World>()!;
 
@@ -169,28 +169,6 @@ public class Plugin : IDalamudPlugin
             {
                 CommandManager.RemoveHandler(commandAlias);
             }
-        }
-    }
-
-    private T RegisterService<T>() where T : class
-    {
-        try
-        {
-            var service = PluginInterface.Create<T>(this);
-
-            if (service == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            return service;
-        }
-        catch (Exception ex)
-        {
-            Logger.Error($"Fatal Error - Failed to create service: {typeof(T).Name}");
-            Logger.Error(ex, ex.Message);
-
-            throw;
         }
     }
 
