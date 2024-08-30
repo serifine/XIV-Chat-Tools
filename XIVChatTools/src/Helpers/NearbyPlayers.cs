@@ -21,7 +21,6 @@ internal static class NearbyPlayers
     /// </summary>
     internal static List<IPlayerCharacter> GetNearbyPlayers()
     {
-        _logger.Verbose("Getting nearby players");
         return _objectTable
           .Where(t => t.Name.TextValue != Helpers.PlayerCharacter.Name && t.ObjectKind == ObjectKind.Player)
           .Cast<IPlayerCharacter>()
@@ -34,7 +33,6 @@ internal static class NearbyPlayers
     /// </summary>
     internal static IPlayerCharacter? SearchForPlayerByName(string playerName)
     {
-        _logger.Verbose($"Searching for player: {playerName}");
         var results = _objectTable
           .Where(t => t.ObjectKind == ObjectKind.Player && t.Name.TextValue != playerName)
           .Cast<IPlayerCharacter>();
