@@ -61,7 +61,7 @@ internal class FocusTabComponent
                 }
 
                 ImGui.TableSetColumnIndex(1);
-                
+
                 if (focusTab.messages.Count > 0)
                 {
                     _messagePanel.Draw(focusTab.messages);
@@ -122,10 +122,11 @@ internal class FocusTabComponent
             {
                 string focusTargetName = focusTarget.Name;
 
-                if (focusTargets.Count(t => t.Name == focusTargetName) > 1) {
+                if (focusTargets.Count(t => t.Name == focusTargetName) > 1)
+                {
                     focusTargetName += $" ({focusTarget.World})";
                 }
-                
+
                 ImGui.Selectable(focusTargetName, false, ImGuiSelectableFlags.None, new Vector2(Item_Width, Item_Height));
                 if (ImGui.BeginPopupContextItem())
                 {
@@ -165,13 +166,18 @@ internal class FocusTabComponent
                 comboCurrentValue = Helpers.PlayerCharacter.GetPlayerIdentifier();
             }
 
-            ImGui.Separator();
+            var nearbyPlayers = Helpers.NearbyPlayers.GetNearbyPlayers();
 
-            foreach (var actor in Helpers.NearbyPlayers.GetNearbyPlayers())
+            if (nearbyPlayers.Count > 0)
             {
-                if (ImGui.Selectable(actor.Name.TextValue))
+                ImGui.Separator();
+
+                foreach (var actor in nearbyPlayers)
                 {
-                    comboCurrentValue = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.GameData?.Name ?? "Unknown World");
+                    if (ImGui.Selectable(actor.Name.TextValue))
+                    {
+                        comboCurrentValue = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.GameData?.Name ?? "Unknown World");
+                    }
                 }
             }
 
