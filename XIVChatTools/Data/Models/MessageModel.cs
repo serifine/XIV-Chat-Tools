@@ -15,7 +15,7 @@ public class Message
     public int Id { get; set; }
 
     public required Player OwningPlayer { get; set; }
-
+ 
     public required string SenderName { get; set; }
     public required string SenderWorld { get; set; }
     public required DateTime Timestamp { get; set; }

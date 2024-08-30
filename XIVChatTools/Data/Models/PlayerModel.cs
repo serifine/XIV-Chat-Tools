@@ -15,7 +15,5 @@ public class Player
     public required string Name { get; set; }
     public required string World { get; set; }
 
-    public ICollection<Message> SentMessages { get; set; } = new List<Message>();
-    public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     public ICollection<Message> OwnedMessages { get; set; } = new List<Message>();
 }

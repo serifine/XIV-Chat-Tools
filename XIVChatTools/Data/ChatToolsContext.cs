@@ -21,7 +21,7 @@ public class ChatToolsDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.LogTo(message => Plugin.Logger.Verbose(message), Microsoft.Extensions.Logging.LogLevel.Debug);
+        // optionsBuilder.LogTo(message => Plugin.Logger.Verbose(message), Microsoft.Extensions.Logging.LogLevel.Debug);
         optionsBuilder.UseSqlite($"Data Source={SqlLiteDbPath}");
     }
 
