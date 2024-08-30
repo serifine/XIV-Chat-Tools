@@ -83,7 +83,7 @@ public class Plugin : IDalamudPlugin
             PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
 
-            ChatGui.ChatMessageUnhandled += MessageService.OnChatMessageUnhandled;
+            ChatGui.ChatMessageUnhandled += MessageService.HandleChatMessage;
 
             foreach (string commandAlias in commandAliases)
             {
@@ -155,7 +155,7 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
 
         if (MessageService != null) {
-            ChatGui.ChatMessageUnhandled -= MessageService.OnChatMessageUnhandled;
+            ChatGui.ChatMessageUnhandled -= MessageService.HandleChatMessage;
         }
 
         PluginState?.Dispose();

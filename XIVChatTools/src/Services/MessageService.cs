@@ -85,7 +85,7 @@ public class MessageService : IDisposable
         keywordWatcher.HandleMessage(message);
     }
 
-    internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
+    internal void HandleChatMessage(XivChatType type, int timestamp, SeString sender, SeString message)
     {
         if (Constants.ChatTypes.IsSupportedChatType(type) == false || !Configuration.ActiveChannels.Any(t => t == type))
         {
