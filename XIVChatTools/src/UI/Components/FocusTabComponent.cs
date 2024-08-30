@@ -76,13 +76,6 @@ internal class FocusTabComponent
                 ImGui.EndTable();
             }
 
-
-            // ImGui.SameLine();
-
-            // var messages = MessageService.GetAllMessages();
-            // _messagePanel.Draw(messages);
-
-
             ImGui.EndTabItem();
         }
 
