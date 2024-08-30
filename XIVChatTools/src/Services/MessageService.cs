@@ -29,6 +29,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using XIVChatTools.Database;
 using XIVChatTools.Database.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Services;
 
@@ -98,17 +99,24 @@ public class MessageService : IDisposable
             }
         }
 
-        _dbContext.Messages.Add(new Message()
+        try
         {
-            Timestamp = DateTime.Now,
-            MessageContents = message.TextValue,
-            ChatType = type,
-            OwningPlayer = _dbContext.GetLoggedInPlayer(),
-            SenderName = parsedSender.Name,
-            SenderWorld = parsedSender.World
-        });
+            _dbContext.Messages.Add(new Message()
+            {
+                Timestamp = DateTime.Now,
+                MessageContents = message.TextValue,
+                ChatType = type,
+                OwningPlayer = _dbContext.GetLoggedInPlayer(),
+                SenderName = parsedSender.Name,
+                SenderWorld = parsedSender.World
+            });
 
-        _dbContext.SaveChanges();
+            _dbContext.SaveChanges();
+        }
+        catch (DbUpdateException ex)
+        {
+            Logger.Error($"Error saving message to database: {ex.Message}");
+        }
     }
 
     internal List<Message> GetAllMessages()
