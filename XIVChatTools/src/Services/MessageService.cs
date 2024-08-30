@@ -45,14 +45,9 @@ public class MessageService : IDisposable
     private ChatToolsDbContext _dbContext => _plugin.DbContext;
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
-
-    private string directoryPath => Configuration.MessageLog_FilePath;
-    private string fullFilePath => Path.Combine(Configuration.MessageLog_FilePath, Configuration.MessageLog_FileName);
-
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
-
+    private IDalamudPluginInterface PluginInterface => Plugin.PluginInterface;
+    private IClientState ClientState => Plugin.ClientState;
+    private IPluginLog Logger => Plugin.Logger;
 
     internal event MessageAddedHandler? MessageAdded;
 
