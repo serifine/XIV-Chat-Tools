@@ -38,8 +38,6 @@ public class PluginStateService : IDisposable
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
-    public event EventHandler? TestEvent;
-
     public PluginStateService(Plugin plugin)
     {
         _plugin = plugin;
@@ -48,14 +46,5 @@ public class PluginStateService : IDisposable
     public void Dispose()
     {
 
-    }
-
-    protected void OnTestEvent(EventArgs e)
-    {
-        TestEvent?.Invoke(this, e);
-    }
-
-    public void TriggerTestEvent(string message) {
-        OnTestEvent(new EventArgs());
     }
 }
