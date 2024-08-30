@@ -33,6 +33,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Services;
 
+internal delegate void MessageAddedHandler(PlayerIdentifier sender, string message);
+
 [PluginInterface]
 public class MessageService : IDisposable
 {
@@ -51,6 +53,8 @@ public class MessageService : IDisposable
 
     private readonly AdvancedDebugLogger? advancedDebugLogger = null;
 
+    internal event MessageAddedHandler? MessageAdded;
+
     public MessageService(Plugin plugin)
     {
         _plugin = plugin;
@@ -65,6 +69,11 @@ public class MessageService : IDisposable
     public void Dispose()
     {
 
+    }
+
+    private void TriggerMessageAddedEvent(PlayerIdentifier sender, string message)
+    {
+        MessageAdded?.Invoke(sender, message);
     }
 
     internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
@@ -82,7 +91,6 @@ public class MessageService : IDisposable
         }
 
         //todo: split watcher logic into its own method
-
         var watchers = Configuration.MessageLog_Watchers.Split(",");
         var messageText = message.TextValue;
 
@@ -112,6 +120,8 @@ public class MessageService : IDisposable
             });
 
             _dbContext.SaveChanges();
+
+            TriggerMessageAddedEvent(parsedSender, message.TextValue);
         }
         catch (DbUpdateException ex)
         {
