@@ -37,10 +37,6 @@ public class TabControllerService : IDisposable
     private readonly Plugin _plugin;
     private readonly List<Tab> _tabs = new();
 
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
-
     internal event EventHandler? TestEvent;
 
     public TabControllerService(Plugin plugin)
