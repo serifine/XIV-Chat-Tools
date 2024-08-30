@@ -121,6 +121,7 @@ public class MessageService : IDisposable
     {
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
+            .AsNoTracking()
             .ToList();
     }
 
@@ -134,6 +135,7 @@ public class MessageService : IDisposable
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
             .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
+            .AsNoTracking()
             .ToList();
     }
 
@@ -144,6 +146,7 @@ public class MessageService : IDisposable
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
             .Where(t => playerIdentifiers.Contains(t.SenderName + "@" + t.SenderWorld))
+            .AsNoTracking()
             .ToList();
     }
 
