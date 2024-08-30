@@ -123,24 +123,24 @@ public class MessageService : IDisposable
           .ToList();
     }
 
-    internal List<Message> GetMessagesForFocusTarget(PlayerIdentifier focusTarget)
+    internal List<Message> GetMessagesForPlayer(PlayerIdentifier player)
     {
-        if (focusTarget == null)
+        if (player == null)
         {
             return [];
         }
 
         return this._dbContext.Messages
           .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => t.SenderName == focusTarget.Name)
+          .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
           .ToList();
     }
 
-    internal List<Message> GetMessagesByPlayerNames(List<string> names)
+    internal List<Message> GetMessagesForPlayers(List<PlayerIdentifier> players)
     {
         return this._dbContext.Messages
           .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-          .Where(t => names.Any(name => t.SenderName == name))
+          .Where(t => players.Any(player => t.SenderName == player.Name && t.SenderWorld == player.World))
           .ToList();
     }
 

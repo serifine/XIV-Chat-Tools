@@ -104,7 +104,7 @@ public class MainWindow : Window
             return;
         }
 
-        var messages = MessageService.GetMessagesForFocusTarget(focusTarget);
+        var messages = MessageService.GetMessagesForPlayer(focusTarget);
 
         if (messages != null && messages.Count > 0)
         {

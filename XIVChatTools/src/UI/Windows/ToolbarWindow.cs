@@ -83,8 +83,8 @@ public class ToolbarWindow : Window
             
             if (focusTarget != null)
             {
-                TabController.AddFocusTab(focusTarget.Name);
-            }
+                TabController.AddFocusTab(focusTarget);
+            } 
         }
 
         string addTabTooltip = "";

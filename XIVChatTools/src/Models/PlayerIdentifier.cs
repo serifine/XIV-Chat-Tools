@@ -31,4 +31,9 @@ internal class PlayerIdentifier
         Name = name;
         World = world;
     }
+
+    public bool Equals(PlayerIdentifier other)
+    {
+        return Name == other.Name && World == other.World;
+    }
 }

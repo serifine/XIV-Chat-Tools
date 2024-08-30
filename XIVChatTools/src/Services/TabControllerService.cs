@@ -40,15 +40,9 @@ public class TabControllerService : IDisposable
     public TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
-        
-        FocusTab focusTab = new("Aureliaux Beladieu");
 
-        focusTab.AddFocusTarget("Tessa Elran");
-
-        _tabs.Add(focusTab);
-        AddFocusTab("Tessa Elran");
-        AddFocusTab("Aureliaux Beladieu");
-        AddFocusTab("Saya Aikawa");
+        var player = Helpers.PlayerCharacter.GetPlayerIdentifier();
+        AddFocusTab(player);
     }
 
     public void Dispose()
@@ -67,17 +61,19 @@ public class TabControllerService : IDisposable
 
         if (focusTarget != null)
         {
-            AddFocusTab(focusTarget.Name);
+            AddFocusTab(focusTarget);
         }
     }
 
-    internal void AddFocusTab(string name)
+    internal void AddFocusTab(PlayerIdentifier target)
     {
-        if (_tabs.Any(t => t.Title == name)) {
-            name = name + " (2)";
+        string tabName = target.Name;
+
+        if (_tabs.Any(t => t.Title == tabName)) {
+            tabName = $"{tabName} (2)";
         }
 
-        var focusTab = new FocusTab(name, name);
+        var focusTab = new FocusTab(target, tabName);
 
         this._tabs.Add(focusTab);
     }

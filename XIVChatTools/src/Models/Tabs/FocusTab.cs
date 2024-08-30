@@ -9,41 +9,43 @@ namespace XIVChatTools.Models.Tabs;
 
 internal class FocusTab : Tab
 {
-  private List<string> focusTargets = new List<string>();
+    private List<PlayerIdentifier> focusTargets = new List<PlayerIdentifier>();
 
-  internal FocusTab(string initialTarget, string title = "New Watcher") : base(title)
-  {
-    if (this.focusTargets.Any(t => t == initialTarget) == false)
+    internal FocusTab(PlayerIdentifier initialTarget, string title = "New Watcher") : base(title)
     {
-      this.focusTargets.Add(initialTarget);
+        if (this.focusTargets.Any(t => t.Equals(initialTarget)) == false)
+        {
+            this.focusTargets.Add(initialTarget);
+        }
     }
-  }
 
-  internal List<string> GetFocusTargets()
-  {
-    return focusTargets.ToList();
-  }
-
-  internal void AddFocusTarget(string name)
-  {
-    if (this.focusTargets.Any(t => t == name) == false)
+    internal List<PlayerIdentifier> GetFocusTargets()
     {
-      this.focusTargets.Add(name);
+        return focusTargets.ToList();
     }
-  }
 
-  internal void RemoveFocusTarget(string name)
-  {
-    if (this.focusTargets.Any(t => t == name))
+    internal void AddFocusTarget(PlayerIdentifier target)
     {
-      this.focusTargets.Remove(name);
+        if (this.focusTargets.Any(t => t.Equals(target)) == false)
+        {
+            this.focusTargets.Add(target);
+        }
     }
-  }
 
-  internal bool IsPlayerAdded(string name)
-  {
-    return this.focusTargets.Any(t => t == name);
-  }
+    internal void RemoveFocusTarget(PlayerIdentifier target)
+    {
+        var selectedTarget = this.focusTargets.FirstOrDefault(t => t.Equals(target));
+
+        if (selectedTarget != null)
+        {
+            this.focusTargets.Remove(selectedTarget);
+        }
+    }
+
+    internal bool IsPlayerAdded(PlayerIdentifier target)
+    {
+        return this.focusTargets.Any(t => t.Equals(target));
+    }
 }
 
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using XIVChatTools.Models;
 using XIVChatTools.Models.Tabs;
 using XIVChatTools.Services;
 
@@ -23,7 +24,7 @@ internal class FocusTabComponent
     private MessageService MessageService => _plugin.MessageService;
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
-    private string comboCurrentValue = "Focus Target";
+    private PlayerIdentifier comboCurrentValue = new PlayerIdentifier("Focus Target", "");
 
     public FocusTabComponent(Plugin plugin)
     {
@@ -61,7 +62,7 @@ internal class FocusTabComponent
                 }
 
                 ImGui.TableSetColumnIndex(1);
-                var tabMessages = MessageService.GetMessagesByPlayerNames(focusTargets);
+                var tabMessages = MessageService.GetMessagesForPlayers(focusTargets);
 
                 if (tabMessages.Count > 0)
                 {
@@ -93,14 +94,14 @@ internal class FocusTabComponent
         }
     }
 
-    private void DrawFocusTargetHeader(FocusTab focusTab, List<string> focusTargets)
+    private void DrawFocusTargetHeader(FocusTab focusTab, List<PlayerIdentifier> focusTargets)
     {
         if (focusTargets.Count != 1)
         {
             return;
         }
 
-        string tabFocusTarget = focusTargets.First();
+        PlayerIdentifier tabFocusTarget = focusTargets.First();
 
         ImGui.BeginChild("##FocusTabHeader", new Vector2(ImGui.GetContentRegionAvail().X, 40 * Scale), true, ImGuiWindowFlags.NoScrollbar);
 
@@ -115,7 +116,7 @@ internal class FocusTabComponent
         ImGui.Separator();
     }
 
-    private void FocusWatchList(FocusTab focusTab, List<string> focusTargets)
+    private void FocusWatchList(FocusTab focusTab, List<PlayerIdentifier> focusTargets)
     {
         if (focusTargets.Count <= 1)
         {
@@ -128,7 +129,13 @@ internal class FocusTabComponent
         {
             foreach (var focusTarget in focusTab.GetFocusTargets())
             {
-                ImGui.Selectable(focusTarget, false, ImGuiSelectableFlags.None, new Vector2(Item_Width, Item_Height));
+                string focusTargetName = focusTarget.Name;
+
+                if (focusTargets.Count(t => t.Name == focusTargetName) > 1) {
+                    focusTargetName += $" ({focusTarget.World})";
+                }
+                
+                ImGui.Selectable(focusTargetName, false, ImGuiSelectableFlags.None, new Vector2(Item_Width, Item_Height));
                 if (ImGui.BeginPopupContextItem())
                 {
                     if (ImGui.MenuItem("Create Watch Tab From Player"))
@@ -155,16 +162,16 @@ internal class FocusTabComponent
     {
 
         ImGui.SetNextItemWidth(193);
-        if (ImGui.BeginCombo(" ", comboCurrentValue))
+        if (ImGui.BeginCombo(" ", comboCurrentValue.Name))
         {
             if (ImGui.Selectable("Focus Target"))
             {
-                comboCurrentValue = "Focus Target";
+                comboCurrentValue = new PlayerIdentifier("Focus Target", "");
             }
 
             if (ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
             {
-                comboCurrentValue = Helpers.PlayerCharacter.Name;
+                comboCurrentValue = Helpers.PlayerCharacter.GetPlayerIdentifier();
             }
 
             ImGui.Separator();
@@ -173,7 +180,7 @@ internal class FocusTabComponent
             {
                 if (ImGui.Selectable(actor.Name.TextValue))
                 {
-                    comboCurrentValue = actor.Name.TextValue;
+                    comboCurrentValue = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.GameData?.Name ?? "Unknown World");
                 }
             }
 
@@ -181,11 +188,13 @@ internal class FocusTabComponent
         }
     }
 
-    private void DrawFocusTargetDisplay(string focusTarget)
+    private void DrawFocusTargetDisplay(PlayerIdentifier focusTarget)
     {
+        string name = focusTarget.Name;
+
         ImGui.BeginDisabled();
         ImGui.SetNextItemWidth(200);
-        ImGui.InputText("", ref focusTarget, 60);
+        ImGui.InputText("", ref name, 60);
         ImGui.EndDisabled();
     }
 
@@ -193,13 +202,13 @@ internal class FocusTabComponent
     {
         if (ImGui.Button(label, new Vector2(width * Scale, 0)))
         {
-            if (comboCurrentValue == "Focus Target")
+            if (comboCurrentValue.Name == "Focus Target")
             {
                 var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
                 if (focusTarget != null)
                 {
-                    focusTab.AddFocusTarget(focusTarget.Name);
+                    focusTab.AddFocusTarget(focusTarget);
                 }
             }
             else
@@ -207,7 +216,7 @@ internal class FocusTabComponent
                 focusTab.AddFocusTarget(comboCurrentValue);
             }
 
-            comboCurrentValue = "Focus Target";
+            comboCurrentValue = new PlayerIdentifier("Focus Target", "");
         }
     }
 }
