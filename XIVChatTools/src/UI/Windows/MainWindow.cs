@@ -20,7 +20,7 @@ namespace XIVChatTools.UI.Windows;
 public class MainWindow : Window
 {
     private readonly Plugin _plugin;
-    private readonly MessagePanel _messagePanel;
+    private readonly FocusTargetTabComponent _focusTargetTabComponent;
 
     private TabControllerService TabController => _plugin.TabController;
 
@@ -34,7 +34,7 @@ public class MainWindow : Window
     internal MainWindow(Plugin plugin) : base($"Chat Tools###ChatToolsMainWindow")
     {
         _plugin = plugin;
-        _messagePanel = new(_plugin);
+        _focusTargetTabComponent = new(_plugin);
 
         this.IsOpen = true;
 
@@ -48,7 +48,9 @@ public class MainWindow : Window
     public override void PreDraw()
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-
+        
+        _focusTargetTabComponent.PreDraw();
+        
         base.PreDraw();
     }
 
@@ -77,11 +79,7 @@ public class MainWindow : Window
         ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
         if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip | ImGuiTabBarFlags.Reorderable))
         {
-            if (ImGui.BeginTabItem("Current Target"))
-            {
-                DrawSelectedTargetTab();
-                ImGui.EndTabItem();
-            }
+            _focusTargetTabComponent.Draw();
             
             foreach (var tab in TabController.GetFocusTabs())
             {
@@ -96,23 +94,5 @@ public class MainWindow : Window
 
     private void DrawSelectedTargetTab()
     {
-        var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
-
-        if (focusTarget == null)
-        {
-            ImGui.Text("No target hovered or selected.");
-            return;
-        }
-
-        var messages = MessageService.GetMessagesForPlayer(focusTarget);
-
-        if (messages != null && messages.Count > 0)
-        {
-            _messagePanel.Draw(messages);
-        }
-        else
-        {
-            ImGui.Text("No messages found for " + focusTarget.Name + ".");
-        }
     }
 }
