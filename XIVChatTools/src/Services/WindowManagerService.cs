@@ -38,9 +38,6 @@ public class WindowManagerService : IDisposable
 
     private Configuration Configuration => _plugin.Configuration;
 
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
-
     public ToolbarWindow ToolbarWindow;
     public SearchWindow SearchWindow;
     public SettingsWindow SettingsWindow;
