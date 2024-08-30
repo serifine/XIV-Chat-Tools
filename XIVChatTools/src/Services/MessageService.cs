@@ -39,6 +39,8 @@ internal delegate void MessageAddedHandler(PlayerIdentifier sender, string messa
 public class MessageService : IDisposable
 {
     private readonly Plugin _plugin;
+    private readonly KeywordWatcher keywordWatcher;
+    private readonly AdvancedDebugLogger? advancedDebugLogger = null;
 
     private ChatToolsDbContext _dbContext => _plugin.DbContext;
     private Configuration Configuration => _plugin.Configuration;
@@ -51,13 +53,14 @@ public class MessageService : IDisposable
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
 
-    private readonly AdvancedDebugLogger? advancedDebugLogger = null;
 
     internal event MessageAddedHandler? MessageAdded;
 
     public MessageService(Plugin plugin)
     {
         _plugin = plugin;
+        keywordWatcher = new KeywordWatcher(plugin);
+
         MessageAdded += OnMessageAdded;
 
         if (PluginInterface.IsDev)
@@ -79,29 +82,7 @@ public class MessageService : IDisposable
 
     private void OnMessageAdded(PlayerIdentifier sender, string message)
     {
-        HandleWatchers(message);
-    }
-
-    private void HandleWatchers(string message) {
-        if (Configuration.MessageLog_Watchers.Trim() == "")
-        {
-            return;
-        }
-
-        IEnumerable<string> watchers = Configuration.MessageLog_Watchers.Split(",");
-
-        if (watchers.Any(t => message.ToLower().Contains(t.ToLower().Trim())))
-        {
-            try
-            {
-                UIModule.PlayChatSoundEffect(2);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("Error playing sound via Dalamud.");
-                Logger.Debug(ex.Message);
-            }
-        }
+        keywordWatcher.HandleMessage(message);
     }
 
     internal void OnChatMessageUnhandled(XivChatType type, int timestamp, SeString sender, SeString message)
