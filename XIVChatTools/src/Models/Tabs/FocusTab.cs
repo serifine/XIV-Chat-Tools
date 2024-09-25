@@ -14,21 +14,26 @@ internal class FocusTab : Tab
     private List<PlayerIdentifier> _focusTargets;
 
     private MessageService _messageService => _plugin.MessageService;
-    
+
     internal List<Message> messages = new List<Message>();
 
     internal FocusTab(Plugin plugin, PlayerIdentifier initialTarget, string title = "New Watcher") : base(plugin, title)
     {
-        _focusTargets = new List<PlayerIdentifier>() { initialTarget};
+        _focusTargets = new List<PlayerIdentifier>() { initialTarget };
 
         _messageService.MessageAdded += OnMessageAdded;
 
-        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
+        UpdateMessagesFromDb();
     }
 
     public override void Dispose()
     {
         _messageService.MessageAdded -= OnMessageAdded;
+    }
+
+    private void UpdateMessagesFromDb()
+    {
+        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
     }
 
     internal void OnMessageAdded(PlayerIdentifier sender, Message message)
@@ -49,6 +54,7 @@ internal class FocusTab : Tab
         if (this._focusTargets.Any(t => t.Equals(target)) == false)
         {
             this._focusTargets.Add(target);
+            UpdateMessagesFromDb();
         }
     }
 
@@ -59,6 +65,7 @@ internal class FocusTab : Tab
         if (selectedTarget != null)
         {
             this._focusTargets.Remove(selectedTarget);
+            UpdateMessagesFromDb();
         }
     }
 
