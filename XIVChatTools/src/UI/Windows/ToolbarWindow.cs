@@ -23,9 +23,6 @@ public class ToolbarWindow : Window
     private Configuration Configuration => _plugin.Configuration;
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
-    private int selectedWindowType = 0;
-    private string[] windowTypes = new string[] { "Watch Target", "Watch Group" };
-
     internal ToolbarWindow(Plugin plugin) : base("Toolbar###ChatToolsToolbar")
     {
         _plugin = plugin;
@@ -63,22 +60,7 @@ public class ToolbarWindow : Window
 
     private void DrawInterface()
     {
-        // if (ImGui.Button("Open Watch Window"))
-        // {
-        //     _windowManagerService.ChatToolsWindow.IsOpen = !_windowManagerService.ChatToolsWindow.IsOpen;
-        // }
-
-        // ImGui.SameLine();
-
-        ImGui.SetNextItemWidth(140 * Scale);
-        if (ImGui.Combo("", ref selectedWindowType, windowTypes, windowTypes.Length))
-        {
-            // on change
-        }
-        
-        ImGui.SameLine();
-
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.PlusCircle)) {
+        if (ImGui.Button("New Watch Tab")) {
             var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
             
             if (focusTarget != null)
@@ -87,12 +69,7 @@ public class ToolbarWindow : Window
             } 
         }
 
-        string addTabTooltip = "";
-
-        if (selectedWindowType == 0) addTabTooltip = "Add a new tab watching your selected character.";
-        else addTabTooltip = "Add a new configurable tab that you can use to watch a group of characters.";
-
-        if (ImGui.IsItemHovered()) ImGui.SetTooltip(addTabTooltip);
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add a new tab watching your selected target.");
 
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - (117 * Scale));
 
