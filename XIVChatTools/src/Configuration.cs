@@ -74,6 +74,11 @@ public class Configuration : IPluginConfiguration
     public void Initialize(IDalamudPluginInterface pluginInterface)
     {
         this.pluginInterface = pluginInterface;
+
+        if (!System.IO.Directory.Exists(MessageDb_FilePath))
+        {
+            System.IO.Directory.CreateDirectory(MessageDb_FilePath);
+        }
     }
 
     public void Save()
