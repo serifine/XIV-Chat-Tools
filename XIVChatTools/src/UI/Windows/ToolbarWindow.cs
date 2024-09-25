@@ -38,17 +38,19 @@ public class ToolbarWindow : Window
 
     private void DrawPopups()
     {
+        ImGui.SetNextWindowSize(new Vector2(320 * Scale, 200 * Scale));
         if (ImGui.BeginPopup("Alerts"))
         {
             ImGui.Spacing();
             ImGui.Spacing();
-            ImGui.Text("You can set up watchers that will make a notification sound whenever you receive a message that containers the selected phrase.");
+            ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
             ImGui.Spacing();
-            ImGui.Text("These phrases need to be separated by a comma.");
+            ImGui.TextWrapped("These phrases need to be separated by a comma.");
             ImGui.Spacing();
             ImGui.Spacing();
             ImGui.Text("Global Watchers");
 
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             if (ImGui.InputTextWithHint("", "Example, watch example", ref Configuration.MessageLog_Watchers, 24096))
             {
                 Configuration.Save();
