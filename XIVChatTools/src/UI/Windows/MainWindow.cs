@@ -36,8 +36,6 @@ public class MainWindow : Window
         _plugin = plugin;
         _focusTargetTabComponent = new(_plugin);
 
-        this.IsOpen = true;
-
         Size = new Vector2(450, 50);
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking;
