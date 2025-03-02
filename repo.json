@@ -5,7 +5,7 @@
     "Punchline": "Filter messages in crowded environments, bringing some sanity back to RP.",
     "Description": "Chat Tools was developed to cut through the cluttered chat that can happen at large RP events, or in crowded environments.\n\nJust some of the things you can do with Chat Tools is:\n- Filter messages in crowded environments\n- Set up windows to watch specific characters of your choice\n- Set up windows to watch for messages from a group of characters\n- Quickly scan what your selected or hovered targets have said\n- Search through your message history\n- Preserve messages on logout",
     "InternalName": "XIVChatTools",
-    "AssemblyVersion": "3.0.1",
+    "AssemblyVersion": "3.0.2",
     "RepoUrl": "https://github.com/serifine/XIV-Chat-Tools",
     "IconUrl": "https://raw.githubusercontent.com/serifine/XIV-Chat-Scanner/main/XIVChatTools/images/icon.png",
     "ApplicableVersion": "any",
@@ -14,8 +14,8 @@
     "IsTestingExclusive": "False",
     "LastUpdate": 1696614479236,
     "DownloadCount": 9230,
-    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.1/XIVChatTools.zip",
-    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.1/XIVChatTools.zip",
-    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.1/XIVChatTools.zip"
+    "DownloadLinkInstall": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.2/XIVChatTools.zip",
+    "DownloadLinkTesting": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.2/XIVChatTools.zip",
+    "DownloadLinkUpdate": "https://github.com/serifine/XIV-Chat-Tools/releases/download/3.0.2/XIVChatTools.zip"
   }
 ]
