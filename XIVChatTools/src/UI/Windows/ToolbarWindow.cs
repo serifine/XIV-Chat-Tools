@@ -68,6 +68,7 @@ public class ToolbarWindow : Window
             if (focusTarget != null)
             {
                 TabController.AddFocusTab(focusTarget);
+                WindowManager.MainWindow.IsOpen = true;
             } 
         }
 
