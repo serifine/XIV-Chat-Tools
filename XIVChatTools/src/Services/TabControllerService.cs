@@ -73,6 +73,8 @@ public class TabControllerService : IDisposable
         {
             tabName = $"{tabName} (2)";
         }
+
+        this._tabs.Add(new FocusTab(_plugin, target, tabName));
     }
 
     internal void PostDrawEvents()
