@@ -73,12 +73,6 @@ public class TabControllerService : IDisposable
         {
             tabName = $"{tabName} (2)";
         }
-
-        var focusTab = new FocusTab(_plugin, target, tabName);
-
-        focusTab.AddFocusTarget(new PlayerIdentifier("Aureliaux Beladieu", "Mateus"));
-
-        this._tabs.Add(focusTab);
     }
 
     internal void PostDrawEvents()
