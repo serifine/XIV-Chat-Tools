@@ -76,6 +76,8 @@ public class TabControllerService : IDisposable
 
         var focusTab = new FocusTab(_plugin, target, tabName);
 
+        focusTab.AddFocusTarget(new PlayerIdentifier("Aureliaux Beladieu", "Mateus"));
+
         this._tabs.Add(focusTab);
     }
 

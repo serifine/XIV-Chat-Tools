@@ -18,7 +18,7 @@ using Dalamud.Plugin.Services;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using XIVChatTools.Services;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Lumina.Excel;
 using XIVChatTools.Database;
 using Microsoft.EntityFrameworkCore;
@@ -137,7 +137,7 @@ public class Plugin : IDalamudPlugin
         WindowManagerService.ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
     }
 
-    private void OnLogout()
+    private void OnLogout(int type, int code)
     {
         TabController.ClearAllTabs();
         WindowManagerService.CloseAllWindows();

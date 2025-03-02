@@ -26,7 +26,7 @@ internal static class PlayerCharacter
     /// <summary>
     /// Returns the currently logged in players world.
     /// </summary>
-    internal static string World => _clientState.LocalPlayer?.HomeWorld.GameData?.Name ?? "";
+    internal static string World => _clientState.LocalPlayer?.HomeWorld.Value.Name.ToString() ?? "";
 
     internal static PlayerIdentifier GetPlayerIdentifier() {
         return new PlayerIdentifier(Name, World);

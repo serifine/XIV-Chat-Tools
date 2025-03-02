@@ -11,19 +11,19 @@ internal class PlayerIdentifier
 
     internal PlayerIdentifier(IPlayerCharacter player)
     {
-        if (player.HomeWorld.GameData == null)
+        if (player.HomeWorld.Value.Name.ToString() == null)
         {
             throw new InvalidOperationException("Player's HomeWorld is null");
         }
 
         Name = player.Name.TextValue;
-        World = player.HomeWorld.GameData.Name;
+        World = player.HomeWorld.Value.Name.ToString();
     }
 
     internal PlayerIdentifier(PlayerPayload player)
     {
         Name = player.PlayerName;
-        World = player.World.Name;
+        World = player.World.Value.Name.ToString();
     }
 
     internal PlayerIdentifier(string name, string world)

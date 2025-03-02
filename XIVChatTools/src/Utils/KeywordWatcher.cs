@@ -56,7 +56,7 @@ internal class KeywordWatcher
     {
         try
         {
-            UIModule.PlayChatSoundEffect(2);
+            UIGlobals.PlayChatSoundEffect(2);
         }
         catch (Exception ex)
         {

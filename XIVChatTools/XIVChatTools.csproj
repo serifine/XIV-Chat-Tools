@@ -22,4 +22,8 @@
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Update="DalamudPackager" Version="11.0.0" />
+    </ItemGroup>
 </Project>

@@ -176,7 +176,7 @@ internal class FocusTabComponent
                 {
                     if (ImGui.Selectable(actor.Name.TextValue))
                     {
-                        comboCurrentValue = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.GameData?.Name ?? "Unknown World");
+                        comboCurrentValue = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.Value.Name.ToString() ?? "Unknown World");
                     }
                 }
             }

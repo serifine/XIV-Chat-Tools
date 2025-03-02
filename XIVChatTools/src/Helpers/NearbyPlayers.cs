@@ -34,7 +34,7 @@ internal static class NearbyPlayers
     internal static IPlayerCharacter? SearchForPlayerByName(string playerName)
     {
         var results = _objectTable
-          .Where(t => t.ObjectKind == ObjectKind.Player && t.Name.TextValue != playerName)
+          .Where(t => t.ObjectKind == ObjectKind.Player && t.Name.TextValue == playerName)
           .Cast<IPlayerCharacter>();
 
         return results.FirstOrDefault();

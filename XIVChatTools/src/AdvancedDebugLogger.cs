@@ -124,7 +124,7 @@ public class AdvancedDebugLogger
                 {
                     Type = playerPayload.Type.ToString(),
                     PlayerName = playerPayload.PlayerName.ToString(),
-                    WorldName = playerPayload.World.Name.ToString()
+                    WorldName = playerPayload.World.ToString()
                 });
 
                 continue;
@@ -138,7 +138,7 @@ public class AdvancedDebugLogger
                 Payloads.Add(new
                 {
                     Type = itemPayload.Type.ToString(),
-                    ItemName = itemPayload.Item?.Name.ToString() ?? "Item Null"
+                    ItemName = itemPayload.DisplayName ?? "Item Null"
                 });
 
                 continue;

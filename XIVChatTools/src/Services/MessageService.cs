@@ -180,6 +180,11 @@ public class MessageService : IDisposable
             if (payload is TextPayload textPayload && textPayload.Text != null)
             {
                 var result = Helpers.NearbyPlayers.SearchForPlayerByName(textPayload.Text);
+
+                if (result != null)
+                {
+                    return new PlayerIdentifier(result);
+                }
             }
         }
 
