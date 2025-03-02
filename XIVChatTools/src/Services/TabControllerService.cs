@@ -40,9 +40,6 @@ public class TabControllerService : IDisposable
     public TabControllerService(Plugin plugin)
     {
         _plugin = plugin;
-
-        var player = Helpers.PlayerCharacter.GetPlayerIdentifier();
-        AddFocusTab(player);
     }
 
     public void Dispose()
