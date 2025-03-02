@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Internal.Windows.StyleEditor;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
@@ -28,6 +29,7 @@ public class MainWindow : Window
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
     private IPluginLog _logger => Plugin.Logger;
+    private Vector2 _originalWindowPadding = new(0, 0);
 
     private FocusTabComponent FocusTabComponent;
 
@@ -45,8 +47,10 @@ public class MainWindow : Window
 
     public override void PreDraw()
     {
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-        
+        var style = ImGui.GetStyle();
+
+        _originalWindowPadding = style.WindowPadding;
+        style.WindowPadding = new Vector2(0, 0);
         _focusTargetTabComponent.PreDraw();
         
         base.PreDraw();
@@ -54,7 +58,7 @@ public class MainWindow : Window
 
     public override void Draw()
     {
-        ImGui.PopStyleVar();
+        ImGui.GetStyle().WindowPadding = _originalWindowPadding;
 
         try
         {
@@ -68,6 +72,8 @@ public class MainWindow : Window
 
     public override void PostDraw()
     {
+        ImGui.GetStyle().WindowPadding = _originalWindowPadding;
+
         base.PostDraw();
     }
 
