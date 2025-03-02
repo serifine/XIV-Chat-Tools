@@ -66,11 +66,6 @@ public class TabControllerService : IDisposable
     {
         string tabName = target.Name;
 
-        if (_tabs.Any(t => t.Title == tabName))
-        {
-            tabName = $"{tabName} (2)";
-        }
-
         this._tabs.Add(new FocusTab(_plugin, target, tabName));
     }
 
