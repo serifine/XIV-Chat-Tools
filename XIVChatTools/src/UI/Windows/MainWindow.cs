@@ -79,8 +79,6 @@ public class MainWindow : Window
 
     private void DrawInterface()
     {
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
         if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip | ImGuiTabBarFlags.Reorderable))
         {
             _focusTargetTabComponent.Draw();
@@ -92,8 +90,6 @@ public class MainWindow : Window
 
             ImGui.EndTabBar();
         }
-        ImGui.PopStyleColor();
-        ImGui.PopStyleVar();
     }
 
     private void DrawSelectedTargetTab()

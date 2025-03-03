@@ -1,5 +1,6 @@
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -31,50 +32,31 @@ internal class FocusTabComponent
         _messagePanel = new(plugin);
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// MAYBE MAKE INTO HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// DEFINITELY RE ORDER
+    private string GetFocusTargetDisplayName(PlayerIdentifier focusTarget, List<PlayerIdentifier> focusTargets)
+    {
+        string focusTargetName = focusTarget.Name;
+
+        if (focusTargets.Count(t => t.Name == focusTargetName) > 1)
+        {
+            focusTargetName += $" ({focusTarget.World})";
+        }
+
+        return focusTargetName;
+    }
+
+
+
+
     internal void Draw(FocusTab focusTab)
     {
         var open = true;
-        var focusTargets = focusTab.GetFocusTargets();
 
         if (ImGui.BeginTabItem(focusTab.Title, ref open))
         {
-            DrawFocusTargetHeader(focusTab, focusTargets);
-
-
-            if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
-            {
-                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 4f));
-
-                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch);
-
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-
-                if (focusTargets.Count > 1)
-                {
-
-                    TargetComboBox();
-                    ImGui.SameLine();
-                    AddWatchTargetButton("Add", focusTab, 50);
-                    FocusWatchList(focusTab, focusTargets);
-                }
-
-                ImGui.TableSetColumnIndex(1);
-
-                if (focusTab.messages.Count > 0)
-                {
-                    _messagePanel.Draw(focusTab.messages);
-                }
-                else
-                {
-                    ImGui.Text("No messages to display.");
-                }
-
-                ImGui.PopStyleVar();
-
-                ImGui.EndTable();
-            }
+            DrawFocusTabHeader(focusTab);
+            DrawFocusTabBody(focusTab);
 
             ImGui.EndTabItem();
         }
@@ -85,26 +67,202 @@ internal class FocusTabComponent
         }
     }
 
-    private void DrawFocusTargetHeader(FocusTab focusTab, List<PlayerIdentifier> focusTargets)
+    private void DrawFocusTabHeader(FocusTab focusTab)
     {
-        if (focusTargets.Count != 1)
+        var focusTargets = focusTab.GetFocusTargets();
+
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(4, 2));
+
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(1, 1, 1, 0.0f));
+        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0, 0, 0, 0));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0, 0, 0, 0));
+        if (ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 24), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
         {
-            return;
+            var offset = DrawScrollTabBar(focusTab);
+
+            ImGui.SameLine(0, offset);
+            DrawAddPlayerButton(focusTab);
+
+            ImGui.EndChild();
         }
 
-        PlayerIdentifier tabFocusTarget = focusTargets.First();
+        ImGui.PopStyleVar(2);
+        ImGui.PopStyleColor(4);
 
-        ImGui.BeginChild("##FocusTabHeader", new Vector2(ImGui.GetContentRegionAvail().X, 40 * Scale), true, ImGuiWindowFlags.NoScrollbar);
+    }
 
-        DrawFocusTargetDisplay(tabFocusTarget);
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X - (297 * Scale));
-        TargetComboBox();
-        ImGui.SameLine();
-        AddWatchTargetButton("Create Group", focusTab);
+    private int DrawScrollTabBar(FocusTab focusTab)
+    {
+        var focusTargets = focusTab.GetFocusTargets();
+        float scrollXDelta = 0.0f;
+        float scrollX = 0.0f;
+        float scrollMaxX = 0.0f;
+        int scrollButtonOffsets = 8;
 
-        ImGui.EndChild();
+        if (ImGui.BeginChild("###focusMemberScrollbar", new Vector2(ImGui.GetContentRegionAvail().X - 142, 24), false, ImGuiWindowFlags.HorizontalScrollbar))
+        {
+            scrollX = ImGui.GetScrollX();
+            scrollMaxX = ImGui.GetScrollMaxX();
 
-        ImGui.Separator();
+            ImGui.SameLine(5);
+
+            foreach (var focusTarget in focusTargets)
+            {
+                var focusTabName = GetFocusTargetDisplayName(focusTarget, focusTargets);
+
+                ImGui.Text(focusTabName);
+                if (ImGui.BeginPopupContextItem("###" + focusTabName + "ContextMenu"))
+                {
+                    if (ImGui.MenuItem("Create Watch Tab From Player"))
+                    {
+                        TabController.AddFocusTab(focusTarget);
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    if (ImGui.MenuItem("Remove Player From Group"))
+                    {
+                        focusTab.RemoveFocusTarget(focusTarget);
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    ImGui.EndPopup();
+                }
+
+                ImGui.SameLine();
+            }
+
+            ImGui.EndChild();
+        }
+
+        if (scrollMaxX > 0)
+        {
+            ImGui.SameLine();
+            ImGui.Button("<", new Vector2(20, 20));
+            if (ImGui.IsItemActive())
+            {
+                scrollXDelta = -ImGui.GetIO().DeltaTime * 1000.0f;
+            }
+
+            ImGui.SameLine();
+            ImGui.Button(">", new Vector2(20, 20));
+            if (ImGui.IsItemActive())
+            {
+                scrollXDelta = +ImGui.GetIO().DeltaTime * 1000.0f;
+            }
+        }
+        else
+        {
+            scrollButtonOffsets = 64;
+        }
+
+        if (scrollXDelta != 0.0f)
+        {
+            ImGui.BeginChild("###focusMemberScrollbar");
+            ImGui.SetScrollX(ImGui.GetScrollX() + scrollXDelta);
+            ImGui.EndChild();
+        }
+
+        return scrollButtonOffsets;
+    }
+
+    private void DrawAddPlayerButton(FocusTab focusTab)
+    {
+        if (ImGui.Button("Add Player"))
+        {
+            ImGui.OpenPopup("###AddFocusTargetPopup");
+        }
+
+
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 8);
+        if (ImGui.BeginPopup("###AddFocusTargetPopup"))
+        {
+            if (ImGui.Selectable("Focus Target"))
+            {
+                comboCurrentValue = new PlayerIdentifier("Focus Target", "");
+            }
+
+            if (ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
+            {
+                comboCurrentValue = Helpers.PlayerCharacter.GetPlayerIdentifier();
+            }
+
+            var nearbyPlayers = Helpers.NearbyPlayers.GetNearbyPlayers();
+
+            if (nearbyPlayers.Count > 0)
+            {
+                ImGui.Separator();
+
+                ImGui.BeginChild("###NearbyPlayers", new Vector2(200, 200));
+
+                foreach (var actor in nearbyPlayers)
+                {
+                    if (ImGui.Selectable(actor.Name.TextValue))
+                    {
+                        var focusTarget = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.Value.Name.ToString() ?? "Unknown World");
+
+                        focusTab.AddFocusTarget(focusTarget);
+
+                        ImGui.CloseCurrentPopup();
+                    }
+                }
+
+                ImGui.EndChild();
+            }
+
+            ImGui.EndPopup();
+        }
+        ImGui.PopStyleVar();
+    }
+
+    private void DrawFocusTabBody(FocusTab focusTab)
+    {
+        var focusTargets = focusTab.GetFocusTargets();
+
+
+        if (focusTab.messages.Count > 0)
+        {
+            _messagePanel.Draw(focusTab.messages);
+        }
+        else
+        {
+            ImGui.Text("No messages to display.");
+        }
+
+        // if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
+        // {
+        //     ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 4f));
+
+        //     ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+        //     ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch);
+
+        //     ImGui.TableNextRow();
+        //     ImGui.TableSetColumnIndex(0);
+
+        //     if (focusTargets.Count > 1)
+        //     {
+        //         TargetComboBox();
+        //         ImGui.SameLine();
+        //         AddWatchTargetButton("Add", focusTab, 50);
+        //         FocusWatchList(focusTab, focusTargets);
+        //     }
+
+        //     ImGui.TableSetColumnIndex(1);
+
+        //     if (focusTab.messages.Count > 0)
+        //     {
+        //         _messagePanel.Draw(focusTab.messages);
+        //     }
+        //     else
+        //     {
+        //         ImGui.Text("No messages to display.");
+        //     }
+
+        //     ImGui.PopStyleVar();
+
+        //     ImGui.EndTable();
+        // }
     }
 
     private void FocusWatchList(FocusTab focusTab, List<PlayerIdentifier> focusTargets)
@@ -152,8 +310,9 @@ internal class FocusTabComponent
 
     private void TargetComboBox()
     {
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6, 4));
 
-        ImGui.SetNextItemWidth(193);
+        ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo(" ", comboCurrentValue.Name))
         {
             if (ImGui.Selectable("Focus Target"))
@@ -183,16 +342,30 @@ internal class FocusTabComponent
 
             ImGui.EndCombo();
         }
+
+        ImGui.PopStyleVar();
     }
 
-    private void DrawFocusTargetDisplay(PlayerIdentifier focusTarget)
+    private void DrawFocusTargetDisplay(string focusTargets)
     {
-        string name = focusTarget.Name;
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.2f, 0.2f, 0.2f, 1f));
+        ImGui.Button(focusTargets, new Vector2(200, Item_Height));
+        ImGui.PopStyleColor();
+        if (ImGui.BeginPopupContextItem())
+        {
+            if (ImGui.MenuItem("Create Watch Tab From Player"))
+            {
+                ImGui.CloseCurrentPopup();
+            }
 
-        ImGui.BeginDisabled();
-        ImGui.SetNextItemWidth(200);
-        ImGui.InputText("", ref name, 60);
-        ImGui.EndDisabled();
+            if (ImGui.MenuItem("Remove Player From Group"))
+            {
+
+            }
+
+            ImGui.EndPopup();
+        }
+        // ImGui.EndDisabled();
     }
 
     private void AddWatchTargetButton(string label, FocusTab focusTab, int width = 0)
