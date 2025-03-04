@@ -41,7 +41,7 @@ public class MainWindow : Window
         Size = new Vector2(450, 50);
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking;
-        
+
         FocusTabComponent = new(plugin);
     }
 
@@ -52,7 +52,7 @@ public class MainWindow : Window
         _originalWindowPadding = style.WindowPadding;
         style.WindowPadding = new Vector2(0, 0);
         _focusTargetTabComponent.PreDraw();
-        
+
         base.PreDraw();
     }
 
@@ -82,11 +82,19 @@ public class MainWindow : Window
         if (ImGui.BeginTabBar("ChatToolsTabBar", ImGuiTabBarFlags.NoTooltip | ImGuiTabBarFlags.Reorderable))
         {
             _focusTargetTabComponent.Draw();
-            
+
             foreach (var tab in TabController.GetFocusTabs())
             {
                 FocusTabComponent.Draw(tab);
             }
+
+            if (ImGui.TabItemButton("+", ImGuiTabItemFlags.Trailing))
+            {
+                TabController.AddFocusTab();
+            }
+
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip("New Watch Tab");
 
             ImGui.EndTabBar();
         }

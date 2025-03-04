@@ -17,9 +17,14 @@ internal class FocusTab : Tab
 
     internal List<Message> messages = new List<Message>();
 
-    internal FocusTab(Plugin plugin, PlayerIdentifier initialTarget, string title = "New Watcher") : base(plugin, title)
+    internal FocusTab(Plugin plugin, PlayerIdentifier? initialTarget = null, string title = "New Watch Tab") : base(plugin, title)
     {
-        _focusTargets = new List<PlayerIdentifier>() { initialTarget };
+        _focusTargets = new List<PlayerIdentifier>();
+
+        if (initialTarget != null)
+        {
+            _focusTargets.Add(initialTarget);
+        }
 
         _messageService.MessageAdded += OnMessageAdded;
 
