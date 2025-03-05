@@ -180,12 +180,26 @@ internal class FocusTabComponent
         {
             if (ImGui.Selectable("Focus Target"))
             {
-                comboCurrentValue = new PlayerIdentifier("Focus Target", "");
+                var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
+
+                if (focusTarget != null)
+                {
+                    focusTab.AddFocusTarget(focusTarget);
+                }
+
+                ImGui.CloseCurrentPopup();
             }
 
             if (ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
             {
-                comboCurrentValue = Helpers.PlayerCharacter.GetPlayerIdentifier();
+                var focusTarget = Helpers.PlayerCharacter.GetPlayerIdentifier();
+
+                if (focusTarget != null)
+                {
+                    focusTab.AddFocusTarget(focusTarget);
+                }
+
+                ImGui.CloseCurrentPopup();
             }
 
             var nearbyPlayers = Helpers.NearbyPlayers.GetNearbyPlayers();
@@ -201,9 +215,7 @@ internal class FocusTabComponent
                     if (ImGui.Selectable(actor.Name.TextValue))
                     {
                         var focusTarget = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.Value.Name.ToString() ?? "Unknown World");
-
                         focusTab.AddFocusTarget(focusTarget);
-
                         ImGui.CloseCurrentPopup();
                     }
                 }
@@ -220,7 +232,6 @@ internal class FocusTabComponent
     {
         var focusTargets = focusTab.GetFocusTargets();
 
-
         if (focusTab.messages.Count > 0)
         {
             _messagePanel.Draw(focusTab.messages);
@@ -229,7 +240,7 @@ internal class FocusTabComponent
         {
             ImGui.Text("No messages to display.");
         }
-
+        
         // if (ImGui.BeginTable("table1", 2, ImGuiTableFlags.NoHostExtendX))
         // {
         //     ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 4f));
