@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>XIVChatTools</PackageId>
-        <Version>3.0.0</Version>
+        <Version>3.1.0</Version>
         <Authors>serifine</Authors>
         <Private>False</Private>
         <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Tools</PackageProjectUrl>
