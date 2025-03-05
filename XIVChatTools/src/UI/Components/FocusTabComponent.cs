@@ -80,7 +80,7 @@ internal class FocusTabComponent
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0, 0, 0, 0));
         if (ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 24), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
         {
-            var offset = DrawScrollTabBar(focusTab);
+            var offset = DrawScrollableTargetBar(focusTab);
 
             ImGui.SameLine(0, offset);
             DrawAddPlayerButton(focusTab);
@@ -93,7 +93,7 @@ internal class FocusTabComponent
 
     }
 
-    private int DrawScrollTabBar(FocusTab focusTab)
+    private int DrawScrollableTargetBar(FocusTab focusTab)
     {
         var focusTargets = focusTab.GetFocusTargets();
         float scrollXDelta = 0.0f;
