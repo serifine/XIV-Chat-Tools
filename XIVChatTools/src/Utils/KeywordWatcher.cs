@@ -17,8 +17,6 @@ internal class KeywordWatcher
     private Configuration Configuration => _plugin.Configuration;
     private IPluginLog Logger => Plugin.Logger;
 
-    private IEnumerable<string> GlobalWatchers => Configuration.MessageLog_Watchers.ToLower().Trim().Split(",");
-
     internal KeywordWatcher(Plugin plugin)
     {
         _plugin = plugin;
@@ -35,19 +33,24 @@ internal class KeywordWatcher
         }
     }
 
+    private IEnumerable<string> GetAllWatchers()
+    {
+        var globalWatchers = Configuration.MessageLog_Watchers.ToLower().Split(",").Select(s => s.Trim());
+        // var characterWatchers = Configuration.MessageLog_CharacterWatchers.ToLower().Split(",").Select(s => s.Trim());
+        // var temporaryWatchers = Configuration.MessageLog_PersonalWatchers.ToLower().Split(",").Select(s => s.Trim());
+
+        return new List<string>()
+            .Concat(globalWatchers)
+            // .Concat(characterWatchers)
+            // .Concat(temporaryWatchers)
+            .Distinct();
+    }
+
     private bool ContainsWatchedTerm(string message)
     {
-        if (GlobalWatchers.Any()) return false;
-
-        List<string> watchers = [];
-
-        foreach (string watcher in GlobalWatchers)
-        {
-            if (watchers.Contains(watcher) == false)
-            {
-                watchers.Add(watcher);
-            }
-        }
+        var watchers = GetAllWatchers();
+        
+        if (!watchers.Any()) return false;
 
         return watchers.Any(watcher => message.ToLower().Contains(watcher));
     }
