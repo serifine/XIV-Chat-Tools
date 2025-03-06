@@ -46,37 +46,21 @@ internal class FocusTabComponent
         return focusTargetName;
     }
 
-
-    string newTabName = "";
-
     internal void Draw(FocusTab focusTab)
     {
         var open = true;
 
-        if (ImGui.BeginTabItem(focusTab.Title, ref open))
+        if (ImGui.BeginTabItem($"{focusTab.Title}###{focusTab.TabId}", ref open))
         {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// REFACTOR INTO SUB FUNCTION
-            if (ImGui.BeginPopupContextItem("###" + focusTab.Title + "TabItemContextMenu"))
+            if (ImGui.BeginPopupContextItem($"{focusTab.TabId}TabItemContextMenu"))
             {
                 ImGui.Text("Tab Options");
+                ImGui.Separator();
                 ImGui.SetNextItemWidth(200);
-                ImGui.InputTextWithHint("", "Enter New Tab Name", ref newTabName, 64);
-                ImGui.SameLine();
-                if (ImGui.Button("Save Changes"))
-                {
-                    focusTab.Title = newTabName;
-                    ImGui.CloseCurrentPopup();
-                }
+                ImGui.InputText($"###{focusTab.TabId}TabNameInput", ref focusTab.Title, 64);
 
                 ImGui.EndPopup();
-            }
-
-            if (ImGui.IsPopupOpen("###" + focusTab.Title + "TabItemContextMenu"))
-            {
-                if (newTabName != "")
-                {
-                    newTabName = "";
-                }
             }
 
             DrawFocusTabHeader(focusTab);
