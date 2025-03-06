@@ -52,6 +52,7 @@ public class ToolbarWindow : Window
             ImGui.Separator();
             ImGui.Spacing();
             ImGui.Text("Global Watchers");
+            ImGuiComponents.HelpMarker("These watchers are always active on all characters.");
 
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             if (ImGui.InputTextWithHint("###GlobalWatcherInput", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
@@ -61,13 +62,13 @@ public class ToolbarWindow : Window
             }
 
             ImGui.Text("Character Watchers");
+            ImGuiComponents.HelpMarker("These watchers are only active on the current character.");
 
             if (ImGui.InputTextWithHint("###CharacterWatcherInput", "Example, watch example", ref characterWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
             {
                 Configuration.UpdateCharacterWatchers(characterWatchers);
                 ImGui.CloseCurrentPopup();
             }
-
 
             ImGui.EndPopup();
         }
