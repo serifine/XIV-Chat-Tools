@@ -39,26 +39,34 @@ public class ToolbarWindow : Window
 
     private void DrawPopups()
     {
-        ImGui.SetNextWindowSize(new Vector2(320 * Scale, 200 * Scale));
+        ImGui.SetNextWindowSize(new Vector2(320 * Scale, 0));
         if (ImGui.BeginPopup("Alerts"))
         {
             string globalWatchers = Configuration.Session_WatchData.GlobalWatchers;
+            string characterWatchers = Configuration.Session_WatchData.CharacterWatchers;
 
-            ImGui.Spacing();
-            ImGui.Spacing();
             ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
             ImGui.Spacing();
             ImGui.TextWrapped("These phrases need to be separated by a comma.");
             ImGui.Spacing();
+            ImGui.Separator();
             ImGui.Spacing();
             ImGui.Text("Global Watchers");
 
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if (ImGui.InputTextWithHint("", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            if (ImGui.InputTextWithHint("###GlobalWatcherInput", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
             {
                 Configuration.UpdateGlobalWatchers(globalWatchers);
+                ImGui.CloseCurrentPopup();
             }
 
+            ImGui.Text("Character Watchers");
+
+            if (ImGui.InputTextWithHint("###CharacterWatcherInput", "Example, watch example", ref characterWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            {
+                Configuration.UpdateCharacterWatchers(characterWatchers);
+                ImGui.CloseCurrentPopup();
+            }
 
 
             ImGui.EndPopup();
