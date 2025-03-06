@@ -12,6 +12,7 @@ public class SessionWatchData
 {
     public string GlobalWatchers = "";
     public string CharacterWatchers = "";
+    public string SessionWatchers = "";
 
     public List<string> AllWatchers = new List<string>();
 
@@ -25,6 +26,13 @@ public class SessionWatchData
     public void UpdateCharacterWatchers(string watchers)
     {
         CharacterWatchers = watchers;
+        
+        RefreshAllWatchers();
+    }
+
+    public void UpdateSessionWatchers(string watchers)
+    {
+        SessionWatchers = watchers;
         
         RefreshAllWatchers();
     }

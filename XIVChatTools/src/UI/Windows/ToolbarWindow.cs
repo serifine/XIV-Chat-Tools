@@ -44,10 +44,11 @@ public class ToolbarWindow : Window
         {
             string globalWatchers = Configuration.Session_WatchData.GlobalWatchers;
             string characterWatchers = Configuration.Session_WatchData.CharacterWatchers;
+            string sessionWatchers = Configuration.Session_WatchData.SessionWatchers;
 
             ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
             ImGui.Spacing();
-            ImGui.TextWrapped("These phrases need to be separated by a comma.");
+            ImGui.TextWrapped("These phrases need to be separated by a comma. To update the watchers, press Enter after after typing in the new phrases.");
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
@@ -69,6 +70,16 @@ public class ToolbarWindow : Window
                 Configuration.UpdateCharacterWatchers(characterWatchers);
                 ImGui.CloseCurrentPopup();
             }
+
+            ImGui.Text("Session Watchers");
+            ImGuiComponents.HelpMarker("These watchers are only active until you log out.");
+
+            if (ImGui.InputTextWithHint("###SessionWatcherInput", "Example, watch example", ref sessionWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            {
+                Configuration.UpdateSessionWatchers(sessionWatchers);
+                ImGui.CloseCurrentPopup();
+            }
+
 
             ImGui.EndPopup();
         }

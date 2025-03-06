@@ -132,9 +132,15 @@ public class Configuration : IPluginConfiguration
         Save();
     }
 
+    public void UpdateSessionWatchers(string watchers)
+    {
+        Session_WatchData.UpdateSessionWatchers(watchers);
+    }
+
     public void ReloadWatcherData() {
         string CharacterName = Helpers.PlayerCharacter.Name;
         string WorldName = Helpers.PlayerCharacter.World;
+        Session_WatchData = new SessionWatchData();
         
         CharacterWatcher? characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
     
