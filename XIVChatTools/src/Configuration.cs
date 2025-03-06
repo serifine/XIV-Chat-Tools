@@ -84,6 +84,8 @@ public class Configuration : IPluginConfiguration
         {
             System.IO.Directory.CreateDirectory(MessageDb_FilePath);
         }
+
+        ReloadWatcherData();
     }
 
     public void Save()
@@ -136,6 +138,11 @@ public class Configuration : IPluginConfiguration
         
         CharacterWatcher? characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
     
+        if (MessageLog_GlobalWatchers != "")
+        {
+            Session_WatchData.UpdateGlobalWatchers(MessageLog_GlobalWatchers);
+        }
+
         if (characterWatcher != null)
         {
             Session_WatchData.UpdateCharacterWatchers(characterWatcher.Watchers);
