@@ -103,10 +103,10 @@ public class SettingsWindow : Window
         ImGui.Spacing();
         ImGui.Spacing();
 
-        if (ImGui.InputText("", ref Configuration.MessageLog_Watchers, 24096))
-        {
-            Configuration.Save();
-        }
+        // if (ImGui.InputText("", ref Configuration.MessageLog_Watchers, 24096))
+        // {
+        //     Configuration.Save();
+        // }
 
         ImGui.Spacing();
         ImGui.Spacing();
