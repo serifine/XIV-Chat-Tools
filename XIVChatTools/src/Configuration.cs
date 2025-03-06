@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Numerics;
+using XIVChatTools.Models.Configuration;
 
 namespace XIVChatTools;
 
@@ -29,7 +30,8 @@ public class Configuration : IPluginConfiguration
 
     public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
     public string MessageLog_FileName = "ChatLogs.json";
-    public string MessageLog_Watchers = "";
+    public string MessageLog_GlobalWatchers = "";
+    public List<CharacterWatcher> MessageLog_CharacterWatchers = new List<CharacterWatcher>();
 
     public bool MessageLog_PreserveOnLogout = true;
     public bool MessageLog_DeleteOldMessages = true;
@@ -71,6 +73,9 @@ public class Configuration : IPluginConfiguration
     [NonSerialized]
     private IDalamudPluginInterface? pluginInterface;
 
+    [NonSerialized]
+    internal SessionWatchData Session_WatchData = new SessionWatchData();
+
     public void Initialize(IDalamudPluginInterface pluginInterface)
     {
         this.pluginInterface = pluginInterface;
@@ -89,5 +94,51 @@ public class Configuration : IPluginConfiguration
         }
 
         this.pluginInterface.SavePluginConfig(this);
+    }
+
+    public void OnLoginUpdates()
+    {
+        ReloadWatcherData();
+    }
+
+    public void UpdateGlobalWatchers(string watchers)
+    {
+        MessageLog_GlobalWatchers = watchers;
+        Session_WatchData.UpdateGlobalWatchers(watchers);
+
+        Save();
+    }
+
+    public void UpdateCharacterWatchers(string watchers)
+    {
+        string CharacterName = Helpers.PlayerCharacter.Name;
+        string WorldName = Helpers.PlayerCharacter.World;
+
+        var characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == CharacterName && w.World == WorldName);
+
+        if (characterWatcher == null)
+        {
+            MessageLog_CharacterWatchers.Add(new CharacterWatcher(CharacterName, WorldName, watchers));
+        }
+        else
+        {
+            characterWatcher.Watchers = watchers;
+        }
+
+        Session_WatchData.UpdateCharacterWatchers(watchers);
+
+        Save();
+    }
+
+    public void ReloadWatcherData() {
+        string CharacterName = Helpers.PlayerCharacter.Name;
+        string WorldName = Helpers.PlayerCharacter.World;
+        
+        CharacterWatcher? characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
+    
+        if (characterWatcher != null)
+        {
+            Session_WatchData.UpdateCharacterWatchers(characterWatcher.Watchers);
+        }
     }
 }

@@ -61,6 +61,11 @@ public class Plugin : IDalamudPlugin
 
     public Plugin()
     {
+
+#if DEBUG
+        Logger.Debug("Chat Tools initialized in debug mode.");
+#endif
+
         try
         {
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
@@ -93,6 +98,11 @@ public class Plugin : IDalamudPlugin
                       "Opens the Chat Tools window." : "Alias for /chattools."
                 });
             }
+
+#if DEBUG
+            Logger.Debug("Opening main window for debug.");
+            WindowManagerService.MainWindow.IsOpen = true;
+#endif
         }
         catch
         {
@@ -135,6 +145,7 @@ public class Plugin : IDalamudPlugin
     private void OnLogin()
     {
         WindowManagerService.ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
+        Configuration.OnLoginUpdates();
     }
 
     private void OnLogout(int type, int code)
@@ -154,7 +165,8 @@ public class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
         PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
 
-        if (MessageService != null) {
+        if (MessageService != null)
+        {
             ChatGui.ChatMessageUnhandled -= MessageService.HandleChatMessage;
         }
 
@@ -175,7 +187,7 @@ public class Plugin : IDalamudPlugin
     private ChatToolsDbContext InitializeDbContext()
     {
         Logger.Debug("Initializing EF Sqllite Database Context");
-        
+
         ChatToolsDbContext dbContext = new ChatToolsDbContext(Configuration.MessageDb_FilePath);
         dbContext.Database.EnsureCreated();
 
