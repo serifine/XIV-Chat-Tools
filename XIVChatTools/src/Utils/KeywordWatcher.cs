@@ -33,24 +33,11 @@ internal class KeywordWatcher
         }
     }
 
-    private IEnumerable<string> GetAllWatchers()
-    {
-        var globalWatchers = Configuration.MessageLog_Watchers.ToLower().Split(",").Select(s => s.Trim());
-        // var characterWatchers = Configuration.MessageLog_CharacterWatchers.ToLower().Split(",").Select(s => s.Trim());
-        // var temporaryWatchers = Configuration.MessageLog_PersonalWatchers.ToLower().Split(",").Select(s => s.Trim());
-
-        return new List<string>()
-            .Concat(globalWatchers)
-            // .Concat(characterWatchers)
-            // .Concat(temporaryWatchers)
-            .Distinct();
-    }
-
     private bool ContainsWatchedTerm(string message)
     {
-        var watchers = GetAllWatchers();
+        var watchers = Configuration.Session_WatchData.AllWatchers;
         
-        if (!watchers.Any()) return false;
+        if (watchers.Count == 0) return false;
 
         return watchers.Any(watcher => message.ToLower().Contains(watcher));
     }
