@@ -9,6 +9,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using Microsoft.Extensions.Logging;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.UI.Windows;
@@ -41,6 +42,8 @@ public class ToolbarWindow : Window
         ImGui.SetNextWindowSize(new Vector2(320 * Scale, 200 * Scale));
         if (ImGui.BeginPopup("Alerts"))
         {
+            string globalWatchers = Configuration.Session_WatchData.GlobalWatchers;
+
             ImGui.Spacing();
             ImGui.Spacing();
             ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
@@ -51,10 +54,12 @@ public class ToolbarWindow : Window
             ImGui.Text("Global Watchers");
 
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if (ImGui.InputTextWithHint("", "Example, watch example", ref Configuration.MessageLog_Watchers, 24096))
+            if (ImGui.InputTextWithHint("", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
             {
-                Configuration.Save();
+                Configuration.UpdateGlobalWatchers(globalWatchers);
             }
+
+
 
             ImGui.EndPopup();
         }
