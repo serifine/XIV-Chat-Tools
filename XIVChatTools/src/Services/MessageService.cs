@@ -121,6 +121,7 @@ public class MessageService : IDisposable
     {
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
+            .OrderBy(t => t.Timestamp)
             .AsNoTracking()
             .ToList();
     }
@@ -135,6 +136,8 @@ public class MessageService : IDisposable
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
             .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
+            .Where(t => t.Timestamp >= DateTime.Now.AddDays(-14))
+            .OrderBy(t => t.Timestamp)
             .AsNoTracking()
             .ToList();
     }
@@ -146,6 +149,8 @@ public class MessageService : IDisposable
         return this._dbContext.Messages
             .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
             .Where(t => playerIdentifiers.Contains(t.SenderName + "@" + t.SenderWorld))
+            .Where(t => t.Timestamp >= DateTime.Now.AddDays(-14))
+            .OrderBy(t => t.Timestamp)
             .AsNoTracking()
             .ToList();
     }
@@ -161,6 +166,7 @@ public class MessageService : IDisposable
             .Where(t =>
                 t.MessageContents.ToLower().Contains(searchText.ToLower()) ||
                 t.SenderName.ToLower().Contains(searchText.ToLower()))
+            .OrderBy(t => t.Timestamp)
             .ToList();
     }
 
