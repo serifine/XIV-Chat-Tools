@@ -1,4 +1,4 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/9.0.2">
+﻿<Project Sdk="Dalamud.NET.Sdk/11.0.0">
 
     <PropertyGroup>
         <PackageId>XIVChatTools</PackageId>
@@ -15,12 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>
