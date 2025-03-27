@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>XIVChatTools</PackageId>
-        <Version>3.1.0</Version>
+        <Version>3.2.0</Version>
         <TargetFramework>net9.0-windows</TargetFramework>
         <Authors>serifine</Authors>
         <Private>False</Private>
