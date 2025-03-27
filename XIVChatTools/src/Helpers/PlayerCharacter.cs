@@ -21,14 +21,24 @@ internal static class PlayerCharacter
     /// <summary>
     /// Returns the currently logged in players name.
     /// </summary>
-    internal static string Name => _clientState.LocalPlayer?.Name.TextValue ?? "";
+    internal static string Name = "";
 
     /// <summary>
     /// Returns the currently logged in players world.
     /// </summary>
-    internal static string World => _clientState.LocalPlayer?.HomeWorld.Value.Name.ToString() ?? "";
+    internal static string World = "";
 
-    internal static PlayerIdentifier GetPlayerIdentifier() {
+    internal async static void UpdatePlayerCharacter()
+    {
+        await Plugin.Framework.RunOnTick(() =>
+        {
+            Name = _clientState.LocalPlayer?.Name.TextValue ?? "";
+            World = _clientState.LocalPlayer?.HomeWorld.Value.Name.ToString() ?? "";
+        });
+    }
+
+    internal static PlayerIdentifier GetPlayerIdentifier()
+    {
         return new PlayerIdentifier(Name, World);
     }
 }

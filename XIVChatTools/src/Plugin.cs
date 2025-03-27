@@ -24,6 +24,7 @@ using XIVChatTools.Database;
 using Microsoft.EntityFrameworkCore;
 using XIVChatTools.Database.Models;
 using System.Threading.Tasks;
+using XIVChatTools.Helpers;
 
 namespace XIVChatTools;
 
@@ -31,6 +32,7 @@ public class Plugin : IDalamudPlugin
 {
     public static string Name => "Chat Tools";
 
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
@@ -68,6 +70,8 @@ public class Plugin : IDalamudPlugin
 
         try
         {
+            PlayerCharacter.UpdatePlayerCharacter();
+
             Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             // to be removed later
             Configuration.Initialize(PluginInterface);
@@ -146,12 +150,14 @@ public class Plugin : IDalamudPlugin
     {
         WindowManagerService.ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
         Configuration.OnLoginUpdates();
+        PlayerCharacter.UpdatePlayerCharacter();
     }
 
     private void OnLogout(int type, int code)
     {
         TabController.ClearAllTabs();
         WindowManagerService.CloseAllWindows();
+        PlayerCharacter.UpdatePlayerCharacter();
     }
 
     #endregion
