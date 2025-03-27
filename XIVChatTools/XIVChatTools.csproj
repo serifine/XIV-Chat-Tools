@@ -1,10 +1,12 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/11.0.0">
+﻿<Project Sdk="Dalamud.NET.Sdk/12.0.0">
 
     <PropertyGroup>
         <PackageId>XIVChatTools</PackageId>
         <Version>3.1.0</Version>
+        <TargetFramework>net9.0-windows</TargetFramework>
         <Authors>serifine</Authors>
         <Private>False</Private>
+        <Use_DalamudPackager>false</Use_DalamudPackager>
         <PackageProjectUrl>https://github.com/serifine/XIV-Chat-Tools</PackageProjectUrl>
     </PropertyGroup>
 
@@ -24,6 +26,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Update="DalamudPackager" Version="11.0.0" />
+      <PackageReference Update="DalamudPackager" Version="12.0.0" />
     </ItemGroup>
 </Project>
