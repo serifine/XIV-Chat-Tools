@@ -10,7 +10,7 @@ using Dalamud.Interface.Internal.Windows.StyleEditor;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XIVChatTools.Models;
 using XIVChatTools.Models.Tabs;
 using XIVChatTools.Services;

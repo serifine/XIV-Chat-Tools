@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XIVChatTools.Models;
 using XIVChatTools.Models.Tabs;
 using XIVChatTools.Services;
@@ -17,9 +17,6 @@ internal class FocusTabComponent
 {
     private readonly Plugin _plugin;
     private readonly MessagePanel _messagePanel;
-
-    private readonly float Item_Height = 24f;
-    private readonly float Item_Width = 250f;
 
     private TabControllerService TabController => _plugin.TabController;
 

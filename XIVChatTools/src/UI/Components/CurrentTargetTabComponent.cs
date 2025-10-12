@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
 using XIVChatTools.Models.Tabs;

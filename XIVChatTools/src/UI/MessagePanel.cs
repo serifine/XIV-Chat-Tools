@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XIVChatTools;
 using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
@@ -66,7 +66,7 @@ public class MessagePanel
                 ImGui.TableSetColumnIndex(1);
 
                 SetMessageColor(chatEntry);
-                ImGuiHelpers.SafeTextWrapped(chatEntry.MessageContents);
+                ImGui.TextWrapped(chatEntry.MessageContents);
                 ImGui.PopStyleColor();
             }
 

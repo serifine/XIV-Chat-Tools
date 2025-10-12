@@ -13,6 +13,7 @@ description: |-
   - Search through your message history
   - Preserve messages on logout
 repo_url: https://github.com/serifine/XIV-Chat-Tools
+dalamudApiLevel: 13
 tags:
   - Social
   - UI

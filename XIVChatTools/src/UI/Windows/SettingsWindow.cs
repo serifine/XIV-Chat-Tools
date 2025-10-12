@@ -9,7 +9,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.UI.Windows;
