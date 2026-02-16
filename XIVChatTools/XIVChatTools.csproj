@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <PackageId>XIVChatTools</PackageId>
-        <Version>3.3.0</Version>
-        <TargetFramework>net9.0-windows</TargetFramework>
+        <Version>4.0.0</Version>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Authors>serifine</Authors>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <PreserveCompilationContext>false</PreserveCompilationContext>
@@ -18,15 +18,16 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.3" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Update="DalamudPackager" Version="13.0.0" />
+      <PackageReference Update="DalamudPackager" Version="14.0.2" />
+      <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.2" />
     </ItemGroup>
 </Project>
