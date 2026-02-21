@@ -16,7 +16,7 @@ namespace XIVChatTools.Helpers;
 /// </summary>
 internal static class PlayerCharacter
 {
-    private static IClientState _clientState = Plugin.ClientState;
+    private static IPlayerState _playerState = Plugin.PlayerState;
 
     /// <summary>
     /// Returns the currently logged in players name.
@@ -32,8 +32,8 @@ internal static class PlayerCharacter
     {
         await Plugin.Framework.RunOnTick(() =>
         {
-            Name = _clientState.LocalPlayer?.Name.TextValue ?? "";
-            World = _clientState.LocalPlayer?.HomeWorld.Value.Name.ToString() ?? "";
+            Name = _playerState.CharacterName ?? "";
+            World = _playerState.HomeWorld.Value.Name.ToString() ?? "";
         });
     }
 
