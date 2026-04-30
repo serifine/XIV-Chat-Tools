@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <AssemblyName>XIVChatTools</AssemblyName>
-        <Version>4.0.2</Version>
+        <Version>4.0.3</Version>
         <TargetFramework>net10.0-windows</TargetFramework>
         <Authors>serifine</Authors>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
