@@ -1,119 +1,118 @@
-﻿using Dalamud.Game.Command;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Dalamud;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.Command;
+using Dalamud.Game.Gui;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Gui;
-using Dalamud.Plugin;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Logging;
-using Dalamud.IoC;
-using Dalamud;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Dalamud.Plugin.Services;
 using Dalamud.Interface.Windowing;
+using Dalamud.IoC;
+using Dalamud.Logging;
+using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using XIVChatTools.Services;
-using Lumina.Excel.Sheets;
 using Lumina.Excel;
-using XIVChatTools.Database;
+using Lumina.Excel.Sheets;
 using Microsoft.EntityFrameworkCore;
+using XIVChatTools.Database;
 using XIVChatTools.Database.Models;
-using System.Threading.Tasks;
 using XIVChatTools.Helpers;
+using XIVChatTools.Services;
 
 namespace XIVChatTools;
 
-public class Plugin : IDalamudPlugin
+public class Plugin : IAsyncDalamudPlugin
 {
     public static string Name => "Chat Tools";
 
-    [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
+    [PluginService] private static IChatGui ChatGui { get; set; } = null!;
+    [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
+    [PluginService] private static IDataManager DataManager { get; set; } = null!;
+
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
 
-    internal readonly ExcelSheet<World> WorldSheet;
-    internal readonly PluginStateService PluginState;
-    internal readonly MessageService MessageService;
-    internal readonly WindowManagerService WindowManagerService;
-    internal readonly TabControllerService TabController;
-    internal readonly Configuration Configuration;
-    internal readonly ChatToolsDbContext DbContext;
+    internal PluginStateService PluginState { get; private set; } = null!;
+    internal MessageService MessageService { get; private set; } = null!;
+    internal WindowManagerService WindowManagerService { get; private set; } = null!;
+    internal TabControllerService TabController { get; private set; } = null!;
+    internal Configuration Configuration { get; private set; } = null!;
+    internal ChatToolsDbContext DbContext { get; private set; } = null!;
 
-    private readonly List<string> _commandAliases = [
+    private readonly List<string> _commandAliases =
+    [
         "/chattools",
         "/ctools",
         "/ct"
     ];
 
-    private readonly List<string> _settingsArgumentAliases = [
+    private readonly List<string> _settingsArgumentAliases =
+    [
         "settings",
         "config"
     ];
 
     public Plugin()
     {
-
 #if DEBUG
         Logger.Debug("Chat Tools initialized in debug mode.");
 #endif
+    }
 
-        try
+    public async Task LoadAsync(CancellationToken token)
+    {
+        Logger.Verbose("Loading Chat Tools");
+        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        Configuration.Initialize(PluginInterface);
+
+        DbContext = await InitializeDbContext();
+        
+        Logger.Verbose("Bootstrapping Chat Tools");
+        PluginState = new PluginStateService(this);
+        MessageService = new MessageService(this);
+        TabController = new TabControllerService(this);
+        WindowManagerService = new WindowManagerService(this);
+        
+        ClientState.Login += OnLogin;
+        ClientState.Logout += OnLogout;
+
+        PluginInterface.UiBuilder.Draw += OnDrawUI;
+        PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
+        PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
+
+        ChatGui.ChatMessageUnhandled += MessageService.HandleChatMessage;
+
+        foreach (string commandAlias in _commandAliases)
         {
-            PlayerCharacter.UpdatePlayerCharacter();
-
-            Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            // to be removed later
-            Configuration.Initialize(PluginInterface);
-
-            DbContext = InitializeDbContext();
-
-            PluginState = new PluginStateService(this);
-            MessageService = new MessageService(this);
-            TabController = new TabControllerService(this);
-            WindowManagerService = new WindowManagerService(this);
-
-            WorldSheet = DataManager.GetExcelSheet<World>()!;
-
-            ClientState.Login += OnLogin;
-            ClientState.Logout += OnLogout;
-
-            PluginInterface.UiBuilder.Draw += OnDrawUI;
-            PluginInterface.UiBuilder.OpenMainUi += OnOpenMainUI;
-            PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUI;
-
-            ChatGui.ChatMessageUnhandled += MessageService.HandleChatMessage;
-
-            foreach (string commandAlias in _commandAliases)
+            CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
             {
-                CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
-                {
-                    HelpMessage = _commandAliases.First() == commandAlias ?
-                      "Opens the Chat Tools window." : "Alias for /chattools."
-                });
-            }
+                HelpMessage = _commandAliases.First() == commandAlias
+                    ? "Opens the Chat Tools window."
+                    : "Alias for /chattools."
+            });
+        }
 
+        PlayerCharacter.UpdatePlayerCharacter();
+        
+        Logger.Verbose("Chat Tools Ready!");
+        
 #if DEBUG
             Logger.Debug("Opening main window for debug.");
             WindowManagerService.MainWindow.IsOpen = true;
 #endif
-        }
-        catch
-        {
-            Dispose();
-            throw;
-        }
     }
 
     #region Event Handlers
@@ -163,42 +162,47 @@ public class Plugin : IDalamudPlugin
 
     #endregion
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
-        ClientState.Login -= OnLogin;
-        ClientState.Logout -= OnLogout;
-
-        PluginInterface.UiBuilder.Draw -= OnDrawUI;
-        PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
-        PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
-
-        if (MessageService != null)
+        try
         {
+            ClientState.Login -= OnLogin;
+            ClientState.Logout -= OnLogout;
+
+            PluginInterface.UiBuilder.Draw -= OnDrawUI;
+            PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
+            PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
             ChatGui.ChatMessageUnhandled -= MessageService.HandleChatMessage;
-        }
 
-        PluginState?.Dispose();
-        MessageService?.Dispose();
-        WindowManagerService?.Dispose();
-        TabController?.Dispose();
+            PluginState.Dispose();
+            MessageService.Dispose();
+            WindowManagerService.Dispose();
+            TabController.Dispose();
 
-        foreach (string commandAlias in _commandAliases)
-        {
-            if (CommandManager.Commands.Any(t => t.Key == commandAlias))
+            foreach (var commandAlias in _commandAliases)
             {
-                CommandManager.RemoveHandler(commandAlias);
+                if (CommandManager.Commands.Any(t => t.Key == commandAlias))
+                {
+                    CommandManager.RemoveHandler(commandAlias);
+                }
             }
+
+            return ValueTask.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            return ValueTask.FromException(exception);
         }
     }
 
-    private ChatToolsDbContext InitializeDbContext()
+    private async Task<ChatToolsDbContext> InitializeDbContext()
     {
-        Logger.Debug("Initializing EF Sqllite Database Context");
+        Logger.Verbose("Initializing Local SQLite Database Context");
 
-        ChatToolsDbContext dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
-        dbContext.Database.EnsureCreated();
+        var dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
+        await dbContext.Database.EnsureCreatedAsync();
 
-        Logger.Debug("EF Sqllite Database Context Initialized");
+        Logger.Verbose("EF Context Initialized");
 
         return dbContext;
     }
