@@ -1,34 +1,25 @@
-
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using Dalamud.Plugin.Services;
 using Dalamud.Bindings.ImGui;
 using XIVChatTools.Database.Models;
 using XIVChatTools.Models;
-using XIVChatTools.Models.Tabs;
 using XIVChatTools.Services;
+
 
 namespace XIVChatTools.UI.Components;
 
-
 internal class FocusTargetTabComponent : IDisposable
 {
-    private readonly Plugin _plugin;
     private readonly MessagePanel _messagePanel;
+    private readonly MessageService _messageService;
 
-    private List<Message> messages = new List<Message>();
-    private MessageService _messageService => _plugin.MessageService;
-    private PlayerIdentifier? currentFocusedTarget = null;
-
-    private float Scale => ImGui.GetIO().FontGlobalScale;
+    private PlayerIdentifier? _currentFocusedTarget;
+    private List<Message> _messages = [];
 
     public FocusTargetTabComponent(Plugin plugin)
     {
-        _plugin = plugin;
-        _messagePanel = new(plugin);
+        _messagePanel = new MessagePanel(plugin);
+        _messageService = plugin.MessageService;
         _messageService.MessageAdded += OnMessageAdded;
     }
 
@@ -39,9 +30,9 @@ internal class FocusTargetTabComponent : IDisposable
 
     private void OnMessageAdded(PlayerIdentifier sender, Message message)
     {
-        if (currentFocusedTarget != null && currentFocusedTarget.Equals(sender))
+        if (_currentFocusedTarget != null && _currentFocusedTarget.Equals(sender))
         {
-            messages.Add(message);
+            _messages.Add(message);
         }
     }
 
@@ -49,35 +40,33 @@ internal class FocusTargetTabComponent : IDisposable
     {
         var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
-        if (focusTarget == null)
-        {
-            currentFocusedTarget = null;
-            messages = new List<Message>();
+        if (focusTarget == null) {
+            _currentFocusedTarget = null;
+            _messages = [];
             return;
         }
 
-        if (currentFocusedTarget == null || !focusTarget.Equals(currentFocusedTarget))
-        {
-            currentFocusedTarget = focusTarget;
-            messages = _messageService.GetMessagesForPlayer(focusTarget);
-        }
+        if (_currentFocusedTarget != null && focusTarget.Equals(_currentFocusedTarget)) return;
+        
+        _currentFocusedTarget = focusTarget;
+        _messages = _messageService.GetMessagesForPlayer(focusTarget);
     }
 
     internal void Draw()
     {
         if (ImGui.BeginTabItem("Current Target"))
         {
-            if (currentFocusedTarget == null)
+            if (_currentFocusedTarget == null)
             {
                 ImGui.Text("No target hovered or selected.");
             }
-            else if (messages != null && messages.Count > 0)
+            else if (_messages.Count > 0)
             {
-                _messagePanel.Draw(messages);
+                _messagePanel.Draw(_messages);
             }
             else
             {
-                ImGui.Text("No messages found for " + currentFocusedTarget.Name + ".");
+                ImGui.Text("No messages found for " + _currentFocusedTarget.Name + ".");
             }
 
             ImGui.EndTabItem();

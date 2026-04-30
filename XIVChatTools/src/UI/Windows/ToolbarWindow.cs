@@ -42,9 +42,9 @@ public class ToolbarWindow : Window
         ImGui.SetNextWindowSize(new Vector2(320 * Scale, 0));
         if (ImGui.BeginPopup("Alerts"))
         {
-            string globalWatchers = Configuration.Session_WatchData.GlobalWatchers;
-            string characterWatchers = Configuration.Session_WatchData.CharacterWatchers;
-            string sessionWatchers = Configuration.Session_WatchData.SessionWatchers;
+            string globalWatchers = Configuration.SessionWatchData.GlobalWatchers;
+            string characterWatchers = Configuration.SessionWatchData.CharacterWatchers;
+            string sessionWatchers = Configuration.SessionWatchData.SessionWatchers;
 
             ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
             ImGui.Spacing();

@@ -33,11 +33,11 @@ public class AdvancedDebugLogger
 {
     private readonly Plugin _plugin;
 
-    private string directoryPath => $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Temp\\Logs\\ChatTools";
-    private string fileName => "chat-tools-debug-log.json";
-    private string fullFilePath => Path.Combine(directoryPath, fileName);
+    private string DirectoryPath => $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Temp\\Logs\\ChatTools";
+    private string FileName => "chat-tools-debug-log.json";
+    private string FullFilePath => Path.Combine(DirectoryPath, FileName);
 
-    private IPluginLog _logger => Plugin.Logger;
+    private IPluginLog Logger => Plugin.Logger;
 
     public AdvancedDebugLogger(Plugin plugin)
     {
@@ -48,27 +48,27 @@ public class AdvancedDebugLogger
 
     private void EnsureFilePath()
     {
-        if (Directory.Exists(directoryPath) == false)
+        if (Directory.Exists(DirectoryPath) == false)
         {
             try
             {
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(DirectoryPath);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Could not create new chat log directory.");
+                Logger.Error(e, "Could not create new chat log directory.");
             }
         }
 
-        if (File.Exists(fullFilePath) == false)
+        if (File.Exists(FullFilePath) == false)
         {
             try
             {
-                File.WriteAllLines(fullFilePath, ["[", "", "]"]);
+                File.WriteAllLines(FullFilePath, ["[", "", "]"]);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Could not create new debug log file.");
+                Logger.Error(e, "Could not create new debug log file.");
             }
         }
     }
@@ -77,14 +77,14 @@ public class AdvancedDebugLogger
     {
         try
         {
-            var FileResult = File.ReadAllText(fullFilePath);
+            var fileResult = File.ReadAllText(FullFilePath);
             var options = new JsonSerializerOptions
             {
                 IncludeFields = true,
                 WriteIndented = true
             };
 
-            List<object> debugList = JsonSerializer.Deserialize<List<object>>(FileResult, options) ?? [];
+            List<object> debugList = JsonSerializer.Deserialize<List<object>>(fileResult, options) ?? [];
 
             debugList.Add(new
             {
@@ -98,17 +98,17 @@ public class AdvancedDebugLogger
 
             string serializedOutput = JsonSerializer.Serialize<List<object>>(debugList, options);
 
-            await File.WriteAllTextAsync(fullFilePath, serializedOutput);
+            await File.WriteAllTextAsync(FullFilePath, serializedOutput);
         }
         catch (Exception ex)
         {
-            _logger.Error("An error has occurred while trying to update chat log history: " + ex.Message);
+            Logger.Error("An error has occurred while trying to update chat log history: " + ex.Message);
         }
     }
 
     private object ParseSeStringForLogging(SeString seString)
     {
-        List<object> Payloads = new List<object>();
+        List<object> payloads = new List<object>();
 
         foreach (var payload in seString.Payloads)
         {
@@ -120,7 +120,7 @@ public class AdvancedDebugLogger
             {
                 var playerPayload = (PlayerPayload)payload;
 
-                Payloads.Add(new
+                payloads.Add(new
                 {
                     Type = playerPayload.Type.ToString(),
                     PlayerName = playerPayload.PlayerName.ToString(),
@@ -135,7 +135,7 @@ public class AdvancedDebugLogger
                 var itemPayload = (ItemPayload)payload;
 
 
-                Payloads.Add(new
+                payloads.Add(new
                 {
                     Type = itemPayload.Type.ToString(),
                     ItemName = itemPayload.DisplayName ?? "Item Null"
@@ -147,7 +147,7 @@ public class AdvancedDebugLogger
             if (payload.Type == PayloadType.Icon) {
                 var iconPayload = (IconPayload)payload;
 
-                Payloads.Add(new
+                payloads.Add(new
                 {
                     Type = iconPayload.Type.ToString(),
                     Icon = iconPayload.Icon.ToString(),
@@ -160,7 +160,7 @@ public class AdvancedDebugLogger
             if (payload.Type == PayloadType.RawText) {
                 var textPayload = (TextPayload)payload;
 
-                Payloads.Add(new
+                payloads.Add(new
                 {
                     Type = textPayload.Type.ToString(),
                     Text = textPayload.Text?.ToString()
@@ -169,7 +169,7 @@ public class AdvancedDebugLogger
                 continue;
             }
 
-            Payloads.Add(new
+            payloads.Add(new
             {
                 Type = payload.Type.ToString(),
                 Text = payload.ToString() ?? "No Value"
@@ -180,8 +180,7 @@ public class AdvancedDebugLogger
 
         return new
         {
-            TextValue = seString.TextValue.ToString(),
-            Payloads
+            TextValue = seString.TextValue.ToString(), Payloads = payloads
         };
     }
 }

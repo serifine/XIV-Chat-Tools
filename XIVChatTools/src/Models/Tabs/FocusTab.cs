@@ -13,9 +13,9 @@ internal class FocusTab : Tab
 {
     private List<PlayerIdentifier> _focusTargets;
 
-    private MessageService _messageService => _plugin.MessageService;
+    private MessageService MessageService => Plugin.MessageService;
 
-    internal List<Message> messages = new List<Message>();
+    internal List<Message> Messages = new List<Message>();
 
     internal FocusTab(Plugin plugin, PlayerIdentifier? initialTarget = null, string title = "New Watch Tab") : base(plugin, title)
     {
@@ -26,26 +26,26 @@ internal class FocusTab : Tab
             _focusTargets.Add(initialTarget);
         }
 
-        _messageService.MessageAdded += OnMessageAdded;
+        MessageService.MessageAdded += OnMessageAdded;
 
         UpdateMessagesFromDb();
     }
 
     public override void Dispose()
     {
-        _messageService.MessageAdded -= OnMessageAdded;
+        MessageService.MessageAdded -= OnMessageAdded;
     }
 
     private void UpdateMessagesFromDb()
     {
-        this.messages = _messageService.GetMessagesForPlayers(_focusTargets);
+        this.Messages = MessageService.GetMessagesForPlayers(_focusTargets);
     }
 
     internal void OnMessageAdded(PlayerIdentifier sender, Message message)
     {
         if (_focusTargets.Any(t => t.Equals(sender)))
         {
-            messages.Add(message);
+            Messages.Add(message);
         }
     }
 

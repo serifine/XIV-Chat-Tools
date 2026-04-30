@@ -26,16 +26,16 @@ public class Configuration : IPluginConfiguration
     public bool SplitDateAndNames = true;
 
     #region Chat Log Settings
-    public string MessageDb_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
+    public string MessageDbFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
 
-    public string MessageLog_FilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
-    public string MessageLog_FileName = "ChatLogs.json";
-    public string MessageLog_GlobalWatchers = "";
-    public List<CharacterWatcher> MessageLog_CharacterWatchers = new List<CharacterWatcher>();
+    public string MessageLogFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
+    public string MessageLogFileName = "ChatLogs.json";
+    public string MessageLogGlobalWatchers = "";
+    public List<CharacterWatcher> MessageLogCharacterWatchers = new List<CharacterWatcher>();
 
-    public bool MessageLog_PreserveOnLogout = true;
-    public bool MessageLog_DeleteOldMessages = true;
-    public int MessageLog_DaysToKeepOldMessages = 7;
+    public bool MessageLogPreserveOnLogout = true;
+    public bool MessageLogDeleteOldMessages = true;
+    public int MessageLogDaysToKeepOldMessages = 7;
 
     #endregion
 
@@ -71,18 +71,18 @@ public class Configuration : IPluginConfiguration
     //
 
     [NonSerialized]
-    private IDalamudPluginInterface? pluginInterface;
+    private IDalamudPluginInterface? _pluginInterface;
 
     [NonSerialized]
-    internal SessionWatchData Session_WatchData = new SessionWatchData();
+    internal SessionWatchData SessionWatchData = new SessionWatchData();
 
     public void Initialize(IDalamudPluginInterface pluginInterface)
     {
-        this.pluginInterface = pluginInterface;
+        this._pluginInterface = pluginInterface;
 
-        if (!System.IO.Directory.Exists(MessageDb_FilePath))
+        if (!System.IO.Directory.Exists(MessageDbFilePath))
         {
-            System.IO.Directory.CreateDirectory(MessageDb_FilePath);
+            System.IO.Directory.CreateDirectory(MessageDbFilePath);
         }
 
         ReloadWatcherData();
@@ -90,12 +90,12 @@ public class Configuration : IPluginConfiguration
 
     public void Save()
     {
-        if (this.pluginInterface == null)
+        if (this._pluginInterface == null)
         {
             throw new InvalidOperationException("Plugin interface not set.");
         }
 
-        this.pluginInterface.SavePluginConfig(this);
+        this._pluginInterface.SavePluginConfig(this);
     }
 
     public void OnLoginUpdates()
@@ -105,53 +105,53 @@ public class Configuration : IPluginConfiguration
 
     public void UpdateGlobalWatchers(string watchers)
     {
-        MessageLog_GlobalWatchers = watchers;
-        Session_WatchData.UpdateGlobalWatchers(watchers);
+        MessageLogGlobalWatchers = watchers;
+        SessionWatchData.UpdateGlobalWatchers(watchers);
 
         Save();
     }
 
     public void UpdateCharacterWatchers(string watchers)
     {
-        string CharacterName = Helpers.PlayerCharacter.Name;
-        string WorldName = Helpers.PlayerCharacter.World;
+        string characterName = Helpers.PlayerCharacter.Name;
+        string worldName = Helpers.PlayerCharacter.World;
 
-        var characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == CharacterName && w.World == WorldName);
+        var characterWatcher = MessageLogCharacterWatchers.FirstOrDefault(w => w.Character == characterName && w.World == worldName);
 
         if (characterWatcher == null)
         {
-            MessageLog_CharacterWatchers.Add(new CharacterWatcher(CharacterName, WorldName, watchers));
+            MessageLogCharacterWatchers.Add(new CharacterWatcher(characterName, worldName, watchers));
         }
         else
         {
             characterWatcher.Watchers = watchers;
         }
 
-        Session_WatchData.UpdateCharacterWatchers(watchers);
+        SessionWatchData.UpdateCharacterWatchers(watchers);
 
         Save();
     }
 
     public void UpdateSessionWatchers(string watchers)
     {
-        Session_WatchData.UpdateSessionWatchers(watchers);
+        SessionWatchData.UpdateSessionWatchers(watchers);
     }
 
     public void ReloadWatcherData() {
-        string CharacterName = Helpers.PlayerCharacter.Name;
-        string WorldName = Helpers.PlayerCharacter.World;
-        Session_WatchData = new SessionWatchData();
+        string characterName = Helpers.PlayerCharacter.Name;
+        string worldName = Helpers.PlayerCharacter.World;
+        SessionWatchData = new SessionWatchData();
         
-        CharacterWatcher? characterWatcher = MessageLog_CharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
+        CharacterWatcher? characterWatcher = MessageLogCharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
     
-        if (MessageLog_GlobalWatchers != "")
+        if (MessageLogGlobalWatchers != "")
         {
-            Session_WatchData.UpdateGlobalWatchers(MessageLog_GlobalWatchers);
+            SessionWatchData.UpdateGlobalWatchers(MessageLogGlobalWatchers);
         }
 
         if (characterWatcher != null)
         {
-            Session_WatchData.UpdateCharacterWatchers(characterWatcher.Watchers);
+            SessionWatchData.UpdateCharacterWatchers(characterWatcher.Watchers);
         }
     }
 }

@@ -21,7 +21,7 @@ internal class FocusTabComponent
     private TabControllerService TabController => _plugin.TabController;
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
-    private PlayerIdentifier comboCurrentValue = new PlayerIdentifier("Focus Target", "");
+    private PlayerIdentifier _comboCurrentValue = new PlayerIdentifier("Focus Target", "");
 
     public FocusTabComponent(Plugin plugin)
     {
@@ -236,9 +236,9 @@ internal class FocusTabComponent
     {
         var focusTargets = focusTab.GetFocusTargets();
 
-        if (focusTab.messages.Count > 0)
+        if (focusTab.Messages.Count > 0)
         {
-            _messagePanel.Draw(focusTab.messages);
+            _messagePanel.Draw(focusTab.Messages);
         }
         else
         {

@@ -35,7 +35,7 @@ internal class KeywordWatcher
 
     private bool ContainsWatchedTerm(string message)
     {
-        var watchers = Configuration.Session_WatchData.AllWatchers;
+        var watchers = Configuration.SessionWatchData.AllWatchers;
         
         if (watchers.Count == 0) return false;
 

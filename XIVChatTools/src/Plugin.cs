@@ -51,13 +51,13 @@ public class Plugin : IDalamudPlugin
     internal readonly Configuration Configuration;
     internal readonly ChatToolsDbContext DbContext;
 
-    private readonly List<string> commandAliases = [
+    private readonly List<string> _commandAliases = [
         "/chattools",
         "/ctools",
         "/ct"
     ];
 
-    private readonly List<string> settingsArgumentAliases = [
+    private readonly List<string> _settingsArgumentAliases = [
         "settings",
         "config"
     ];
@@ -95,11 +95,11 @@ public class Plugin : IDalamudPlugin
 
             ChatGui.ChatMessageUnhandled += MessageService.HandleChatMessage;
 
-            foreach (string commandAlias in commandAliases)
+            foreach (string commandAlias in _commandAliases)
             {
                 CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
                 {
-                    HelpMessage = commandAliases.First() == commandAlias ?
+                    HelpMessage = _commandAliases.First() == commandAlias ?
                       "Opens the Chat Tools window." : "Alias for /chattools."
                 });
             }
@@ -120,7 +120,7 @@ public class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
-        if (settingsArgumentAliases.Contains(args.ToLower()))
+        if (_settingsArgumentAliases.Contains(args.ToLower()))
         {
             WindowManagerService.SettingsWindow.IsOpen = !WindowManagerService.SettingsWindow.IsOpen;
         }
@@ -182,7 +182,7 @@ public class Plugin : IDalamudPlugin
         WindowManagerService?.Dispose();
         TabController?.Dispose();
 
-        foreach (string commandAlias in commandAliases)
+        foreach (string commandAlias in _commandAliases)
         {
             if (CommandManager.Commands.Any(t => t.Key == commandAlias))
             {
@@ -195,7 +195,7 @@ public class Plugin : IDalamudPlugin
     {
         Logger.Debug("Initializing EF Sqllite Database Context");
 
-        ChatToolsDbContext dbContext = new ChatToolsDbContext(Configuration.MessageDb_FilePath);
+        ChatToolsDbContext dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
         dbContext.Database.EnsureCreated();
 
         Logger.Debug("EF Sqllite Database Context Initialized");

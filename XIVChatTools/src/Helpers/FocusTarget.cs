@@ -21,12 +21,12 @@ internal static class FocusTarget
     {
         IGameObject? focusTarget = _targetManager.Target;
 
-        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
+        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Pc)
         {
             focusTarget = _targetManager.MouseOverTarget;
         }
 
-        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Player)
+        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Pc)
         {
             return null;
         }

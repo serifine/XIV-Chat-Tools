@@ -23,15 +23,15 @@ public class SearchWindow : Window
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
 
-    private List<Message> searchMessages = [];
-    private string searchText = "";
+    private List<Message> _searchMessages = [];
+    private string _searchText = "";
 
     internal SearchWindow(Plugin plugin) : base($"Search###ChatToolsSearchWindow")
     {
         _plugin = plugin;
         _messagePanel = new(_plugin);
 
-        searchMessages = MessageService.GetAllMessages();
+        _searchMessages = MessageService.GetAllMessages();
 
         Size = new Vector2(450, 600);
         SizeConstraints = new WindowSizeConstraints() { MinimumSize = new Vector2(450, 600), MaximumSize = new Vector2(700, 1200) };
@@ -42,16 +42,16 @@ public class SearchWindow : Window
     private void DrawInterface()
     {
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if (ImGui.InputTextWithHint("", "Search Messages", ref searchText, 24096))
+        if (ImGui.InputTextWithHint("", "Search Messages", ref _searchText, 24096))
         {
-            searchMessages = MessageService.SearchMessages(searchText);
+            _searchMessages = MessageService.SearchMessages(_searchText);
         }
 
         ImGui.Separator();
 
-        if (searchMessages.Count > 0)
+        if (_searchMessages.Count > 0)
         {
-            _messagePanel.Draw(searchMessages);
+            _messagePanel.Draw(_searchMessages);
         }
         else
         {

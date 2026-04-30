@@ -7,7 +7,7 @@ namespace XIVChatTools.Models.Tabs;
 
 internal class Tab : IDisposable
 {
-    internal Plugin _plugin;
+    internal Plugin Plugin;
     internal readonly Guid TabId;
 
     internal bool ShouldCloseNextFrame { get; private set; }
@@ -16,7 +16,7 @@ internal class Tab : IDisposable
 
     internal Tab(Plugin plugin, string title = "")
     {
-        _plugin = plugin;
+        Plugin = plugin;
         TabId = Guid.NewGuid();
         Title = title;
     }

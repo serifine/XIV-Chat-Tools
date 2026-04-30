@@ -3,3 +3,12 @@ obj/
 bin/
 packages/
 *.user
+*.log
+.DS_Store
+
+# Editor directories and files
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea

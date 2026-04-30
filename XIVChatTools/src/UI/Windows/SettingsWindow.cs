@@ -20,10 +20,10 @@ public class SettingsWindow : Window
 
     private Configuration Configuration => _plugin.Configuration;
 
-    private int ChannelLogging_ActiveSelection = 0;
-    private int ChannelLogging_InactiveSelection = 0;
-    private String[] InactiveChannels = [];
-    private String[] ActiveChannels = [];
+    private int _channelLoggingActiveSelection = 0;
+    private int _channelLoggingInactiveSelection = 0;
+    private String[] _inactiveChannels = [];
+    private String[] _activeChannels = [];
 
 
     internal SettingsWindow(Plugin plugin) : base($"Chat Tools Settings###ChatToolsSettingsWindow")
@@ -40,7 +40,7 @@ public class SettingsWindow : Window
 
     private void AddActiveChannel()
     {
-        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == InactiveChannels[ChannelLogging_InactiveSelection]);
+        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == _inactiveChannels[_channelLoggingInactiveSelection]);
 
 
         if (channel != null)
@@ -54,7 +54,7 @@ public class SettingsWindow : Window
 
     private void RemoveActiveChannel()
     {
-        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == ActiveChannels[ChannelLogging_ActiveSelection]);
+        var channel = Constants.ChatTypes.SupportedChannels.FirstOrDefault(t => t.Name == _activeChannels[_channelLoggingActiveSelection]);
 
         if (channel != null)
         {
@@ -67,12 +67,12 @@ public class SettingsWindow : Window
 
     private void UpdateChannelsToLog()
     {
-        InactiveChannels = Constants.ChatTypes.SupportedChannels
+        _inactiveChannels = Constants.ChatTypes.SupportedChannels
           .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == false)
           .Select(t => t.Name)
           .OrderBy(t => t)
           .ToArray();
-        ActiveChannels = Constants.ChatTypes.SupportedChannels
+        _activeChannels = Constants.ChatTypes.SupportedChannels
           .Where(t => Configuration.ActiveChannels.Contains(t.ChatType) == true)
           .Select(t => t.Name)
           .OrderBy(t => t)
@@ -86,7 +86,7 @@ public class SettingsWindow : Window
             this.Configuration.Save();
         }
 
-        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.MessageLog_PreserveOnLogout))
+        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.MessageLogPreserveOnLogout))
         {
             this.Configuration.Save();
         }
@@ -168,7 +168,7 @@ public class SettingsWindow : Window
 
         ImGui.SetNextItemWidth(260);
         ImGui.PushID("AddChannelComboBox");
-        ImGui.Combo("", ref ChannelLogging_InactiveSelection, InactiveChannels, InactiveChannels.Length);
+        ImGui.Combo("", ref _channelLoggingInactiveSelection, _inactiveChannels, _inactiveChannels.Length);
         ImGui.PopID();
         ImGui.SameLine();
         if (ImGui.Button("Add Selected Channel")) AddActiveChannel();
@@ -176,7 +176,7 @@ public class SettingsWindow : Window
         ImGui.PushItemWidth(180);
         ImGui.PushID("InactiveChannelsListbox");
         ImGui.SetNextItemWidth(400);
-        ImGui.ListBox("", ref ChannelLogging_ActiveSelection, ActiveChannels, ActiveChannels.Length);
+        ImGui.ListBox("", ref _channelLoggingActiveSelection, _activeChannels, _activeChannels.Length);
         ImGui.PopID();
         if (ImGui.Button("Remove Selected Channel From Watch List")) RemoveActiveChannel();
     }
@@ -192,26 +192,26 @@ public class SettingsWindow : Window
         ImGui.Spacing();
         ImGui.Spacing();
 
-        if (ImGui.Checkbox("Preserve Messages on Logout", ref this.Configuration.MessageLog_PreserveOnLogout))
+        if (ImGui.Checkbox("Preserve Messages on Logout", ref this.Configuration.MessageLogPreserveOnLogout))
         {
             this.Configuration.Save();
         }
 
-        if (ImGui.Checkbox("Delete Old Messages", ref this.Configuration.MessageLog_DeleteOldMessages))
+        if (ImGui.Checkbox("Delete Old Messages", ref this.Configuration.MessageLogDeleteOldMessages))
         {
             this.Configuration.Save();
         }
 
-        if (this.Configuration.MessageLog_DeleteOldMessages)
+        if (this.Configuration.MessageLogDeleteOldMessages)
         {
 
-            if (ImGui.InputInt("Delete After (days)", ref this.Configuration.MessageLog_DaysToKeepOldMessages))
+            if (ImGui.InputInt("Delete After (days)", ref this.Configuration.MessageLogDaysToKeepOldMessages))
             {
                 this.Configuration.Save();
             }
         }
 
-        ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLog_FilePath, 2048);
+        ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLogFilePath, 2048);
     }
 
     private void DrawDevLogging()

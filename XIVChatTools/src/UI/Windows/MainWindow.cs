@@ -28,10 +28,10 @@ public class MainWindow : Window
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
-    private IPluginLog _logger => Plugin.Logger;
+    private IPluginLog Logger => Plugin.Logger;
     private Vector2 _originalWindowPadding = new(0, 0);
 
-    private FocusTabComponent FocusTabComponent;
+    private FocusTabComponent _focusTabComponent;
 
     internal MainWindow(Plugin plugin) : base($"Chat Tools###ChatToolsMainWindow")
     {
@@ -42,7 +42,7 @@ public class MainWindow : Window
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking;
 
-        FocusTabComponent = new(plugin);
+        _focusTabComponent = new(plugin);
     }
 
     public override void PreDraw()
@@ -66,7 +66,7 @@ public class MainWindow : Window
         }
         catch (Exception e)
         {
-            _logger.Error(e, "Error drawing Chat Tools window.");
+            Logger.Error(e, "Error drawing Chat Tools window.");
         }
     }
 
@@ -85,7 +85,7 @@ public class MainWindow : Window
 
             foreach (var tab in TabController.GetFocusTabs())
             {
-                FocusTabComponent.Draw(tab);
+                _focusTabComponent.Draw(tab);
             }
 
             if (ImGui.TabItemButton("+", ImGuiTabItemFlags.Trailing))
