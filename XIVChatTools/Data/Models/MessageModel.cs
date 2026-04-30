@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Dalamud.Game.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Database.Models;
 

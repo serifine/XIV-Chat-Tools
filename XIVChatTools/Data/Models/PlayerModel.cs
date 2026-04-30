@@ -1,9 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Microsoft.EntityFrameworkCore;
 
 namespace XIVChatTools.Database.Models;

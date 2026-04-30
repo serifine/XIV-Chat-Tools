@@ -1,15 +1,8 @@
-
-
-using System;
-using System.Linq;
 using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
-using Dalamud.IoC;
-using Dalamud.Plugin.Services;
-using Dalamud.Bindings.ImGui;
-using Microsoft.Extensions.Logging;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.UI.Windows;

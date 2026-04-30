@@ -1,18 +1,10 @@
 
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Interface;
-using Dalamud.Interface.Components;
-using Dalamud.Interface.Internal.Windows.StyleEditor;
-using Dalamud.Interface.Windowing;
-using Dalamud.IoC;
-using Dalamud.Plugin.Services;
 using Dalamud.Bindings.ImGui;
-using XIVChatTools.Models;
-using XIVChatTools.Models.Tabs;
+using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Services;
 using XIVChatTools.Services;
 using XIVChatTools.UI.Components;
 

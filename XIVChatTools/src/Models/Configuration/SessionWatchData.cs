@@ -1,10 +1,5 @@
-using Dalamud.Configuration;
-using Dalamud.Plugin;
-using Dalamud.Game.Text;
-using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Linq;
 
 namespace XIVChatTools.Models.Configuration;
 

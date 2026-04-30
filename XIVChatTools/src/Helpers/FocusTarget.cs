@@ -1,4 +1,3 @@
-using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -21,12 +20,12 @@ internal static class FocusTarget
     {
         IGameObject? focusTarget = _targetManager.Target;
 
-        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Pc)
+        if (focusTarget is not { ObjectKind: ObjectKind.Pc })
         {
             focusTarget = _targetManager.MouseOverTarget;
         }
 
-        if (focusTarget == null || focusTarget.ObjectKind != ObjectKind.Pc)
+        if (focusTarget is not { ObjectKind: ObjectKind.Pc })
         {
             return null;
         }

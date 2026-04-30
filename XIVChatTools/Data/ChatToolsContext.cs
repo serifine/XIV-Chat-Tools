@@ -6,18 +6,12 @@ using XIVChatTools.Database.Models;
 
 namespace XIVChatTools.Database;
 
-public class ChatToolsDbContext : DbContext
+public class ChatToolsDbContext(string filePath) : DbContext
 {
-    private string _filePath;
-    private string SqlLiteDbPath => Path.Combine(_filePath, "ChatTools.db");
+    private string SqlLiteDbPath => Path.Combine(filePath, "ChatTools.db");
 
     public DbSet<Player> Players { get; set; }
     public DbSet<Message> Messages { get; set; }
-
-    public ChatToolsDbContext(string filePath)
-    {
-        _filePath = filePath;
-    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

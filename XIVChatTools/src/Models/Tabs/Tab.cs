@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 
 namespace XIVChatTools.Models.Tabs;
 

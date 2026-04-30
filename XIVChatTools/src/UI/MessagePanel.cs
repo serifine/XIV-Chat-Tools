@@ -2,12 +2,9 @@
 
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.Game.Text;
-using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
-using XIVChatTools;
+using Dalamud.Game.Text;
 using XIVChatTools.Database.Models;
-using XIVChatTools.Models;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.UI;
