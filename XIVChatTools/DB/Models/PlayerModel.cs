@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace XIVChatTools.Database.Models;
+namespace XIVChatTools.DB.Models;
 
 [Table("Players")]
 [PrimaryKey(nameof(Name), nameof(World))]

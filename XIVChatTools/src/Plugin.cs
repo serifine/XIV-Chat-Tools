@@ -7,7 +7,8 @@ using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using XIVChatTools.Database;
+using Microsoft.EntityFrameworkCore;
+using XIVChatTools.DB;
 using XIVChatTools.Helpers;
 using XIVChatTools.Services;
 
@@ -19,7 +20,6 @@ public class Plugin : IAsyncDalamudPlugin
 
     [PluginService] private static IChatGui ChatGui { get; set; } = null!;
     [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
-    [PluginService] private static IDataManager DataManager { get; set; } = null!;
 
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
@@ -185,6 +185,10 @@ public class Plugin : IAsyncDalamudPlugin
 
         var dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
         await dbContext.Database.EnsureCreatedAsync();
+        
+        Logger.Verbose("Warming Up SQLite Context");
+
+        await dbContext.Messages.FirstAsync();
 
         Logger.Verbose("EF Context Initialized");
 

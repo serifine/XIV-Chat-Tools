@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using XIVChatTools.Database.Models;
+using XIVChatTools.DB.Models;
 
-namespace XIVChatTools.Database;
+namespace XIVChatTools.DB;
 
 public class ChatToolsDbContext(string filePath) : DbContext
 {
@@ -27,17 +27,16 @@ public class ChatToolsDbContext(string filePath) : DbContext
     }
 
     internal Player GetLoggedInPlayer() {
-        if (Plugin.ClientState.IsLoggedIn == false) {
+        if (!Plugin.ClientState.IsLoggedIn) {
             throw new InvalidOperationException("Must be logged in to access logged in player.");
         }
 
-        var results = this.Players.FirstOrDefault(t => t.Name == Helpers.PlayerCharacter.Name && t.World == Helpers.PlayerCharacter.World);
+        var results = Players.FirstOrDefault(t => t.Name == Helpers.PlayerCharacter.Name && t.World == Helpers.PlayerCharacter.World);
 
-        if (results != null) {
+        if (results != null)
             return results;
-        }
 
-        return new Player() {
+        return new Player {
             Name = Helpers.PlayerCharacter.Name,
             World = Helpers.PlayerCharacter.World
         };

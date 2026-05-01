@@ -9,8 +9,8 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Microsoft.EntityFrameworkCore;
-using XIVChatTools.Database;
-using XIVChatTools.Database.Models;
+using XIVChatTools.DB;
+using XIVChatTools.DB.Models;
 using XIVChatTools.Models;
 
 namespace XIVChatTools.Services;

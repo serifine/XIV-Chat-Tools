@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Dalamud.Game.Text;
 
-namespace XIVChatTools.Database.Models;
+namespace XIVChatTools.DB.Models;
 
 [Table("Messages")]
 public class Message

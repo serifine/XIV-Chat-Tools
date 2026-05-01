@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text;
-using XIVChatTools.Database.Models;
+using XIVChatTools.DB.Models;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.UI;

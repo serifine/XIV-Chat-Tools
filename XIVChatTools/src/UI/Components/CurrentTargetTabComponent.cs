@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dalamud.Bindings.ImGui;
-using XIVChatTools.Database.Models;
+using XIVChatTools.DB.Models;
 using XIVChatTools.Models;
 using XIVChatTools.Services;
 

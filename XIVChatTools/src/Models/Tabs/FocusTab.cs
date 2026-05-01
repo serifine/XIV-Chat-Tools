@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using XIVChatTools.Database.Models;
+using XIVChatTools.DB.Models;
 using XIVChatTools.Services;
 
 namespace XIVChatTools.Models.Tabs;
