@@ -11,19 +11,20 @@ internal class PlayerIdentifier
 
     internal PlayerIdentifier(IPlayerCharacter player)
     {
-        if (player.HomeWorld.Value.Name.ToString() == null)
-        {
-            throw new InvalidOperationException("Player's HomeWorld is null");
-        }
-
+        if (!player.HomeWorld.IsValid)
+            Plugin.Logger.Error($"Player {player.Name.TextValue} has no home world.");
+        
         Name = player.Name.TextValue;
-        World = player.HomeWorld.Value.Name.ToString();
+        World = player.HomeWorld.ValueNullable?.Name.ToString() ?? "Unknown World";
     }
 
     internal PlayerIdentifier(PlayerPayload player)
     {
+        if (!player.World.IsValid)
+            Plugin.Logger.Error($"Player {player.PlayerName} has no home world.");
+
         Name = player.PlayerName;
-        World = player.World.Value.Name.ToString();
+        World = player.World.ValueNullable?.Name.ToString() ?? "Unknown World";
     }
 
     internal PlayerIdentifier(string name, string world)
