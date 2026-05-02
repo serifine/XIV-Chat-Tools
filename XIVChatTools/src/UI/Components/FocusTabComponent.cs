@@ -9,21 +9,13 @@ using XIVChatTools.Services;
 namespace XIVChatTools.UI.Components;
 
 
-internal class FocusTabComponent
+internal class FocusTabComponent(Plugin plugin)
 {
-    private readonly Plugin _plugin;
-    private readonly MessagePanel _messagePanel;
+    private readonly MessagePanel _messagePanel = new(plugin);
 
-    private TabControllerService TabController => _plugin.TabController;
+    private TabControllerService TabController => plugin.TabController;
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
-    private PlayerIdentifier _comboCurrentValue = new PlayerIdentifier("Focus Target", "");
-
-    public FocusTabComponent(Plugin plugin)
-    {
-        _plugin = plugin;
-        _messagePanel = new(plugin);
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// MAYBE MAKE INTO HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// DEFINITELY RE ORDER
@@ -214,7 +206,7 @@ internal class FocusTabComponent
                 {
                     if (ImGui.Selectable(actor.Name.TextValue))
                     {
-                        var focusTarget = new PlayerIdentifier(actor.Name.TextValue, actor.HomeWorld.Value.Name.ToString() ?? "Unknown World");
+                        var focusTarget = new PlayerIdentifier(actor);
                         focusTab.AddFocusTarget(focusTarget);
                         ImGui.CloseCurrentPopup();
                     }

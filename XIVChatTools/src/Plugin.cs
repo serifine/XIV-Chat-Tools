@@ -13,8 +13,8 @@ using XIVChatTools.Helpers;
 using XIVChatTools.Services;
 
 namespace XIVChatTools;
-
-public class Plugin : IAsyncDalamudPlugin
+ 
+public partial class Plugin : IAsyncDalamudPlugin
 {
     public static string Name => "Chat Tools";
 
@@ -36,19 +36,6 @@ public class Plugin : IAsyncDalamudPlugin
     internal Configuration Configuration { get; private set; } = null!;
     internal ChatToolsDbContext DbContext { get; private set; } = null!;
 
-    private readonly List<string> _commandAliases =
-    [
-        "/chattools",
-        "/ctools",
-        "/ct"
-    ];
-
-    private readonly List<string> _settingsArgumentAliases =
-    [
-        "settings",
-        "config"
-    ];
-
     public Plugin()
     {
 #if DEBUG
@@ -63,7 +50,7 @@ public class Plugin : IAsyncDalamudPlugin
         Configuration.Initialize(PluginInterface);
 
         DbContext = await InitializeDbContext();
-        
+
         Logger.Verbose("Bootstrapping Chat Tools");
         PluginState = new PluginStateService(this);
         MessageService = new MessageService(this);
@@ -79,56 +66,24 @@ public class Plugin : IAsyncDalamudPlugin
 
         ChatGui.ChatMessageUnhandled += MessageService.HandleChatMessage;
 
-        foreach (string commandAlias in _commandAliases)
-        {
-            CommandManager.AddHandler(commandAlias, new CommandInfo(OnCommand)
-            {
-                HelpMessage = _commandAliases.First() == commandAlias
-                    ? "Opens the Chat Tools window."
-                    : "Alias for /chattools."
-            });
-        }
+        SetupCommands();
 
         PlayerCharacter.UpdatePlayerCharacter();
         
         Logger.Verbose("Chat Tools Ready!");
         
 #if DEBUG
-            Logger.Debug("Opening main window for debug.");
+        if (Plugin.ClientState.IsLoggedIn) {
+            Logger.Debug("[DEBUG] Opening main window for debug.");
             WindowManagerService.MainWindow.IsOpen = true;
+        } else
+        {
+            Logger.Debug("[DEBUG] Not opening main window on load because player is not logged in.");
+        }
 #endif
     }
 
     #region Event Handlers
-
-    private void OnCommand(string command, string args)
-    {
-        if (_settingsArgumentAliases.Contains(args.ToLower()))
-        {
-            WindowManagerService.SettingsWindow.IsOpen = !WindowManagerService.SettingsWindow.IsOpen;
-        }
-        else
-        {
-            OnOpenMainUI();
-        }
-    }
-
-    private void OnDrawUI()
-    {
-        WindowManagerService.Draw();
-
-        PostDrawEvents();
-    }
-
-    private void OnOpenMainUI()
-    {
-        WindowManagerService.ToolbarWindow.Toggle();
-    }
-
-    private void OnOpenConfigUI()
-    {
-        WindowManagerService.SettingsWindow.Toggle();
-    }
 
     private void OnLogin()
     {
@@ -142,6 +97,25 @@ public class Plugin : IAsyncDalamudPlugin
         TabController.ClearAllTabs();
         WindowManagerService.CloseAllWindows();
         PlayerCharacter.UpdatePlayerCharacter();
+    }
+
+    private void OnDrawUI()
+    {
+        WindowManagerService.Draw();
+
+        PostDrawEvents();
+    }
+
+    private void OnOpenMainUI()
+    {
+        if (Plugin.ClientState.IsLoggedIn) {
+            WindowManagerService.ToolbarWindow.Toggle();
+        }
+    }
+
+    private void OnOpenConfigUI()
+    {
+        WindowManagerService.SettingsWindow.Toggle();
     }
 
     #endregion
@@ -163,13 +137,9 @@ public class Plugin : IAsyncDalamudPlugin
             WindowManagerService.Dispose();
             TabController.Dispose();
 
-            foreach (var commandAlias in _commandAliases)
-            {
-                if (CommandManager.Commands.Any(t => t.Key == commandAlias))
-                {
-                    CommandManager.RemoveHandler(commandAlias);
-                }
-            }
+            DbContext.Dispose();
+
+            DisposeCommands();
 
             return ValueTask.CompletedTask;
         }

@@ -70,6 +70,12 @@ public class MessageService : IDisposable
 
         var parsedSender = ParseSender(chatMessage.LogKind, chatMessage.Sender);
 
+        if (parsedSender == null)
+        {
+            Logger.Error("Unable to parse sender for incoming message. Message will be ignored.");
+            return;
+        }
+
         var newMessage = new Message()
         {
             Timestamp = DateTime.Now,
@@ -151,7 +157,7 @@ public class MessageService : IDisposable
             .ToList();
     }
 
-    private PlayerIdentifier ParseSender(XivChatType type, SeString sender)
+    private PlayerIdentifier? ParseSender(XivChatType type, SeString sender)
     {
         Payload? payload = sender.Payloads.FirstOrDefault(t => t.Type == PayloadType.Player);
 

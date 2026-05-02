@@ -46,8 +46,15 @@ internal static class PlayerCharacter
         }
     }
 
-    internal static PlayerIdentifier GetPlayerIdentifier()
+    internal static PlayerIdentifier? GetPlayerIdentifier()
     {
-        return new PlayerIdentifier(Name, World);
+        if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(World))
+        {
+            return null;
+        }
+        else
+        {
+            return new PlayerIdentifier(Name, World);
+        }
     }
 }

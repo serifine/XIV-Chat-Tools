@@ -12,7 +12,6 @@ namespace XIVChatTools.Helpers;
 internal static class NearbyPlayers
 {
     private static IObjectTable _objectTable = Plugin.ObjectTable;
-    private static IPluginLog _logger = Plugin.Logger;
 
     /// <summary>
     /// Returns a list of nearby players.
