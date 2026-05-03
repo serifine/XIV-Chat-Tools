@@ -20,7 +20,6 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     [PluginService] private static IChatGui ChatGui { get; set; } = null!;
     [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
-
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
@@ -87,7 +86,7 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     private void OnLogin()
     {
-        WindowManagerService.ToolbarWindow.IsOpen = Configuration.OpenOnLogin;
+        WindowManagerService.MainWindow.IsOpen = Configuration.OpenOnLogin;
         Configuration.OnLoginUpdates();
         PlayerCharacter.UpdatePlayerCharacter();
     }
@@ -109,7 +108,7 @@ public partial class Plugin : IAsyncDalamudPlugin
     private void OnOpenMainUI()
     {
         if (Plugin.ClientState.IsLoggedIn) {
-            WindowManagerService.ToolbarWindow.Toggle();
+            WindowManagerService.MainWindow.Toggle();
         }
     }
 
@@ -155,10 +154,6 @@ public partial class Plugin : IAsyncDalamudPlugin
 
         var dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
         await dbContext.Database.EnsureCreatedAsync();
-        
-        Logger.Verbose("Warming Up SQLite Context");
-
-        await dbContext.Messages.FirstAsync();
 
         Logger.Verbose("EF Context Initialized");
 

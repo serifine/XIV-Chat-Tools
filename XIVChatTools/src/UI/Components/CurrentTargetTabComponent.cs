@@ -56,20 +56,24 @@ internal class FocusTargetTabComponent : IDisposable
     {
         if (ImGui.BeginTabItem("Current Target"))
         {
-            if (_currentFocusedTarget == null)
-            {
-                ImGui.Text("No target hovered or selected.");
-            }
-            else if (_messages.Count > 0)
-            {
-                _messagePanel.Draw(_messages);
-            }
-            else
-            {
-                ImGui.Text("No messages found for " + _currentFocusedTarget.Name + ".");
-            }
-
+            DrawContent();
             ImGui.EndTabItem();
+        }
+    }
+
+    internal void DrawContent()
+    {
+        if (_currentFocusedTarget == null)
+        {
+            ImGui.Text("No target hovered or selected.");
+        }
+        else if (_messages.Count > 0)
+        {
+            _messagePanel.Draw(_messages);
+        }
+        else
+        {
+            ImGui.Text("No messages found for " + _currentFocusedTarget.Name + ".");
         }
     }
 }

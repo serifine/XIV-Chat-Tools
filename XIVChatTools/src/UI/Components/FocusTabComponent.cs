@@ -48,8 +48,7 @@ internal class FocusTabComponent(Plugin plugin)
                 ImGui.EndPopup();
             }
 
-            DrawFocusTabHeader(focusTab);
-            DrawFocusTabBody(focusTab);
+            DrawContent(focusTab);
 
             ImGui.EndTabItem();
         }
@@ -60,6 +59,12 @@ internal class FocusTabComponent(Plugin plugin)
         }
     }
 
+    internal void DrawContent(FocusTab focusTab)
+    {
+        DrawFocusTabHeader(focusTab);
+        DrawFocusTabBody(focusTab);
+    }
+
     private void DrawFocusTabHeader(FocusTab focusTab)
     {
         var focusTargets = focusTab.GetFocusTargets();
@@ -67,7 +72,7 @@ internal class FocusTabComponent(Plugin plugin)
         ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 0);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(4, 2));
 
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(1, 1, 1, 0.0f));
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0, 0, 0, 0));
         ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0, 0, 0, 0));
         ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0, 0, 0, 0));

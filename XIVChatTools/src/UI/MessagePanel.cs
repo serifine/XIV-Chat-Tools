@@ -27,7 +27,9 @@ public class MessagePanel
 
         var contentRegionAvail = ImGui.GetContentRegionAvail();
 
+        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0.1f));
         ImGui.BeginChild("Messages", new Vector2(contentRegionAvail.X, contentRegionAvail.Y), true, ImGuiWindowFlags.None);
+        ImGui.PopStyleColor();
 
         var isChatAtBottom = ImGui.GetScrollY() == ImGui.GetScrollMaxY();
 

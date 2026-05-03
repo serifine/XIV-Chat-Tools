@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
+using XIVChatTools.UI;
 using XIVChatTools.UI.Windows;
 
 namespace XIVChatTools.Services;
@@ -10,10 +11,10 @@ public class WindowManagerService : IDisposable
 {
     private readonly Plugin _plugin;
     private readonly WindowSystem _windowSystem;
+    private readonly StyleManager _styleManager;
 
     private Configuration Configuration => _plugin.Configuration;
 
-    public ToolbarWindow ToolbarWindow;
     public SearchWindow SearchWindow;
     public SettingsWindow SettingsWindow;
     public MainWindow MainWindow;
@@ -22,34 +23,35 @@ public class WindowManagerService : IDisposable
     {
         _plugin = plugin;
         _windowSystem = new(Plugin.Name);
+        _styleManager = new StyleManager();
 
-        ToolbarWindow = new(_plugin);
         SearchWindow = new(_plugin);
         SettingsWindow = new(_plugin);
         MainWindow = new(_plugin);
 
-        _windowSystem.AddWindow(ToolbarWindow);
         _windowSystem.AddWindow(SearchWindow);
         _windowSystem.AddWindow(SettingsWindow);
         _windowSystem.AddWindow(MainWindow);
 
-        ToolbarWindow.IsOpen = Plugin.ClientState.IsLoggedIn && Configuration.OpenOnLogin;
+        MainWindow.IsOpen = Plugin.ClientState.IsLoggedIn && Configuration.OpenOnLogin;
     }
 
     public void Draw()
     {
+        _styleManager.ApplyStyles();
         _windowSystem.Draw();
+        _styleManager.RemoveStyles();
     }
 
     public void CloseAllWindows() {
         SearchWindow.IsOpen = false;
         SettingsWindow.IsOpen = false;
         MainWindow.IsOpen = false;
-        ToolbarWindow.IsOpen = false;
     }
 
     public void Dispose()
     {        
-        _windowSystem?.RemoveAllWindows();
+        _styleManager.Dispose();
+        _windowSystem.RemoveAllWindows();
     }
 }
