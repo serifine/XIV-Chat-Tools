@@ -204,14 +204,6 @@ public class MessageService : IDisposable
         
         var modifiedSender = chatMessage.Sender;
 
-        _advancedDebugLogger.AddNewMessage(new AdvancedDebugEntry
-        {
-            ChatType = chatMessage.LogKind.ToString(),
-            Timestamp = chatMessage.Timestamp,
-            TextValue = chatMessage.Message.TextValue,
-            ParsedSender = parsedSenderName,
-            Sender = chatMessage.Sender,
-            Message = chatMessage.Message
-        });
+        _advancedDebugLogger.AddNewMessage(chatMessage, parsedSenderName);
     }
 }

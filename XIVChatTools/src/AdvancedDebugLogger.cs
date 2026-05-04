@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Dalamud.Game.Chat;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
@@ -52,7 +53,7 @@ public class AdvancedDebugLogger
         }
     }
 
-    internal async void AddNewMessage(AdvancedDebugEntry message)
+    internal async void AddNewMessage(IChatMessage message, string parsedSenderName)
     {
         try
         {
@@ -68,9 +69,11 @@ public class AdvancedDebugLogger
             debugList.Add(new
             {
                 Timestamp = message.Timestamp,
-                ChatType = message.ChatType,
-                TextValue = message.TextValue,
-                ParsedSenderName = message.ParsedSender,
+                ChatType = message.LogKind.ToString(),
+                TextValue = message.Message.TextValue,
+                ParsedSenderName = parsedSenderName,
+                SourceKind = message.SourceKind.ToString(),
+                TargetKind = message.TargetKind.ToString(),
                 Sender = ParseSeStringForLogging(message.Sender),
                 Message = ParseSeStringForLogging(message.Message)
             });
@@ -171,5 +174,6 @@ public class AdvancedDebugEntry
     public string TextValue { get; set; } = null!;
     public string ParsedSender { get; set; } = null!;
     public SeString Sender { get; set; } = null!;
+    public SeString Target { get; set; } = null!;
     public SeString Message { get; set; } = null!;
 }
