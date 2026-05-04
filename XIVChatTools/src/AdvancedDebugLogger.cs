@@ -12,7 +12,7 @@ public class AdvancedDebugLogger
 {
     private readonly Plugin _plugin;
 
-    private string DirectoryPath => $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\Temp\\Logs\\ChatTools";
+    private string DirectoryPath => Plugin.Interface.ConfigDirectory.FullName;
     private string FileName => "chat-tools-debug-log.json";
     private string FullFilePath => Path.Combine(DirectoryPath, FileName);
 

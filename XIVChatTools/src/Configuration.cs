@@ -26,10 +26,6 @@ public class Configuration : IPluginConfiguration
     public bool SplitDateAndNames = true;
 
     #region Chat Log Settings
-    public string MessageDbFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
-
-    public string MessageLogFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\XIVLauncher\\pluginConfigs\\ChatTools";
-    public string MessageLogFileName = "ChatLogs.json";
     public string MessageLogGlobalWatchers = "";
     public List<CharacterWatcher> MessageLogCharacterWatchers = new List<CharacterWatcher>();
 
@@ -79,11 +75,6 @@ public class Configuration : IPluginConfiguration
     public void Initialize(IDalamudPluginInterface pluginInterface)
     {
         this._pluginInterface = pluginInterface;
-
-        if (!System.IO.Directory.Exists(MessageDbFilePath))
-        {
-            System.IO.Directory.CreateDirectory(MessageDbFilePath);
-        }
 
         ReloadWatcherData();
     }

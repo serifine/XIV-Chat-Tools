@@ -20,6 +20,7 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     [PluginService] private static IChatGui ChatGui { get; set; } = null!;
     [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
+    [PluginService] public static IDalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
@@ -152,7 +153,7 @@ public partial class Plugin : IAsyncDalamudPlugin
     {
         Logger.Verbose("Initializing Local SQLite Database Context");
 
-        var dbContext = new ChatToolsDbContext(Configuration.MessageDbFilePath);
+        var dbContext = new ChatToolsDbContext(Interface.ConfigDirectory.FullName);
         await dbContext.Database.EnsureCreatedAsync();
 
         Logger.Verbose("EF Context Initialized");

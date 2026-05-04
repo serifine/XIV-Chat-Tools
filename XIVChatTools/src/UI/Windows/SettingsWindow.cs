@@ -204,8 +204,6 @@ public class SettingsWindow : Window
                 this.Configuration.Save();
             }
         }
-
-        ImGui.InputText("Message-Log File Path", ref this.Configuration.MessageLogFilePath, 2048);
     }
 
     private void DrawDevLogging()
