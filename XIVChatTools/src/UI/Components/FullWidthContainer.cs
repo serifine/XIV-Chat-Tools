@@ -6,8 +6,6 @@ namespace XIVChatTools.UI.Components;
 
 class FullWidthContainer : IDisposable
 {
-    private readonly float _originalCursorPosX;
-
     public FullWidthContainer(string id, float height = 24, float innerMargin = 4, float outerMargin = 4)
     {
         float boxWidth = ImGui.GetContentRegionAvail().X - outerMargin * 2;
