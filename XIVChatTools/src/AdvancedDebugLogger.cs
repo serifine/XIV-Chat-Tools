@@ -75,7 +75,9 @@ public class AdvancedDebugLogger
                 SourceKind = message.SourceKind.ToString(),
                 TargetKind = message.TargetKind.ToString(),
                 Sender = ParseSeStringForLogging(message.Sender),
-                Message = ParseSeStringForLogging(message.Message)
+                Message = ParseSeStringForLogging(message.Message),
+                RawSender = message.Sender.ToJson(),
+                RawMessage = message.Message.ToJson()
             });
 
             string serializedOutput = JsonSerializer.Serialize<List<object>>(debugList, options);
