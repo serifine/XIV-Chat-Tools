@@ -35,22 +35,15 @@ public partial class Plugin : IAsyncDalamudPlugin
     internal Configuration Configuration { get; private set; } = null!;
     internal ChatToolsDatabase DbContext { get; private set; } = null!;
 
-    public Plugin()
-    {
-#if DEBUG
-        Logger.Debug("Chat Tools initialized in debug mode.");
-#endif
-    }
-
     public async Task LoadAsync(CancellationToken token)
     {
-        Logger.Verbose("Loading Chat Tools");
+        PrintStartupMessage();
+
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
 
         DbContext = new ChatToolsDatabase(Interface.ConfigDirectory.FullName);
 
-        Logger.Verbose("Bootstrapping Chat Tools");
         PluginState = new PluginStateService(this);
         MessageService = new MessageService(this);
         TabController = new TabControllerService(this);
@@ -70,16 +63,28 @@ public partial class Plugin : IAsyncDalamudPlugin
         PlayerCharacter.UpdatePlayerCharacter();
 
         Logger.Verbose("Chat Tools Ready!");
+    }
+
+    private void PrintStartupMessage()
+    {
+        string title = "Loading ChatTools";
+
+        if (PluginInterface.IsDev)
+        {
+            title += " (Dev)";
+        }   
+
+        if (PluginInterface.IsTesting)
+        {
+            title += " (Testing)";
+        }
+
+        Logger.Info(title);
 
 #if DEBUG
-        if (Plugin.ClientState.IsLoggedIn)
+        if (!PluginInterface.IsDev)
         {
-            Logger.Debug("[DEBUG] Opening main window for debug.");
-            WindowManagerService.MainWindow.IsOpen = true;
-        }
-        else
-        {
-            Logger.Debug("[DEBUG] Not opening main window on load because player is not logged in.");
+            Logger.Warning("  Debug Build Detected");
         }
 #endif
     }

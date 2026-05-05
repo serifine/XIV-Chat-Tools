@@ -40,7 +40,6 @@ public class MessageService : IDisposable
 
         if (PluginInterface.IsDev)
         {
-            Logger.Debug("Chat Tools is running in development mode.");
             _advancedDebugLogger = new AdvancedDebugLogger(plugin);
         }
     }
