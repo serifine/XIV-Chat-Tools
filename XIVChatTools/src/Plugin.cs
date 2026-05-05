@@ -1,19 +1,18 @@
-﻿using System;
+﻿using Dalamud.Game.Command;
+using Dalamud.IoC;
+using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
-using Microsoft.EntityFrameworkCore;
 using XIVChatTools.DB;
 using XIVChatTools.Helpers;
 using XIVChatTools.Services;
 
 namespace XIVChatTools;
- 
+
 public partial class Plugin : IAsyncDalamudPlugin
 {
     public static string Name => "Chat Tools";
@@ -34,7 +33,7 @@ public partial class Plugin : IAsyncDalamudPlugin
     internal WindowManagerService WindowManagerService { get; private set; } = null!;
     internal TabControllerService TabController { get; private set; } = null!;
     internal Configuration Configuration { get; private set; } = null!;
-    internal ChatToolsDbContext DbContext { get; private set; } = null!;
+    internal ChatToolsDatabase DbContext { get; private set; } = null!;
 
     public Plugin()
     {
@@ -49,14 +48,14 @@ public partial class Plugin : IAsyncDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
 
-        DbContext = await InitializeDbContext();
+        DbContext = new ChatToolsDatabase(Interface.ConfigDirectory.FullName);
 
         Logger.Verbose("Bootstrapping Chat Tools");
         PluginState = new PluginStateService(this);
         MessageService = new MessageService(this);
         TabController = new TabControllerService(this);
         WindowManagerService = new WindowManagerService(this);
-        
+
         ClientState.Login += OnLogin;
         ClientState.Logout += OnLogout;
 
@@ -69,14 +68,16 @@ public partial class Plugin : IAsyncDalamudPlugin
         SetupCommands();
 
         PlayerCharacter.UpdatePlayerCharacter();
-        
+
         Logger.Verbose("Chat Tools Ready!");
-        
+
 #if DEBUG
-        if (Plugin.ClientState.IsLoggedIn) {
+        if (Plugin.ClientState.IsLoggedIn)
+        {
             Logger.Debug("[DEBUG] Opening main window for debug.");
             WindowManagerService.MainWindow.IsOpen = true;
-        } else
+        }
+        else
         {
             Logger.Debug("[DEBUG] Not opening main window on load because player is not logged in.");
         }
@@ -108,7 +109,8 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     private void OnOpenMainUI()
     {
-        if (Plugin.ClientState.IsLoggedIn) {
+        if (Plugin.ClientState.IsLoggedIn)
+        {
             WindowManagerService.MainWindow.Toggle();
         }
     }
@@ -147,18 +149,6 @@ public partial class Plugin : IAsyncDalamudPlugin
         {
             return ValueTask.FromException(exception);
         }
-    }
-
-    private async Task<ChatToolsDbContext> InitializeDbContext()
-    {
-        Logger.Verbose("Initializing Local SQLite Database Context");
-
-        var dbContext = new ChatToolsDbContext(Interface.ConfigDirectory.FullName);
-        await dbContext.Database.EnsureCreatedAsync();
-
-        Logger.Verbose("EF Context Initialized");
-
-        return dbContext;
     }
 
     private void PostDrawEvents()

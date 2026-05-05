@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -8,7 +5,9 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using XIVChatTools.DB;
 using XIVChatTools.DB.Models;
 using XIVChatTools.Models;
@@ -24,7 +23,7 @@ public class MessageService : IDisposable
     private readonly KeywordWatcher _keywordWatcher;
     private readonly AdvancedDebugLogger? _advancedDebugLogger = null;
 
-    private ChatToolsDbContext DbContext => _plugin.DbContext;
+    private ChatToolsDatabase DbContext => _plugin.DbContext;
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
     private static IDalamudPluginInterface PluginInterface => Plugin.PluginInterface;
@@ -82,16 +81,17 @@ public class MessageService : IDisposable
             MessageContents = chatMessage.Message.TextValue,
             ChatType = chatMessage.LogKind,
             OwningPlayer = DbContext.GetLoggedInPlayer(),
+            OwningPlayerName = parsedSender.Name,
+            OwningPlayerWorld = parsedSender.World,
             SenderName = parsedSender.Name,
             SenderWorld = parsedSender.World
         };
 
         try
         {
-            DbContext.Messages.Add(newMessage);
-            DbContext.SaveChanges();
+            DbContext.AddMessage(newMessage);
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
             Logger.Error($"Error saving message to database: {ex.Message}");
         }
@@ -106,11 +106,7 @@ public class MessageService : IDisposable
 
     internal List<Message> GetAllMessages()
     {
-        return this.DbContext.Messages
-            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-            .OrderBy(t => t.Timestamp)
-            .AsNoTracking()
-            .ToList();
+        return DbContext.GetAllMessages(Helpers.PlayerCharacter.Name);
     }
 
     internal List<Message> GetMessagesForPlayer(PlayerIdentifier player)
@@ -120,41 +116,23 @@ public class MessageService : IDisposable
             return [];
         }
 
-        return this.DbContext.Messages
-            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-            .Where(t => t.SenderName == player.Name && t.SenderWorld == player.World)
-            .Where(t => t.Timestamp >= DateTime.Now.AddDays(-14))
-            .OrderBy(t => t.Timestamp)
-            .AsNoTracking()
-            .ToList();
+        return DbContext.GetMessagesForPlayer(Helpers.PlayerCharacter.Name, player.Name, player.World);
     }
 
     internal List<Message> GetMessagesForPlayers(List<PlayerIdentifier> players)
     {
-        var playerIdentifiers = players.Select(t => $"{t.Name}@{t.World}").ToList();
-
-        return this.DbContext.Messages
-            .Where(t => t.OwningPlayer.Name == Helpers.PlayerCharacter.Name)
-            .Where(t => playerIdentifiers.Contains(t.SenderName + "@" + t.SenderWorld))
-            .Where(t => t.Timestamp >= DateTime.Now.AddDays(-14))
-            .OrderBy(t => t.Timestamp)
-            .AsNoTracking()
-            .ToList();
+        var playerKeys = players.Select(t => $"{t.Name}@{t.World}").ToList();
+        return DbContext.GetMessagesForPlayers(Helpers.PlayerCharacter.Name, playerKeys);
     }
 
     internal List<Message> SearchMessages(string searchText)
     {
         if (searchText == string.Empty)
         {
-            return this.DbContext.Messages.ToList();
+            return DbContext.GetAllMessages(Helpers.PlayerCharacter.Name);
         }
 
-        return this.DbContext.Messages
-            .Where(t =>
-                t.MessageContents.ToLower().Contains(searchText.ToLower()) ||
-                t.SenderName.ToLower().Contains(searchText.ToLower()))
-            .OrderBy(t => t.Timestamp)
-            .ToList();
+        return DbContext.SearchMessages(Helpers.PlayerCharacter.Name, searchText);
     }
 
     private PlayerIdentifier? ParseSender(XivChatType type, SeString sender)

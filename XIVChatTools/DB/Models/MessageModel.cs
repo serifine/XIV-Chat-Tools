@@ -1,20 +1,16 @@
-
-
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Dalamud.Game.Text;
+using System;
 
 namespace XIVChatTools.DB.Models;
 
-[Table("Messages")]
 public class Message
 {
-    [Key]
     public int Id { get; set; }
 
-    public required Player OwningPlayer { get; set; }
- 
+    public Player? OwningPlayer { get; set; }
+    public required string OwningPlayerName { get; set; }
+    public required string OwningPlayerWorld { get; set; }
+
     public required string SenderName { get; set; }
     public required string SenderWorld { get; set; }
     public required DateTime Timestamp { get; set; }
