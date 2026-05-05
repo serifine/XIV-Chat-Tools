@@ -5,6 +5,8 @@ using Dalamud.Plugin.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using XIVChatTools.DB;
@@ -17,16 +19,18 @@ public partial class Plugin : IAsyncDalamudPlugin
 {
     public static string Name => "Chat Tools";
 
-    [PluginService] private static IChatGui ChatGui { get; set; } = null!;
-    [PluginService] private static ICommandManager CommandManager { get; set; } = null!;
-    [PluginService] public static IDalamudPluginInterface Interface { get; private set; } = null!;
+    [PluginService] internal static IChatGui ChatGui { get; set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    [PluginService] internal static ICommandManager CommandManager { get; set; } = null!;
+    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
-    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static IDalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] internal static IPluginLog Logger { get; private set; } = null!;
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
+    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
+    [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
 
     internal PluginStateService PluginState { get; private set; } = null!;
     internal MessageService MessageService { get; private set; } = null!;
