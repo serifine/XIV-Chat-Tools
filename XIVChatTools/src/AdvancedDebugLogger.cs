@@ -68,7 +68,7 @@ public class AdvancedDebugLogger
 
             debugList.Add(new
             {
-                Timestamp = message.Timestamp,
+                Timestamp = DateTime.UtcNow,
                 ChatType = message.LogKind.ToString(),
                 TextValue = message.Message.TextValue,
                 ParsedSenderName = parsedSenderName,
