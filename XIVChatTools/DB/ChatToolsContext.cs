@@ -3,6 +3,8 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using XIVChatTools.DB.Migrations;
 using XIVChatTools.DB.Models;
 
 namespace XIVChatTools.DB;
@@ -13,33 +15,12 @@ public class ChatToolsDatabase : IDisposable
 
     public ChatToolsDatabase(string filePath)
     {
-        var dbPath = Path.Combine(filePath, "ChatTools.db");
+        string dbPath = Path.Combine(filePath, "ChatTools.db");
+        
         _connection = new SqliteConnection($"Data Source={dbPath}");
         _connection.Open();
-        InitializeSchema();
-    }
 
-    private void InitializeSchema()
-    {
-        _connection.Execute(@"
-            CREATE TABLE IF NOT EXISTS Players (
-                Name  TEXT NOT NULL,
-                World TEXT NOT NULL,
-                PRIMARY KEY (Name, World)
-            );
-            CREATE TABLE IF NOT EXISTS Messages (
-                Id                 INTEGER PRIMARY KEY AUTOINCREMENT,
-                OwningPlayerName   TEXT    NOT NULL,
-                OwningPlayerWorld  TEXT    NOT NULL,
-                SenderName         TEXT    NOT NULL,
-                SenderWorld        TEXT    NOT NULL,
-                Timestamp          TEXT    NOT NULL,
-                ChatType           INTEGER NOT NULL,
-                MessageContents    TEXT    NOT NULL,
-                FOREIGN KEY (OwningPlayerName, OwningPlayerWorld)
-                    REFERENCES Players(Name, World)
-            );
-        ");
+        new MigrationRunner(_connection).RunMigrations();
     }
 
     internal Player GetLoggedInPlayer()
@@ -64,8 +45,9 @@ public class ChatToolsDatabase : IDisposable
                 (OwningPlayerName, OwningPlayerWorld, SenderName, SenderWorld, Timestamp, ChatType, MessageContents)
             VALUES
                 (@OwningPlayerName, @OwningPlayerWorld, @SenderName, @SenderWorld, @Timestamp, @ChatType, @MessageContents)",
-            new {
-                OwningPlayerName  = message.OwningPlayer!.Name,
+            new
+            {
+                OwningPlayerName = message.OwningPlayer!.Name,
                 OwningPlayerWorld = message.OwningPlayer!.World,
                 message.SenderName,
                 message.SenderWorld,
