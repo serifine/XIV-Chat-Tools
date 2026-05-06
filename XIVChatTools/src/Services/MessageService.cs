@@ -107,7 +107,8 @@ public class MessageService : IDisposable
 
     internal List<Message> GetAllMessages()
     {
-        return DbContext.GetAllMessages(Helpers.PlayerCharacter.Name);
+        var messages = DbContext.GetAllMessages(Helpers.PlayerCharacter.Name);
+        return MessageProcessor.SplitMessageContents(messages);
     }
 
     internal List<Message> GetMessagesForPlayer(PlayerIdentifier player)
@@ -117,13 +118,15 @@ public class MessageService : IDisposable
             return [];
         }
 
-        return DbContext.GetMessagesForPlayer(Helpers.PlayerCharacter.Name, player.Name, player.World);
+        var messages = DbContext.GetMessagesForPlayer(Helpers.PlayerCharacter.Name, player.Name, player.World);
+        return MessageProcessor.SplitMessageContents(messages);
     }
 
     internal List<Message> GetMessagesForPlayers(List<PlayerIdentifier> players)
     {
         var playerKeys = players.Select(t => $"{t.Name}@{t.World}").ToList();
-        return DbContext.GetMessagesForPlayers(Helpers.PlayerCharacter.Name, playerKeys);
+        var messages = DbContext.GetMessagesForPlayers(Helpers.PlayerCharacter.Name, playerKeys);
+        return MessageProcessor.SplitMessageContents(messages);
     }
 
     internal List<Message> SearchMessages(string searchText)
@@ -133,7 +136,8 @@ public class MessageService : IDisposable
             return DbContext.GetAllMessages(Helpers.PlayerCharacter.Name);
         }
 
-        return DbContext.SearchMessages(Helpers.PlayerCharacter.Name, searchText);
+        var messages = DbContext.SearchMessages(Helpers.PlayerCharacter.Name, searchText);
+        return MessageProcessor.SplitMessageContents(messages);
     }
 
     private PlayerIdentifier? ParseSender(XivChatType type, SeString sender)
@@ -166,13 +170,16 @@ public class MessageService : IDisposable
     private void ChatDevLogging(IChatMessage chatMessage, PlayerIdentifier parsedSender) // (XivChatType type, int timestamp, SeString sender, SeString message, string parsedSenderName)
     {
         var parsedSenderName = parsedSender.Name + "|" + parsedSender.World;
-        
-        if (parsedSenderName == "N/A|BadType") {
+
+        if (parsedSenderName == "N/A|BadType")
+        {
             Logger.Error("NEW CHAT MESSAGE: UNABLE TO PARSE NAME");
-        } else {
+        }
+        else
+        {
             Logger.Debug("NEW CHAT MESSAGE RECEIVED");
         }
-        
+
         Logger.Debug("=======================================================");
         Logger.Debug("Message Type: " + chatMessage.LogKind.ToString());
         Logger.Debug("Raw Sender: " + chatMessage.Sender.TextValue);
@@ -180,20 +187,21 @@ public class MessageService : IDisposable
 
 
         if (!PluginInterface.IsDev || _advancedDebugLogger == null) return;
-        
+
         var modifiedSender = chatMessage.Sender;
 
         _advancedDebugLogger.AddNewMessage(chatMessage, parsedSenderName);
     }
 }
 
-public class MessageProcessor
+internal class MessageProcessor
 {
-    public static List<IMessagePart> ProcessMessagePayload(IChatMessage chatMessage)
+    internal static List<IMessagePart> ProcessMessagePayload(IChatMessage chatMessage)
     {
         List<IMessagePart> messageParts = new List<IMessagePart>();
 
-        foreach (var payload in chatMessage.Message.Payloads) {
+        foreach (var payload in chatMessage.Message.Payloads)
+        {
             if (payload is IconPayload iconPayload)
             {
                 messageParts.Add(new IconMessagePart(iconPayload.Icon));
@@ -211,12 +219,36 @@ public class MessageProcessor
                 messageParts.Add(new MessagePart(textPayload.Text));
             }
         }
-        
-        return messageParts; 
+
+        return messageParts;
     }
 
-    // public static void ProcessMessage(IChatMessage chatMessage)
-    // {
-    //     Plugin.Instance.MessageService.HandleChatMessage(chatMessage);
-    // }
+    internal static List<Message> SplitMessageContents(List<Message> messages)
+    {
+        foreach (var message in messages)
+        {
+            List<IMessagePart> splitContents = new List<IMessagePart>();
+
+            foreach (var messagePart in message.MessageContents)
+            {
+                if (messagePart is MessagePart textPart)
+                {
+                    var parts = textPart.Text
+                        .Trim()
+                        .Split(' ')
+                        .Select(word => new MessagePart(word));
+
+                    splitContents.AddRange(parts);
+                }
+                else
+                {
+                    splitContents.Add(messagePart);
+                }
+            }
+
+            message.MessageContents = splitContents;
+        }
+
+        return messages;
+    }
 }

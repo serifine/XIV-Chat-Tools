@@ -89,11 +89,11 @@ public class MainWindow : Window
 
             float buttonPanelWidth = (24 * 4) + (4 * 3); // Formula is (numButtons * buttonWidth) + (numSpacings * itemSpacing)
             float totalWidth = ImGui.GetContentRegionAvail().X;
-            float windowHeight = ImGui.GetWindowHeight() - style.WindowPadding.Y;
+            float height = ImGui.GetContentRegionAvail().Y;
 
-            DrawTabs(totalWidth - buttonPanelWidth - style.ItemSpacing.X, windowHeight);
+            DrawTabs(totalWidth - buttonPanelWidth - style.ItemSpacing.X, height);
             ImGui.SameLine();
-            DrawActionButtons(buttonPanelWidth, 24, windowHeight);
+            DrawActionButtons(buttonPanelWidth, 24, height);
         }
 
         DrawTabContent();
@@ -111,9 +111,8 @@ public class MainWindow : Window
         if (frame)
         {
             DrawTabPanel();
+            ImGui.EndChildFrame();
         }
-
-        ImGui.EndChildFrame();
     }
 
     private void DrawActionButtons(float panelWidth, float buttonWidth, float buttonHeight)
@@ -161,9 +160,8 @@ public class MainWindow : Window
                 ImGui.SetTooltip("Settings");
 
             ImGui.PopStyleVar(2);
+            ImGui.EndChildFrame();
         }
-
-        ImGui.EndChildFrame();
     }
 
 
