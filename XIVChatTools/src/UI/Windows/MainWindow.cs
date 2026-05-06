@@ -2,16 +2,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using Newtonsoft.Json;
+using XIVChatTools.Helpers;
+using XIVChatTools.IO;
 using XIVChatTools.Services;
 using XIVChatTools.UI.Components;
 
 namespace XIVChatTools.UI.Windows;
+
+// TODO: This class is getting pretty large. Split into multiple windows or components.
 
 public class MainWindow : Window
 {
@@ -24,7 +33,6 @@ public class MainWindow : Window
     private PluginStateService PluginState => _plugin.PluginState;
     private MessageService MessageService => _plugin.MessageService;
     private IPluginLog Logger => Plugin.Logger;
-    private Vector2 _originalWindowPadding = new(0, 0);
 
     private FocusTabComponent _focusTabComponent;
 
@@ -48,10 +56,7 @@ public class MainWindow : Window
 
     public override void PreDraw()
     {
-        var style = ImGui.GetStyle();
-
-        _originalWindowPadding = style.WindowPadding;
-        style.WindowPadding = new Vector2(0, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
         _focusTargetTabComponent.PreDraw();
 
         base.PreDraw();
@@ -59,8 +64,6 @@ public class MainWindow : Window
 
     public override void Draw()
     {
-        ImGui.GetStyle().WindowPadding = _originalWindowPadding;
-
         try
         {
             DrawInterface();
@@ -73,7 +76,7 @@ public class MainWindow : Window
 
     public override void PostDraw()
     {
-        ImGui.GetStyle().WindowPadding = _originalWindowPadding;
+        ImGui.PopStyleVar();
 
         base.PostDraw();
     }
@@ -83,11 +86,11 @@ public class MainWindow : Window
         using (new FullWidthContainer("ToolbarContainer"))
         {
             var style = ImGui.GetStyle();
-            
-            float buttonPanelWidth = (24*4)+(4*3); // Formula is (numButtons * buttonWidth) + (numSpacings * itemSpacing)
+
+            float buttonPanelWidth = (24 * 4) + (4 * 3); // Formula is (numButtons * buttonWidth) + (numSpacings * itemSpacing)
             float totalWidth = ImGui.GetContentRegionAvail().X;
             float windowHeight = ImGui.GetWindowHeight() - style.WindowPadding.Y;
-            
+
             DrawTabs(totalWidth - buttonPanelWidth - style.ItemSpacing.X, windowHeight);
             ImGui.SameLine();
             DrawActionButtons(buttonPanelWidth, 24, windowHeight);
@@ -108,9 +111,9 @@ public class MainWindow : Window
         if (frame)
         {
             DrawTabPanel();
-
-            ImGui.EndChildFrame();
         }
+
+        ImGui.EndChildFrame();
     }
 
     private void DrawActionButtons(float panelWidth, float buttonWidth, float buttonHeight)
@@ -158,8 +161,9 @@ public class MainWindow : Window
                 ImGui.SetTooltip("Settings");
 
             ImGui.PopStyleVar(2);
-            ImGui.EndChildFrame();
         }
+
+        ImGui.EndChildFrame();
     }
 
 
@@ -223,41 +227,40 @@ public class MainWindow : Window
         // Scrollable tab button region
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
         ImGui.SetNextWindowContentSize(new Vector2(totalTabsWidth, 0));
-        if (ImGui.BeginChild("##TabScrollRegion",
+        ImGui.BeginChild("##TabScrollRegion",
             new Vector2(scrollRegionWidth, windowHeight),
             false,
-            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+
+        ImGui.SetScrollX(_tabScrollOffset);
+
+        DrawTabButton("focus_target", "Current Target");
+
+        foreach (var tab in tabs)
         {
-            ImGui.SetScrollX(_tabScrollOffset);
-
-            DrawTabButton("focus_target", "Current Target");
-
-            foreach (var tab in tabs)
+            ImGui.SameLine(0, style.ItemSpacing.X);
+            DrawTabButton(tab.TabId.ToString(), tab.Title, () =>
             {
-                ImGui.SameLine(0, style.ItemSpacing.X);
-                DrawTabButton(tab.TabId.ToString(), tab.Title, () =>
+                if (_activeTabKey == tab.TabId.ToString())
+                    _activeTabKey = "focus_target";
+                tab.Close();
+            });
+
+            if (ImGui.BeginPopupContextItem($"##TabCtx_{tab.TabId}"))
+            {
+                ImGui.SetNextItemWidth(160);
+                ImGui.InputText($"###{tab.TabId}Rename", ref tab.Title, 64);
+                if (ImGui.MenuItem("Close Tab"))
                 {
                     if (_activeTabKey == tab.TabId.ToString())
                         _activeTabKey = "focus_target";
                     tab.Close();
-                });
-
-                if (ImGui.BeginPopupContextItem($"##TabCtx_{tab.TabId}"))
-                {
-                    ImGui.SetNextItemWidth(160);
-                    ImGui.InputText($"###{tab.TabId}Rename", ref tab.Title, 64);
-                    if (ImGui.MenuItem("Close Tab"))
-                    {
-                        if (_activeTabKey == tab.TabId.ToString())
-                            _activeTabKey = "focus_target";
-                        tab.Close();
-                    }
-                    ImGui.EndPopup();
                 }
+                ImGui.EndPopup();
             }
-
-            ImGui.EndChild();
         }
+
+        ImGui.EndChild();
         ImGui.PopStyleVar();
 
         // Right arrow or invisible spacer
