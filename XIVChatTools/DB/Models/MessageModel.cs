@@ -1,5 +1,7 @@
 using Dalamud.Game.Text;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace XIVChatTools.DB.Models;
 
@@ -15,5 +17,5 @@ public class Message
     public required string SenderWorld { get; set; }
     public required DateTime Timestamp { get; set; }
     public required XivChatType ChatType { get; set; }
-    public required string MessageContents { get; set; }
+    public List<IMessagePart> MessageContents { get; set; } = [];
 }

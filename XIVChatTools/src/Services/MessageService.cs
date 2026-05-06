@@ -74,10 +74,12 @@ public class MessageService : IDisposable
             return;
         }
 
+        var messageParts = MessageProcessor.ProcessMessagePayload(chatMessage);
+
         var newMessage = new Message()
         {
             Timestamp = DateTime.Now,
-            MessageContents = chatMessage.Message.TextValue,
+            MessageContents = messageParts,
             ChatType = chatMessage.LogKind,
             OwningPlayer = DbContext.GetLoggedInPlayer(),
             OwningPlayerName = parsedSender.Name,
@@ -183,4 +185,38 @@ public class MessageService : IDisposable
 
         _advancedDebugLogger.AddNewMessage(chatMessage, parsedSenderName);
     }
+}
+
+public class MessageProcessor
+{
+    public static List<IMessagePart> ProcessMessagePayload(IChatMessage chatMessage)
+    {
+        List<IMessagePart> messageParts = new List<IMessagePart>();
+
+        foreach (var payload in chatMessage.Message.Payloads) {
+            if (payload is IconPayload iconPayload)
+            {
+                messageParts.Add(new IconMessagePart(iconPayload.Icon));
+            }
+
+            if (payload is AutoTranslatePayload autoTranslatePayload)
+            {
+                messageParts.Add(new AutoTranslateMessagePart(autoTranslatePayload.Text));
+            }
+
+            if (payload is TextPayload textPayload)
+            {
+                if (textPayload.Text == null) continue;
+
+                messageParts.Add(new MessagePart(textPayload.Text));
+            }
+        }
+        
+        return messageParts; 
+    }
+
+    // public static void ProcessMessage(IChatMessage chatMessage)
+    // {
+    //     Plugin.Instance.MessageService.HandleChatMessage(chatMessage);
+    // }
 }

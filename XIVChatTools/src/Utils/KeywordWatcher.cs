@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -24,8 +25,9 @@ internal class KeywordWatcher
     /// <summary>
     /// Checks if the message contains any watched terms and plays a notification if it does.
     /// </summary>
-    internal void HandleMessage(string message)
+    internal void HandleMessage(List<IMessagePart> messageParts)
     {
+        var message = string.Join("", messageParts.Select(part => part.ToString()));
         if (ContainsWatchedTerm(message))
         {
             PlayNotification();

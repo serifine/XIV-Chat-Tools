@@ -65,7 +65,7 @@ public class MessagePanel
                 ImGui.TableSetColumnIndex(1);
 
                 SetMessageColor(chatEntry);
-                ImGui.TextWrapped(chatEntry.MessageContents);
+                ImGui.TextWrapped(string.Join("", chatEntry.MessageContents));
                 ImGui.PopStyleColor();
             }
 

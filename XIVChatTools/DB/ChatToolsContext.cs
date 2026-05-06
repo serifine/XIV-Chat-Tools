@@ -1,13 +1,57 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using XIVChatTools.DB.Migrations;
 using XIVChatTools.DB.Models;
 
 namespace XIVChatTools.DB;
+
+/// <summary>
+/// Resolves types from the plugin assembly rather than via Type.GetType(),
+/// which fails under Dalamud's custom AssemblyLoadContext.
+/// </summary>
+internal class PluginSerializationBinder : ISerializationBinder
+{
+    private static readonly Assembly _assembly = typeof(IMessagePart).Assembly;
+
+    public Type BindToType(string? assemblyName, string typeName)
+    {
+        return _assembly.GetType(typeName)
+            ?? throw new JsonSerializationException($"Cannot resolve type '{typeName}' from plugin assembly.");
+    }
+
+    public void BindToName(Type serializedType, out string? assemblyName, out string? typeName)
+    {
+        assemblyName = serializedType.Assembly.GetName().Name;
+        typeName = serializedType.FullName;
+    }
+}
+
+internal class MessagePartsTypeHandler : SqlMapper.TypeHandler<List<IMessagePart>>
+{
+    private static readonly JsonSerializerSettings _jsonSettings = new()
+    {
+        TypeNameHandling = TypeNameHandling.Auto,
+        SerializationBinder = new PluginSerializationBinder()
+    };
+
+    public override void SetValue(IDbDataParameter parameter, List<IMessagePart>? value)
+    {
+        parameter.Value = JsonConvert.SerializeObject(value, _jsonSettings);
+    }
+
+    public override List<IMessagePart> Parse(object value)
+    {
+        return JsonConvert.DeserializeObject<List<IMessagePart>>((string)value, _jsonSettings) ?? [];
+    }
+}
 
 public class ChatToolsDatabase : IDisposable
 {
@@ -17,6 +61,8 @@ public class ChatToolsDatabase : IDisposable
     {
         string dbPath = Path.Combine(filePath, "ChatTools.db");
         
+        SqlMapper.AddTypeHandler(new MessagePartsTypeHandler());
+
         _connection = new SqliteConnection($"Data Source={dbPath}");
         _connection.Open();
 
