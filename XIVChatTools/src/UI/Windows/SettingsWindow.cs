@@ -5,12 +5,14 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using XIVChatTools.UI.Components;
 
 namespace XIVChatTools.UI.Windows;
 
 public class SettingsWindow : Window
 {
     private readonly Plugin _plugin;
+    private readonly WatcherConfigurationComponent _watcherConfigurationComponent;
 
     private Configuration Configuration => _plugin.Configuration;
 
@@ -23,6 +25,7 @@ public class SettingsWindow : Window
     internal SettingsWindow(Plugin plugin) : base($"Chat Tools Settings###ChatToolsSettingsWindow")
     {
         _plugin = plugin;
+        _watcherConfigurationComponent = new(_plugin);
 
         Size = new Vector2(400, 350);
         SizeCondition = ImGuiCond.FirstUseEver;
@@ -93,14 +96,8 @@ public class SettingsWindow : Window
         ImGui.Separator();
         ImGui.Spacing();
         ImGui.Spacing();
-        ImGui.Text("Notify when message contains (comma delimited)");
-        ImGui.Spacing();
-        ImGui.Spacing();
-
-        // if (ImGui.InputText("", ref Configuration.MessageLog_Watchers, 24096))
-        // {
-        //     Configuration.Save();
-        // }
+        
+        _watcherConfigurationComponent.Draw();
 
         ImGui.Spacing();
         ImGui.Spacing();

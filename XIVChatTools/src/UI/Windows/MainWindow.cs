@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Newtonsoft.Json;
@@ -26,6 +25,7 @@ public class MainWindow : Window
 {
     private readonly Plugin _plugin;
     private readonly FocusTargetTabComponent _focusTargetTabComponent;
+    private readonly WatcherConfigurationComponent _watcherConfigurationComponent;
 
     private TabControllerService TabController => _plugin.TabController;
     private WindowManagerService WindowManager => _plugin.WindowManagerService;
@@ -46,6 +46,7 @@ public class MainWindow : Window
     {
         _plugin = plugin;
         _focusTargetTabComponent = new(_plugin);
+        _watcherConfigurationComponent = new(_plugin);
 
         Size = new Vector2(450, 50);
         SizeCondition = ImGuiCond.FirstUseEver;
@@ -99,49 +100,10 @@ public class MainWindow : Window
     private void DrawPopups()
     {
         ImGui.SetNextWindowSize(new Vector2(320, 0));
+        using var popup = ImRaii.Popup("Alerts", ImGuiWindowFlags.NoResize);
         
-        if (ImGui.BeginPopup("Alerts"))
-        {
-            string globalWatchers = Configuration.SessionWatchData.GlobalWatchers;
-            string characterWatchers = Configuration.SessionWatchData.CharacterWatchers;
-            string sessionWatchers = Configuration.SessionWatchData.SessionWatchers;
-
-            ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
-            ImGui.Spacing();
-            ImGui.TextWrapped("These phrases need to be separated by a comma. To update the watchers, press Enter after after typing in the new phrases.");
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-            ImGui.Text("Global Watchers");
-            ImGuiComponents.HelpMarker("These watchers are always active on all characters.");
-
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if (ImGui.InputTextWithHint("###GlobalWatcherInput", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
-            {
-                Configuration.UpdateGlobalWatchers(globalWatchers);
-                ImGui.CloseCurrentPopup();
-            }
-
-            ImGui.Text("Character Watchers");
-            ImGuiComponents.HelpMarker("These watchers are only active on the current character.");
-
-            if (ImGui.InputTextWithHint("###CharacterWatcherInput", "Example, watch example", ref characterWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
-            {
-                Configuration.UpdateCharacterWatchers(characterWatchers);
-                ImGui.CloseCurrentPopup();
-            }
-
-            ImGui.Text("Session Watchers");
-            ImGuiComponents.HelpMarker("These watchers are only active until you log out.");
-
-            if (ImGui.InputTextWithHint("###SessionWatcherInput", "Example, watch example", ref sessionWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
-            {
-                Configuration.UpdateSessionWatchers(sessionWatchers);
-                ImGui.CloseCurrentPopup();
-            }
-
-
-            ImGui.EndPopup();
+        if (popup) {
+            _watcherConfigurationComponent.Draw();
         }
     }
 
