@@ -15,7 +15,6 @@ public interface IMessagePart
 
 public class MessagePart : IMessagePart
 {
-
     public bool? Highlighted { get; set; }
     public string Text { get; set; }
 
@@ -23,6 +22,9 @@ public class MessagePart : IMessagePart
 
     public MessagePart(string text, bool? highlighted = null)
     {
+        if (text.StartsWith(' '))
+            text = text.Trim();
+        
         Text = text;
         Highlighted = highlighted;
     }
@@ -62,6 +64,9 @@ public class AutoTranslateMessagePart : IMessagePart
 
     public AutoTranslateMessagePart(string text)
     {
+        if (text.StartsWith(''))
+            text = text.Substring(2, text.Length - 4);
+        
         Text = text;
     }
 
