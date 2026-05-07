@@ -19,7 +19,7 @@ public class ChannelType
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
-    public int Version { get; set; } = 0;
+    public int Version { get; set; } = 1;
 
     public bool OpenOnLogin = false;
 
@@ -38,11 +38,14 @@ public class Configuration : IPluginConfiguration
     #region Channel and Chat Settings
 
     public bool DisableCustomChatColors = false;
-    public Vector4 CharacterNameColor = new Vector4(255, 255, 255, 255);
-    public Vector4 NormalChatColor = new Vector4(255, 255, 255, 255);
-    public Vector4 EmoteColor = new Vector4(0.950f, 0.500f, 0f, 1f);
-    public Vector4 PartyColor = new Vector4(239, 122, 13, 255);
-    public Vector4 TellColor = new Vector4(239, 122, 13, 255);
+
+    public Dictionary<ChatToolsColorCategory, Vector4> CustomChatColors = ColorConfigurations.DefaultColors;
+
+    public Vector4 CharacterNameColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.CharacterName];
+    public Vector4 SayColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Say];
+    public Vector4 EmoteColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Emote];
+    public Vector4 PartyColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Party];
+    public Vector4 TellColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Tell];
 
     public List<XivChatType> ActiveChannels { get; set; } = new List<XivChatType>() {
             XivChatType.StandardEmote,
@@ -77,6 +80,7 @@ public class Configuration : IPluginConfiguration
         this._pluginInterface = pluginInterface;
 
         ReloadWatcherData();
+        ColorConfigurations.SetCustomColors(this);
     }
 
     public void Save()
@@ -86,6 +90,7 @@ public class Configuration : IPluginConfiguration
             throw new InvalidOperationException("Plugin interface not set.");
         }
 
+        ColorConfigurations.SetCustomColors(this);
         this._pluginInterface.SavePluginConfig(this);
     }
 
@@ -128,13 +133,14 @@ public class Configuration : IPluginConfiguration
         SessionWatchData.UpdateSessionWatchers(watchers);
     }
 
-    public void ReloadWatcherData() {
+    public void ReloadWatcherData()
+    {
         string characterName = Helpers.PlayerCharacter.Name;
         string worldName = Helpers.PlayerCharacter.World;
         SessionWatchData = new SessionWatchData();
-        
+
         CharacterWatcher? characterWatcher = MessageLogCharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
-    
+
         if (MessageLogGlobalWatchers != "")
         {
             SessionWatchData.UpdateGlobalWatchers(MessageLogGlobalWatchers);
@@ -144,5 +150,50 @@ public class Configuration : IPluginConfiguration
         {
             SessionWatchData.UpdateCharacterWatchers(characterWatcher.Watchers);
         }
+    }
+}
+
+public enum ChatToolsColorCategory
+{
+    Watch,
+    CharacterName,
+    Emote,
+    Party,
+    Say,
+    Tell,
+    Yell,
+}
+
+internal static class ColorConfigurations
+{
+    internal static readonly Dictionary<ChatToolsColorCategory, Vector4> DefaultColors = new Dictionary<ChatToolsColorCategory, Vector4>()
+    {
+        { ChatToolsColorCategory.Watch, new Vector4(1.0f, 1.0f, 0.0f, 1.0f) },
+        { ChatToolsColorCategory.CharacterName, new Vector4(255, 255, 255, 255) },
+        { ChatToolsColorCategory.Say, new Vector4(255, 255, 255, 255) },
+        { ChatToolsColorCategory.Emote, new Vector4(0.950f, 0.500f, 0f, 1f) },
+        { ChatToolsColorCategory.Party, new Vector4(239, 122, 13, 255) },
+        { ChatToolsColorCategory.Tell, new Vector4(239, 122, 13, 255) },
+        { ChatToolsColorCategory.Yell, new Vector4(255, 255, 255, 255) },
+    };
+
+    internal static readonly Dictionary<ChatToolsColorCategory, Vector4> Colors = new Dictionary<ChatToolsColorCategory, Vector4>();
+
+    internal static void SetCustomColors(Configuration config)
+    {
+        foreach (var color in config.CustomChatColors)
+        {
+            Colors[color.Key] = color.Value;
+        }
+    }
+
+    internal static Vector4 GetColor(ChatToolsColorCategory category)
+    {
+        if (Colors.TryGetValue(category, out var color))
+        {
+            return color;
+        }
+
+        return DefaultColors[category];
     }
 }

@@ -130,7 +130,7 @@ public class MessagePanel
         }
         else
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
         }
     }
 
@@ -138,7 +138,7 @@ public class MessagePanel
     {
         if (Configuration.DisableCustomChatColors)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
         }
         else if (message.ChatType == XivChatType.CustomEmote || message.ChatType == XivChatType.StandardEmote)
         {
@@ -154,7 +154,7 @@ public class MessagePanel
         }
         else
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.NormalChatColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
         }
     }
 }

@@ -32,8 +32,8 @@ public class MessagePart : IMessagePart
     {
         if (Watched == true)
         {
-            // TODO: Set highlight color
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 0.0f, 1.0f)); // Yellow color for highlighting
+            var color = ColorConfigurations.GetColor(ChatToolsColorCategory.Watch);
+            ImGui.PushStyleColor(ImGuiCol.Text, color);
         }
 
         ImGui.Text(Text);
