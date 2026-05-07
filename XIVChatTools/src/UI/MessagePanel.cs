@@ -122,39 +122,27 @@ public class MessagePanel
         }
     }
 
-    private void SetNameColor(Message message)
-    {
-        if (message.SenderName == Helpers.PlayerCharacter.Name)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.CharacterNameColor);
-        }
-        else
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
-        }
-    }
-
     private void SetMessageColor(Message message)
     {
         if (Configuration.DisableCustomChatColors)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Say));
         }
         else if (message.ChatType == XivChatType.CustomEmote || message.ChatType == XivChatType.StandardEmote)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.EmoteColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Emote));
         }
         else if (message.ChatType == XivChatType.TellIncoming || message.ChatType == XivChatType.TellOutgoing)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.TellColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Tell));
         }
         else if (message.ChatType == XivChatType.Party)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.PartyColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Party));
         }
         else
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, Configuration.SayColor);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Say));
         }
     }
 }

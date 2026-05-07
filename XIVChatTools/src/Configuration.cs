@@ -39,13 +39,7 @@ public class Configuration : IPluginConfiguration
 
     public bool DisableCustomChatColors = false;
 
-    public Dictionary<ChatToolsColorCategory, Vector4> CustomChatColors = ColorConfigurations.DefaultColors;
-
-    public Vector4 CharacterNameColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.CharacterName];
-    public Vector4 SayColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Say];
-    public Vector4 EmoteColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Emote];
-    public Vector4 PartyColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Party];
-    public Vector4 TellColor = ColorConfigurations.DefaultColors[ChatToolsColorCategory.Tell];
+    public Dictionary<ColorCategory, Vector4> CustomChatColors = ColorConfigurations.DefaultColors;
 
     public List<XivChatType> ActiveChannels { get; set; } = new List<XivChatType>() {
             XivChatType.StandardEmote,
@@ -153,10 +147,9 @@ public class Configuration : IPluginConfiguration
     }
 }
 
-public enum ChatToolsColorCategory
+public enum ColorCategory
 {
     Watch,
-    CharacterName,
     Emote,
     Party,
     Say,
@@ -164,20 +157,22 @@ public enum ChatToolsColorCategory
     Yell,
 }
 
+/// <summary>
+/// Handles the color configurations for Chat Tools, hoisting them into a static method that can be accessed anywhere in the plugin.
+/// </summary>
 internal static class ColorConfigurations
 {
-    internal static readonly Dictionary<ChatToolsColorCategory, Vector4> DefaultColors = new Dictionary<ChatToolsColorCategory, Vector4>()
+    internal static readonly Dictionary<ColorCategory, Vector4> DefaultColors = new Dictionary<ColorCategory, Vector4>()
     {
-        { ChatToolsColorCategory.Watch, new Vector4(1.0f, 1.0f, 0.0f, 1.0f) },
-        { ChatToolsColorCategory.CharacterName, new Vector4(255, 255, 255, 255) },
-        { ChatToolsColorCategory.Say, new Vector4(255, 255, 255, 255) },
-        { ChatToolsColorCategory.Emote, new Vector4(0.950f, 0.500f, 0f, 1f) },
-        { ChatToolsColorCategory.Party, new Vector4(239, 122, 13, 255) },
-        { ChatToolsColorCategory.Tell, new Vector4(239, 122, 13, 255) },
-        { ChatToolsColorCategory.Yell, new Vector4(255, 255, 255, 255) },
+        { ColorCategory.Watch, new Vector4(0f, 0.88f, 1f, 1f) },
+        { ColorCategory.Say, new Vector4(1f, 1f, 1f, 1f) },
+        { ColorCategory.Emote, new Vector4(0.950f, 0.500f, 0f, 1f) },
+        { ColorCategory.Party, new Vector4(0.937f, 0.478f, 0.051f, 1f) },
+        { ColorCategory.Tell, new Vector4(0.937f, 0.478f, 0.051f, 1f) },
+        { ColorCategory.Yell, new Vector4(1f, 1f, 1f, 1f) },
     };
 
-    internal static readonly Dictionary<ChatToolsColorCategory, Vector4> Colors = new Dictionary<ChatToolsColorCategory, Vector4>();
+    private static readonly Dictionary<ColorCategory, Vector4> Colors = new Dictionary<ColorCategory, Vector4>();
 
     internal static void SetCustomColors(Configuration config)
     {
@@ -187,7 +182,7 @@ internal static class ColorConfigurations
         }
     }
 
-    internal static Vector4 GetColor(ChatToolsColorCategory category)
+    internal static Vector4 GetColor(ColorCategory category)
     {
         if (Colors.TryGetValue(category, out var color))
         {

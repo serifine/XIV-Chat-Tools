@@ -31,7 +31,7 @@ public class SettingsWindow : Window
         SizeCondition = ImGuiCond.FirstUseEver;
         Flags = ImGuiWindowFlags.NoDocking;
 
-        WatchColor = Configuration.CustomChatColors[ChatToolsColorCategory.Watch];
+        WatchColor = Configuration.CustomChatColors[ColorCategory.Watch];
 
         UpdateChannelsToLog();
     }
@@ -155,34 +155,37 @@ public class SettingsWindow : Window
         if (ImGui.Button("Remove Selected Channel From Watch List")) RemoveActiveChannel();
     }
 
-    private Vector4 WatchColor = ColorConfigurations.GetColor(ChatToolsColorCategory.Watch);
+    private Vector4 SayColor = ColorConfigurations.DefaultColors[ColorCategory.Say];
+    private Vector4 EmoteColor = ColorConfigurations.DefaultColors[ColorCategory.Emote];
+    private Vector4 PartyColor = ColorConfigurations.DefaultColors[ColorCategory.Party];
+    private Vector4 TellColor = ColorConfigurations.DefaultColors[ColorCategory.Tell];
+    private Vector4 WatchColor = ColorConfigurations.GetColor(ColorCategory.Watch);
 
     private void DrawColorPanel()
     {
-        
-        if (ImGui.ColorEdit4("My Name Color", ref Configuration.CharacterNameColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+        if (ImGui.ColorEdit4("Normal Message Color", ref SayColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
+            Configuration.CustomChatColors[ColorCategory.Say] = SayColor;
             Configuration.Save();
         }
-        if (ImGui.ColorEdit4("Normal Message Color", ref Configuration.SayColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+        if (ImGui.ColorEdit4("Emote Color", ref EmoteColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
+            Configuration.CustomChatColors[ColorCategory.Emote] = EmoteColor;
             Configuration.Save();
         }
-        if (ImGui.ColorEdit4("Emote Color", ref Configuration.EmoteColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+        if (ImGui.ColorEdit4("Tell Color", ref TellColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
+            Configuration.CustomChatColors[ColorCategory.Tell] = TellColor;
             Configuration.Save();
         }
-        if (ImGui.ColorEdit4("Tell Color", ref Configuration.TellColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+        if (ImGui.ColorEdit4("Party Chat Color", ref PartyColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
-            Configuration.Save();
-        }
-        if (ImGui.ColorEdit4("Party Chat Color", ref Configuration.PartyColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
-        {
+            Configuration.CustomChatColors[ColorCategory.Party] = PartyColor;
             Configuration.Save();
         }
         if (ImGui.ColorEdit4("Watch Alert Color", ref WatchColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
-            Configuration.CustomChatColors[ChatToolsColorCategory.Watch] = WatchColor;
+            Configuration.CustomChatColors[ColorCategory.Watch] = WatchColor;
             Configuration.Save();
         }
     }

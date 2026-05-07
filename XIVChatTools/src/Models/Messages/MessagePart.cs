@@ -32,7 +32,7 @@ public class MessagePart : IMessagePart
     {
         if (Watched == true)
         {
-            var color = ColorConfigurations.GetColor(ChatToolsColorCategory.Watch);
+            var color = ColorConfigurations.GetColor(ColorCategory.Watch);
             ImGui.PushStyleColor(ImGuiCol.Text, color);
         }
 
