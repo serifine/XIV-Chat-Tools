@@ -11,6 +11,7 @@ internal class Migration_001_InitialSchema : IMigration
 
     private static readonly JsonSerializerSettings _jsonSettings = new()
     {
+        NullValueHandling = NullValueHandling.Ignore,
         TypeNameHandling = TypeNameHandling.Auto
     };
 
