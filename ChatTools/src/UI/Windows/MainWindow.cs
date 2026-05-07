@@ -81,7 +81,7 @@ public class MainWindow : Window
 
     private void DrawInterface()
     {
-        using (new FullWidthContainer("ToolbarContainer"))
+        using (new FullWidthContainer("ToolbarContainer", outerMargin: 0))
         {
             var style = ImGui.GetStyle();
 

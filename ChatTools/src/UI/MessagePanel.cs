@@ -27,7 +27,7 @@ public class MessagePanel
 
     public void Draw(List<Message> messages)
     {
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(16, 8));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(4, 8));
 
         var contentRegionAvail = ImGui.GetContentRegionAvail();
 
