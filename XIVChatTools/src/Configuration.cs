@@ -39,7 +39,7 @@ public class Configuration : IPluginConfiguration
 
     public bool DisableCustomChatColors = false;
 
-    public Dictionary<ColorCategory, Vector4> CustomChatColors = ColorConfigurations.DefaultColors;
+    public Dictionary<ColorCategory, Vector4> CustomChatColors = ColorConfigurations.DefaultColors.ToDictionary();
 
     public List<XivChatType> ActiveChannels { get; set; } = new List<XivChatType>() {
             XivChatType.StandardEmote,
@@ -162,6 +162,8 @@ public enum ColorCategory
 /// </summary>
 internal static class ColorConfigurations
 {
+    internal static event Action? ColorsUpdated;
+
     internal static readonly Dictionary<ColorCategory, Vector4> DefaultColors = new Dictionary<ColorCategory, Vector4>()
     {
         { ColorCategory.Watch, new Vector4(0f, 0.88f, 1f, 1f) },
@@ -180,6 +182,8 @@ internal static class ColorConfigurations
         {
             Colors[color.Key] = color.Value;
         }
+
+        ColorsUpdated?.Invoke();
     }
 
     internal static Vector4 GetColor(ColorCategory category)
