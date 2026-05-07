@@ -28,13 +28,14 @@ internal class KeywordWatcher
     internal void HandleMessage(List<IMessagePart> messageParts)
     {
         var message = string.Join("", messageParts.Select(part => part.ToString()));
-        if (ContainsWatchedTerm(message))
+
+        if (IsWatchedTerm(message))
         {
             PlayNotification();
         }
     }
 
-    private bool ContainsWatchedTerm(string message)
+    internal bool IsWatchedTerm(string message)
     {
         var watchers = Configuration.SessionWatchData.AllWatchers;
         

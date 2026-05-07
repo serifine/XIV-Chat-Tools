@@ -15,23 +15,22 @@ public interface IMessagePart
 
 public class MessagePart : IMessagePart
 {
-    public bool? Highlighted { get; set; }
     public string Text { get; set; }
 
+    [JsonIgnore] public bool? Watched { get; set; }
     [JsonIgnore] public float Width => ImGui.CalcTextSize(Text).X;
 
-    public MessagePart(string text, bool? highlighted = null)
+    public MessagePart(string text)
     {
         if (text.StartsWith(' '))
             text = text.Trim();
-        
+
         Text = text;
-        Highlighted = highlighted;
     }
 
     public void Draw()
     {
-        if (Highlighted == true)
+        if (Watched == true)
         {
             // TODO: Set highlight color
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 0.0f, 1.0f)); // Yellow color for highlighting
@@ -39,7 +38,7 @@ public class MessagePart : IMessagePart
 
         ImGui.Text(Text);
 
-        if (Highlighted == true)
+        if (Watched == true)
         {
             ImGui.PopStyleColor();
         }
@@ -66,7 +65,7 @@ public class AutoTranslateMessagePart : IMessagePart
     {
         if (text.StartsWith(''))
             text = text.Substring(2, text.Length - 4);
-        
+
         Text = text;
     }
 

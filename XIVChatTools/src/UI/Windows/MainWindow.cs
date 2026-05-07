@@ -56,7 +56,6 @@ public class MainWindow : Window
 
     public override void PreDraw()
     {
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
         _focusTargetTabComponent.PreDraw();
 
         base.PreDraw();
@@ -76,8 +75,6 @@ public class MainWindow : Window
 
     public override void PostDraw()
     {
-        ImGui.PopStyleVar();
-
         base.PostDraw();
     }
 
@@ -97,6 +94,55 @@ public class MainWindow : Window
         }
 
         DrawTabContent();
+    }
+
+    private void DrawPopups()
+    {
+        ImGui.SetNextWindowSize(new Vector2(320, 0));
+        
+        if (ImGui.BeginPopup("Alerts"))
+        {
+            string globalWatchers = Configuration.SessionWatchData.GlobalWatchers;
+            string characterWatchers = Configuration.SessionWatchData.CharacterWatchers;
+            string sessionWatchers = Configuration.SessionWatchData.SessionWatchers;
+
+            ImGui.TextWrapped("You can set up watchers that will make a notification sound whenever you receive a message that contains the selected phrase.");
+            ImGui.Spacing();
+            ImGui.TextWrapped("These phrases need to be separated by a comma. To update the watchers, press Enter after after typing in the new phrases.");
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            ImGui.Text("Global Watchers");
+            ImGuiComponents.HelpMarker("These watchers are always active on all characters.");
+
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            if (ImGui.InputTextWithHint("###GlobalWatcherInput", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            {
+                Configuration.UpdateGlobalWatchers(globalWatchers);
+                ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.Text("Character Watchers");
+            ImGuiComponents.HelpMarker("These watchers are only active on the current character.");
+
+            if (ImGui.InputTextWithHint("###CharacterWatcherInput", "Example, watch example", ref characterWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            {
+                Configuration.UpdateCharacterWatchers(characterWatchers);
+                ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.Text("Session Watchers");
+            ImGuiComponents.HelpMarker("These watchers are only active until you log out.");
+
+            if (ImGui.InputTextWithHint("###SessionWatcherInput", "Example, watch example", ref sessionWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
+            {
+                Configuration.UpdateSessionWatchers(sessionWatchers);
+                ImGui.CloseCurrentPopup();
+            }
+
+
+            ImGui.EndPopup();
+        }
     }
 
     private void DrawTabs(float panelWidth, float buttonHeight)
@@ -126,6 +172,8 @@ public class MainWindow : Window
 
         if (frame)
         {
+            DrawPopups();
+
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 4));
             ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(0.5f, 0.5f));
 

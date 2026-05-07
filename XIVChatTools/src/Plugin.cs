@@ -34,6 +34,7 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     internal PluginStateService PluginState { get; private set; } = null!;
     internal MessageService MessageService { get; private set; } = null!;
+    internal KeywordWatcher KeywordWatcher { get; private set; } = null!;
     internal WindowManagerService WindowManagerService { get; private set; } = null!;
     internal TabControllerService TabController { get; private set; } = null!;
     internal Configuration Configuration { get; private set; } = null!;
@@ -50,6 +51,7 @@ public partial class Plugin : IAsyncDalamudPlugin
 
         PluginState = new PluginStateService(this);
         MessageService = new MessageService(this);
+        KeywordWatcher = new KeywordWatcher(this);
         TabController = new TabControllerService(this);
         WindowManagerService = new WindowManagerService(this);
 
