@@ -10,12 +10,13 @@ public class StyleManager : IDisposable
     private bool _stylesApplied = false;
     private Dictionary<ImGuiStyleVar, float> StyleVarFloats { get; set; } = new()
     {
-        // { ImGuiStyleVar.IndentSpacing, 21.0f },
+        { ImGuiStyleVar.PopupRounding,      4 },
+        { ImGuiStyleVar.PopupBorderSize,  1.0f },
+        { ImGuiStyleVar.WindowBorderSize, 1.0f },
     };
 
     private Dictionary<ImGuiStyleVar, Vector2> StyleVarVectors { get; set; } = new()
     {
-        // { ImGuiStyleVar.ItemSpacing, new Vector2(4, 4) },
     };
 
     private Dictionary<ImGuiCol, Vector4> StyleColors { get; set; } = new()
@@ -23,6 +24,8 @@ public class StyleManager : IDisposable
         { ImGuiCol.Text,                    new Vector4(1.0f, 1.0f, 1.0f, 1.0f) },
         { ImGuiCol.TextDisabled,            new Vector4(0.5f, 0.5f, 0.5f, 1.0f) },
         { ImGuiCol.WindowBg,                new Vector4(0.025f, 0.025f, 0.025f, 1.0f) },
+        { ImGuiCol.PopupBg,                 new Vector4(0.03f, 0.03f, 0.03f, 1.0f) },
+        { ImGuiCol.Border,                  new Vector4(0.14f, 0.14f, 0.16f, 0.50f) },
         { ImGuiCol.TitleBg,                 new Vector4(0.025f, 0.025f, 0.025f, 0.9f) },
         { ImGuiCol.TitleBgActive,           new Vector4(0.025f, 0.025f, 0.025f, 1.0f) },
         { ImGuiCol.Button,                  new Vector4(1.0f, 1.0f, 1.0f, 0.122f) },
@@ -42,12 +45,12 @@ public class StyleManager : IDisposable
         { ImGuiCol.PlotLinesHovered,        new Vector4(0.45f, 0.39f, 0.82f, 1.00f) },
         { ImGuiCol.PlotHistogram,           new Vector4(0.26f, 0.18f, 0.67f, 1.00f) },
         { ImGuiCol.PlotHistogramHovered,    new Vector4(0.24f, 0.14f, 0.81f, 1.00f) },
-        { ImGuiCol.FrameBg,                new Vector4(0.12f, 0.12f, 0.12f, 0.54f) },
-        { ImGuiCol.FrameBgHovered,         new Vector4(0.20f, 0.20f, 0.20f, 0.40f) },
-        { ImGuiCol.FrameBgActive,          new Vector4(0.16f, 0.16f, 0.16f, 0.67f) },
-        { ImGuiCol.Header,                 new Vector4(0.10f, 0.10f, 0.10f, 1.00f) },
-        { ImGuiCol.HeaderHovered,          new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
-        { ImGuiCol.HeaderActive,           new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
+        { ImGuiCol.FrameBg,                 new Vector4(0.12f, 0.12f, 0.12f, 0.54f) },
+        { ImGuiCol.FrameBgHovered,          new Vector4(0.20f, 0.20f, 0.20f, 0.40f) },
+        { ImGuiCol.FrameBgActive,           new Vector4(0.16f, 0.16f, 0.16f, 0.67f) },
+        { ImGuiCol.Header,                  new Vector4(0.10f, 0.10f, 0.10f, 1.00f) },
+        { ImGuiCol.HeaderHovered,           new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
+        { ImGuiCol.HeaderActive,            new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
     };
 
     public StyleManager()
@@ -70,7 +73,6 @@ public class StyleManager : IDisposable
             ImGui.PushStyleVar(style.Key, style.Value);
         }
 
-        // Apply styles to UI elements here
         foreach (var style in StyleColors)
         {
             ImGui.PushStyleColor(style.Key, style.Value);
