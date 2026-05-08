@@ -47,6 +47,7 @@ public partial class Plugin : IAsyncDalamudPlugin
     {
         PrintStartupMessage();
 
+        PlayerCharacter.UpdatePlayerCharacter();
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
 
@@ -69,7 +70,6 @@ public partial class Plugin : IAsyncDalamudPlugin
 
         SetupCommands();
 
-        PlayerCharacter.UpdatePlayerCharacter();
 
         Logger.Verbose("Chat Tools Ready!");
     }

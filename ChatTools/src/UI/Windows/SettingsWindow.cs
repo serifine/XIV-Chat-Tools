@@ -35,7 +35,6 @@ public class SettingsWindow : Window
 
         ColorConfigurations.ColorsUpdated += () =>
         {
-            Plugin.Logger.Information($"Updating colors");
             SayColor = ColorConfigurations.GetColor(ColorCategory.Say);
             EmoteColor = ColorConfigurations.GetColor(ColorCategory.Emote);
             PartyColor = ColorConfigurations.GetColor(ColorCategory.Party);
@@ -109,16 +108,16 @@ public class SettingsWindow : Window
 
         _watcherConfigurationComponent.Draw();
 
-        ImGui.Spacing();
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-        ImGui.Spacing();
+        // ImGui.Spacing();
+        // ImGui.Spacing();
+        // ImGui.Separator();
+        // ImGui.Spacing();
+        // ImGui.Spacing();
 
-        if (ImGui.Checkbox("Split date and names on new lines", ref Configuration.SplitDateAndNames))
-        {
-            Configuration.Save();
-        }
+        // if (ImGui.Checkbox("Split date and names on new lines", ref Configuration.SplitDateAndNames))
+        // {
+        //     Configuration.Save();
+        // }
 
         ImGui.Spacing();
         ImGui.Spacing();

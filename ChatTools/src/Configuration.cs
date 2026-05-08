@@ -133,7 +133,7 @@ public class Configuration : IPluginConfiguration
         string worldName = Helpers.PlayerCharacter.World;
         SessionWatchData = new SessionWatchData();
 
-        CharacterWatcher? characterWatcher = MessageLogCharacterWatchers.FirstOrDefault(w => w.Character == Helpers.PlayerCharacter.Name && w.World == Helpers.PlayerCharacter.World);
+        CharacterWatcher? characterWatcher = MessageLogCharacterWatchers.FirstOrDefault(w => w.Character == characterName && w.World == worldName);
 
         if (MessageLogGlobalWatchers != "")
         {
