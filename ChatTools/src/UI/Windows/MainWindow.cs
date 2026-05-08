@@ -56,7 +56,7 @@ public class MainWindow : Window
 
         _focusTabComponent = new(plugin);
 
-        if (Plugin.PluginInterface.IsDev)
+        if (Plugin.PluginInterface.IsDev && Configuration.DebugLogging)
         {
             var tabId = TabController.AddFocusTab(new PlayerIdentifier("Tessa Elran", "Mateus"));
             _activeTabKey = tabId.ToString();
