@@ -34,6 +34,10 @@ internal class FocusTargetTabComponent : IDisposable
         {
             _messages.Add(message);
         }
+        else if (_currentFocusedTarget == null)
+        {
+            _messages.Add(message);
+        }
     }
 
     internal void PreDraw()
@@ -43,7 +47,7 @@ internal class FocusTargetTabComponent : IDisposable
         if (focusTarget == null)
         {
             _currentFocusedTarget = null;
-            _messages = [];
+            _messages = _messageService.GetAllMessages();
             return;
         }
 
@@ -60,17 +64,17 @@ internal class FocusTargetTabComponent : IDisposable
 
     private void DrawContent()
     {
-        if (_currentFocusedTarget == null)
-        {
-            ImGui.Text("No target hovered or selected.");
-        }
-        else if (_messages.Count > 0)
+        if (_messages.Count > 0)
         {
             _messagePanel.Draw(_messages);
         }
-        else
+        else if (_currentFocusedTarget != null)
         {
             ImGui.Text("No messages found for " + _currentFocusedTarget.Name + ".");
+        }
+        else
+        {
+            ImGui.Text("No messages found.");
         }
     }
 }
