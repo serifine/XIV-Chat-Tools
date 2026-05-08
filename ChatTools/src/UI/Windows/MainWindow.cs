@@ -65,12 +65,12 @@ public class MainWindow : Window
 
     public override bool DrawConditions()
     {
-        return Plugin.Condition[ConditionFlag.OccupiedInCutSceneEvent] ||
-               Plugin.Condition[ConditionFlag.PlayingMiniGame] ||
-               Plugin.Condition[ConditionFlag.OccupiedInEvent] ||
-               Plugin.Condition[ConditionFlag.OccupiedInQuestEvent] ||
-               Plugin.Condition[ConditionFlag.BetweenAreas] ||
-               Plugin.Condition[ConditionFlag.Crafting];
+        return !Plugin.Condition[ConditionFlag.OccupiedInCutSceneEvent] &&
+               !Plugin.Condition[ConditionFlag.PlayingMiniGame] &&
+               !Plugin.Condition[ConditionFlag.OccupiedInEvent] &&
+               !Plugin.Condition[ConditionFlag.OccupiedInQuestEvent] &&
+               !Plugin.Condition[ConditionFlag.BetweenAreas] &&
+               !Plugin.Condition[ConditionFlag.Crafting];
     }
 
     public override void PreDraw()
