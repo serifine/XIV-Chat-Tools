@@ -17,6 +17,7 @@ using ChatTools.IO;
 using ChatTools.Services;
 using ChatTools.UI.Components;
 using ChatTools.Models;
+using Dalamud.Game.ClientState.Conditions;
 
 namespace ChatTools.UI.Windows;
 
@@ -60,6 +61,16 @@ public class MainWindow : Window
             var tabId = TabController.AddFocusTab(new PlayerIdentifier("Tessa Elran", "Mateus"));
             _activeTabKey = tabId.ToString();
         }
+    }
+
+    public override bool DrawConditions()
+    {
+        return Plugin.Condition[ConditionFlag.OccupiedInCutSceneEvent] ||
+               Plugin.Condition[ConditionFlag.PlayingMiniGame] ||
+               Plugin.Condition[ConditionFlag.OccupiedInEvent] ||
+               Plugin.Condition[ConditionFlag.OccupiedInQuestEvent] ||
+               Plugin.Condition[ConditionFlag.BetweenAreas] ||
+               Plugin.Condition[ConditionFlag.Crafting];
     }
 
     public override void PreDraw()
