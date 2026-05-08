@@ -7,7 +7,7 @@ using ChatTools.IO;
 
 namespace ChatTools.Helpers;
 
-public class DrawHelpers
+public class ImGuiHelpers
 {
     public static void DrawIcon(BitmapFontIcon icon)
     {
@@ -22,11 +22,18 @@ public class DrawHelpers
 
         var fontSize = ImGui.GetFontSize();
         var textureSize = new Vector2(iconTexture.Width, iconTexture.Height);
-        var iconSize = new Vector2(fontSize, fontSize) * ImGuiHelpers.GlobalScale;
+        var iconSize = new Vector2(fontSize, fontSize) * Dalamud.Interface.Utility.ImGuiHelpers.GlobalScale;
 
         var uv0 = new Vector2(gfdEntry.Value.Left, gfdEntry.Value.Top + 170) * 2 / textureSize;
         var uv1 = new Vector2(gfdEntry.Value.Left + gfdEntry.Value.Width, gfdEntry.Value.Top + gfdEntry.Value.Height + 170) * 2 / textureSize;
 
         ImGui.Image(iconTexture.Handle, iconSize, uv0, uv1);
+    }
+
+    public static void DrawLabel(string label, float fontSize = 0.8f)
+    {
+        ImGui.SetWindowFontScale(fontSize);
+        ImGui.Text(label);
+        ImGui.SetWindowFontScale(1f);
     }
 }

@@ -71,11 +71,11 @@ public class AutoTranslateMessagePart : IMessagePart
 
     public void Draw()
     {
-        DrawHelpers.DrawIcon(BitmapFontIcon.AutoTranslateBegin);
+        ImGuiHelpers.DrawIcon(BitmapFontIcon.AutoTranslateBegin);
         ImGui.SameLine(0, _spaceWidth);
         ImGui.Text(Text);
         ImGui.SameLine(0, _spaceWidth);
-        DrawHelpers.DrawIcon(BitmapFontIcon.AutoTranslateEnd);
+        ImGuiHelpers.DrawIcon(BitmapFontIcon.AutoTranslateEnd);
     }
 
     public override string ToString()
@@ -103,7 +103,7 @@ public class IconMessagePart : IMessagePart
 
     public void Draw()
     {
-        DrawHelpers.DrawIcon(Icon);
+        ImGuiHelpers.DrawIcon(Icon);
     }
 
     public override string ToString()

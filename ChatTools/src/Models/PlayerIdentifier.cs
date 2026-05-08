@@ -1,5 +1,6 @@
 using System;
 using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace ChatTools.Models;
@@ -18,6 +19,15 @@ internal class PlayerIdentifier
         World = player.HomeWorld.ValueNullable?.Name.ToString() ?? "Unknown World";
     }
 
+    internal PlayerIdentifier(IPartyMember player)
+    {
+        if (!player.World.IsValid)
+            Plugin.Logger.Error($"Player {player.Name} has no home world.");
+
+        Name = player.Name.TextValue;
+        World = player.World.ValueNullable?.Name.ToString() ?? "Unknown World";
+    }
+
     internal PlayerIdentifier(PlayerPayload player)
     {
         if (!player.World.IsValid)
@@ -33,7 +43,7 @@ internal class PlayerIdentifier
         World = world;
     }
 
-    public bool Equals(PlayerIdentifier other)
+    public bool Matches(PlayerIdentifier other)
     {
         return Name == other.Name && World == other.World;
     }

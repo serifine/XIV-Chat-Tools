@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -96,7 +94,7 @@ public class MessagePanel
         if (true)
         {
             ImGui.SameLine(0, 0);
-            DrawHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
+            ImGuiHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
             ImGui.SameLine(0, 0);
             ImGui.Text(message.SenderWorld);
         }

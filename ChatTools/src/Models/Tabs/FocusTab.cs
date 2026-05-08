@@ -39,7 +39,7 @@ internal class FocusTab : Tab
 
     internal void OnMessageAdded(PlayerIdentifier sender, Message message)
     {
-        if (_focusTargets.Any(t => t.Equals(sender)))
+        if (_focusTargets.Any(t => t.Matches(sender)))
         {
             Messages.Add(message);
         }
@@ -52,7 +52,7 @@ internal class FocusTab : Tab
 
     internal void AddFocusTarget(PlayerIdentifier target)
     {
-        if (this._focusTargets.Any(t => t.Equals(target)) == false)
+        if (this._focusTargets.Any(t => t.Matches(target)) == false)
         {
             this._focusTargets.Add(target);
             UpdateMessagesFromDb();
@@ -61,7 +61,7 @@ internal class FocusTab : Tab
 
     internal void RemoveFocusTarget(PlayerIdentifier target)
     {
-        var selectedTarget = this._focusTargets.FirstOrDefault(t => t.Equals(target));
+        var selectedTarget = this._focusTargets.FirstOrDefault(t => t.Matches(target));
 
         if (selectedTarget != null)
         {
@@ -72,7 +72,7 @@ internal class FocusTab : Tab
 
     internal bool IsPlayerAdded(PlayerIdentifier target)
     {
-        return this._focusTargets.Any(t => t.Equals(target));
+        return this._focusTargets.Any(t => t.Matches(target));
     }
 }
 

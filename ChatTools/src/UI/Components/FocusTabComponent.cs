@@ -5,6 +5,9 @@ using Dalamud.Bindings.ImGui;
 using ChatTools.Models;
 using ChatTools.Models.Tabs;
 using ChatTools.Services;
+using Dalamud.Interface.Utility.Raii;
+using ChatTools.Helpers;
+using Dalamud.Game.Text.SeStringHandling;
 
 namespace ChatTools.UI.Components;
 
@@ -69,14 +72,12 @@ internal class FocusTabComponent(Plugin plugin)
     {
         var focusTargets = focusTab.GetFocusTargets();
 
-        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarSize, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(4, 2));
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(2, 4));
+        var header = ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 30), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+        ImGui.PopStyleVar(2);
 
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0, 0, 0, 0));
-        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0, 0, 0, 0));
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0, 0, 0, 0));
-        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0, 0, 0, 0));
-        if (ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 24), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+        if (header)
         {
             var offset = DrawScrollableTargetBar(focusTab);
 
@@ -85,10 +86,6 @@ internal class FocusTabComponent(Plugin plugin)
 
             ImGui.EndChild();
         }
-
-        ImGui.PopStyleVar(2);
-        ImGui.PopStyleColor(4);
-
     }
 
     private int DrawScrollableTargetBar(FocusTab focusTab)
@@ -99,7 +96,7 @@ internal class FocusTabComponent(Plugin plugin)
         float scrollMaxX = 0.0f;
         int scrollButtonOffsets = 8;
 
-        if (ImGui.BeginChild("###focusMemberScrollbar", new Vector2(ImGui.GetContentRegionAvail().X - 142, 24), false, ImGuiWindowFlags.HorizontalScrollbar))
+        if (ImGui.BeginChild("###focusMemberScrollbar", new Vector2(ImGui.GetContentRegionAvail().X - 142, 24), false, ImGuiWindowFlags.NoScrollbar))
         {
             scrollX = ImGui.GetScrollX();
             scrollMaxX = ImGui.GetScrollMaxX();
@@ -108,10 +105,16 @@ internal class FocusTabComponent(Plugin plugin)
 
             foreach (var focusTarget in focusTargets)
             {
-                var focusTabName = GetFocusTargetDisplayName(focusTarget, focusTargets);
+                ImGui.Text(focusTarget.Name);
 
-                ImGui.Text(focusTabName);
-                if (ImGui.BeginPopupContextItem("###" + focusTabName + "ContextMenu"))
+                if (focusTarget.World != PlayerCharacter.World) {
+                    ImGui.SameLine(0, 0);
+                    ImGuiHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
+                    ImGui.SameLine(0, 0);
+                    ImGui.Text(focusTarget.World);
+                }
+
+                if (ImGui.BeginPopupContextItem("###" + focusTarget.Name+focusTarget.World + "ContextMenu"))
                 {
                     if (ImGui.MenuItem("Create Watch Tab From Player"))
                     {
@@ -126,6 +129,12 @@ internal class FocusTabComponent(Plugin plugin)
                     }
 
                     ImGui.EndPopup();
+                }
+
+                if (focusTarget != focusTargets.Last())
+                {
+                    ImGui.SameLine();
+                    ImGui.Text("|");
                 }
 
                 ImGui.SameLine();
@@ -172,52 +181,75 @@ internal class FocusTabComponent(Plugin plugin)
             ImGui.OpenPopup("###AddFocusTargetPopup");
         }
 
+
         ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 8);
         if (ImGui.BeginPopup("###AddFocusTargetPopup"))
         {
-            if (ImGui.Selectable("Focus Target"))
+            var targets = focusTab.GetFocusTargets();
+            
+            var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
+            if (focusTarget != null)
             {
-                var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
-
-                if (focusTarget != null)
+                if (ImGui.Selectable("Focus Target"))
                 {
                     focusTab.AddFocusTarget(focusTarget);
+                    ImGui.CloseCurrentPopup();
+                }
+            }
+
+            var player = Helpers.PlayerCharacter.GetPlayerIdentifier();
+            if (player != null && !targets.Any(t => t.Matches(player)) && ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
+            {
+                if (player != null)
+                {
+                    focusTab.AddFocusTarget(player);
                 }
 
                 ImGui.CloseCurrentPopup();
             }
 
-            if (ImGui.Selectable(Helpers.PlayerCharacter.Name + " (you)"))
-            {
-                var focusTarget = Helpers.PlayerCharacter.GetPlayerIdentifier();
+            var partyPlayers = Plugin.PartyList
+                .Select(p => new PlayerIdentifier(p))
+                .Where(p => targets.All(t => !t.Matches(p)))
+                .ToList();
 
-                if (focusTarget != null)
-                {
-                    focusTab.AddFocusTarget(focusTarget);
-                }
-
-                ImGui.CloseCurrentPopup();
-            }
-
-            var nearbyPlayers = Helpers.NearbyPlayers.GetNearbyPlayers();
-
-            if (nearbyPlayers.Count > 0)
+            if (partyPlayers.Any())
             {
                 ImGui.Separator();
+                ImGuiHelpers.DrawLabel("Party Members", 0.8f);
 
-                ImGui.BeginChild("###NearbyPlayers", new Vector2(200, 200));
-
-                foreach (var actor in nearbyPlayers)
+                foreach (var partyMember in partyPlayers)
                 {
-                    if (ImGui.Selectable(actor.Name.TextValue))
+                    if (ImGui.Selectable(partyMember.Name + " (" + partyMember.World + ")"))
                     {
-                        var focusTarget = new PlayerIdentifier(actor);
-                        focusTab.AddFocusTarget(focusTarget);
+                        focusTab.AddFocusTarget(partyMember);
                         ImGui.CloseCurrentPopup();
                     }
                 }
+            }
 
-                ImGui.EndChild();
+            var nearbyPlayers = Helpers.NearbyPlayers.GetNearbyPlayers()
+                .Select(p => new PlayerIdentifier(p))
+                .Where(p => !targets.Any(t => t.Matches(p)) && !partyPlayers.Any(pp => pp.Matches(p)));
+
+            if (nearbyPlayers.Any())
+            {
+                ImGui.Separator();
+                ImGuiHelpers.DrawLabel("Nearby Players", 0.8f);
+
+                foreach (var nearbyPlayer in nearbyPlayers)
+                {
+                    if (ImGui.Selectable(nearbyPlayer.Name + " (" + nearbyPlayer.World + ")"))
+                    {
+                        focusTab.AddFocusTarget(nearbyPlayer);
+                        ImGui.CloseCurrentPopup();
+                    }
+                }
+            }
+
+            if (player == null && focusTarget == null && !partyPlayers.Any() && !nearbyPlayers.Any())
+            {
+                ImGui.Text("No players to add.");
             }
 
             ImGui.EndPopup();

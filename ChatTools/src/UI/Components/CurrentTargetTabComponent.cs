@@ -30,7 +30,7 @@ internal class FocusTargetTabComponent : IDisposable
 
     private void OnMessageAdded(PlayerIdentifier sender, Message message)
     {
-        if (_currentFocusedTarget != null && _currentFocusedTarget.Equals(sender))
+        if (_currentFocusedTarget != null && _currentFocusedTarget.Matches(sender))
         {
             _messages.Add(message);
         }
@@ -46,7 +46,7 @@ internal class FocusTargetTabComponent : IDisposable
             return;
         }
 
-        if (_currentFocusedTarget != null && focusTarget.Equals(_currentFocusedTarget)) return;
+        if (_currentFocusedTarget != null && focusTarget.Matches(_currentFocusedTarget)) return;
         
         _currentFocusedTarget = focusTarget;
         _messages = _messageService.GetMessagesForPlayer(focusTarget);
