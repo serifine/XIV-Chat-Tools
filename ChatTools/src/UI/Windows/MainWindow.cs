@@ -60,7 +60,7 @@ public class MainWindow : Window
         {
             var tabId = TabController.AddFocusTab(new PlayerIdentifier("Tessa Elran", "Mateus"));
             _activeTabKey = tabId.ToString();
-        }
+        } 
     }
 
     public override bool DrawConditions()

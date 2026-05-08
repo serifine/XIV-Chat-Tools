@@ -18,6 +18,9 @@ public class MessagePanel
     private Configuration Configuration => _plugin.Configuration;
     private PluginStateService PluginState => _plugin.PluginState;
 
+    private float _spaceWidth => ImGui.CalcTextSize(" ").X;
+    private float _widestTimestampWidth = ImGui.CalcTextSize("12:00 AM").X + ImGui.CalcTextSize(" ").X;
+
     public MessagePanel(Plugin plugin)
     {
         _plugin = plugin;
@@ -37,32 +40,9 @@ public class MessagePanel
 
         foreach (var chatEntry in messages)
         {
-            // TODO: Re-implement name coloring and prepending/appending of arrows for tells. Will likely need to be moved.
-            // string nameAppend = "";
-            // string namePrepend = "";
-
-            // ImGui.TableNextRow();
-            // ImGui.TableSetColumnIndex(0);
-
-            // SetNameColor(chatEntry);
-
-            // if (chatEntry.ChatType == XivChatType.TellOutgoing)
-            // {
-            //     namePrepend = ">>";
-            // }
-
-            // if (chatEntry.ChatType == XivChatType.TellIncoming)
-            // {
-            //     nameAppend = ">>";
-            // }
-
-            // ImGui.Text($"{chatEntry.Timestamp.ToShortTimeString()} {namePrepend}{chatEntry.SenderName}{nameAppend}: ");
-
-            // ImGui.PopStyleColor();
-
-            // ImGui.TableSetColumnIndex(1);
-
+            DrawTimestamp(chatEntry.Timestamp);
             SetMessageColor(chatEntry);
+            DrawSender(chatEntry);
             DrawMessage(chatEntry);
             ImGui.PopStyleColor();
         }
@@ -77,43 +57,60 @@ public class MessagePanel
         ImGui.PopStyleVar();
     }
 
-    private void DrawMessage(Message message)
+    private void DrawTimestamp(DateTime timestamp)
     {
-        float spaceWidth = ImGui.CalcTextSize(" ").X;
+        var timeString = timestamp.ToString("t");
+        var timeStringWidth = ImGui.CalcTextSize(timeString).X;
 
-        // Date Rendering =====================================================
-        ImGui.Text(message.Timestamp.ToString("t"));
-        ImGui.SameLine(0, spaceWidth);
 
-        // message.SenderName
-        // Player Name and World ==============================================
-        // if (sender is PlayerPayload playerPayload)
+        ImGui.Text(timeString);
+        ImGui.SameLine(0, _widestTimestampWidth - timeStringWidth);
+    }
+
+    private void DrawSender(Message message)
+    {
+        // string nameAppend = "";
+        // string namePrepend = "";
+
+        // ImGui.TableNextRow();
+        // ImGui.TableSetColumnIndex(0);
+
+        // // SetNameColor(chatEntry);
+
+        // if (chatEntry.ChatType == XivChatType.TellOutgoing)
         // {
+        //     namePrepend = ">>";
+        // }
+
+        // if (chatEntry.ChatType == XivChatType.TellIncoming)
+        // {
+        //     nameAppend = ">>";
+        // }
+
+        // ImGui.Text($"{chatEntry.Timestamp.ToShortTimeString()} {namePrepend}{chatEntry.SenderName}{nameAppend}: ");
         ImGui.Text(message.SenderName);
 
-        if (true)
+        if (message.SenderWorld != PlayerCharacter.World)
         {
             ImGui.SameLine(0, 0);
             ImGuiHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
             ImGui.SameLine(0, 0);
             ImGui.Text(message.SenderWorld);
         }
-        // }
-        // else if (sender is TextPayload textPayload)
-        // {
-        //     ImGui.Text(textPayload.Text);
-        // }
+        ImGui.SameLine(0, _spaceWidth);
+    }
 
-        // Message Contents ===================================================
+    private void DrawMessage(Message message)
+    {
         foreach (var messagePart in message.MessageContents)
         {
 
             float windowRight = ImGui.GetWindowPos().X + ImGui.GetContentRegionAvail().X + ImGui.GetScrollX();
             float rightEdge = ImGui.GetItemRectMax().X; // end of last rendered item
 
-            if (rightEdge + spaceWidth + messagePart.Width <= windowRight)
+            if (rightEdge + _spaceWidth + messagePart.Width <= windowRight)
             {
-                ImGui.SameLine(0, spaceWidth);
+                ImGui.SameLine(0, _spaceWidth);
             }
 
             messagePart.Draw();
