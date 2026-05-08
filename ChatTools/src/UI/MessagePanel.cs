@@ -69,26 +69,16 @@ public class MessagePanel
 
     private void DrawSender(Message message)
     {
-        // string nameAppend = "";
-        // string namePrepend = "";
+        string nameAppend = "";
+        string namePrepend = "";
 
-        // ImGui.TableNextRow();
-        // ImGui.TableSetColumnIndex(0);
+        if (message.ChatType == XivChatType.TellOutgoing)
+        {
+            ImGui.Text(">> ");
+            ImGui.SameLine(0, 0);
+        }
 
-        // // SetNameColor(chatEntry);
-
-        // if (chatEntry.ChatType == XivChatType.TellOutgoing)
-        // {
-        //     namePrepend = ">>";
-        // }
-
-        // if (chatEntry.ChatType == XivChatType.TellIncoming)
-        // {
-        //     nameAppend = ">>";
-        // }
-
-        // ImGui.Text($"{chatEntry.Timestamp.ToShortTimeString()} {namePrepend}{chatEntry.SenderName}{nameAppend}: ");
-        ImGui.Text(message.SenderName);
+        ImGui.Text(namePrepend + message.SenderName + nameAppend);
 
         if (message.SenderWorld != PlayerCharacter.World)
         {
@@ -97,6 +87,13 @@ public class MessagePanel
             ImGui.SameLine(0, 0);
             ImGui.Text(message.SenderWorld);
         }
+
+        if (message.ChatType == XivChatType.TellIncoming)
+        {
+            ImGui.SameLine(0, 0);
+            ImGui.Text(" >>");
+        }
+
         ImGui.SameLine(0, _spaceWidth);
     }
 
