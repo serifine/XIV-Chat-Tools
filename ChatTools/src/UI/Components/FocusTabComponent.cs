@@ -20,49 +20,7 @@ internal class FocusTabComponent(Plugin plugin)
 
     private float Scale => ImGui.GetIO().FontGlobalScale;
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// MAYBE MAKE INTO HELPER FUNCTIONS
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// DEFINITELY RE ORDER
-    private string GetFocusTargetDisplayName(PlayerIdentifier focusTarget, List<PlayerIdentifier> focusTargets)
-    {
-        string focusTargetName = focusTarget.Name;
-
-        if (focusTargets.Count(t => t.Name == focusTargetName) > 1)
-        {
-            focusTargetName += $" ({focusTarget.World})";
-        }
-
-        return focusTargetName;
-    }
-
     internal void Draw(FocusTab focusTab)
-    {
-        var open = true;
-
-        if (ImGui.BeginTabItem($"{focusTab.Title}###{focusTab.TabId}", ref open))
-        {
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// REFACTOR INTO SUB FUNCTION
-            if (ImGui.BeginPopupContextItem($"{focusTab.TabId}TabItemContextMenu"))
-            {
-                ImGui.Text("Tab Options");
-                ImGui.Separator();
-                ImGui.SetNextItemWidth(200);
-                ImGui.InputText($"###{focusTab.TabId}TabNameInput", ref focusTab.Title, 64);
-
-                ImGui.EndPopup();
-            }
-
-            DrawContent(focusTab);
-
-            ImGui.EndTabItem();
-        }
-
-        if (!open)
-        {
-            focusTab.Close();
-        }
-    }
-
-    internal void DrawContent(FocusTab focusTab)
     {
         DrawFocusTabHeader(focusTab);
         DrawFocusTabBody(focusTab);
@@ -73,8 +31,8 @@ internal class FocusTabComponent(Plugin plugin)
         var focusTargets = focusTab.GetFocusTargets();
 
         ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(2, 4));
-        var header = ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 30), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+        var header = ImGui.BeginChild("###focusMemberScrollbarContainer", new Vector2(ImGui.GetContentRegionAvail().X, 24), false, ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.AlwaysUseWindowPadding);
         ImGui.PopStyleVar(2);
 
         if (header)
@@ -96,64 +54,34 @@ internal class FocusTabComponent(Plugin plugin)
         float scrollMaxX = 0.0f;
         int scrollButtonOffsets = 8;
 
-        if (ImGui.BeginChild("###focusMemberScrollbar", new Vector2(ImGui.GetContentRegionAvail().X - 142, 24), false, ImGuiWindowFlags.NoScrollbar))
+        if (ImGui.BeginChild("###focusMemberScrollbar", new Vector2(ImGui.GetContentRegionAvail().X - 151, 24), false, ImGuiWindowFlags.NoScrollbar))
         {
             scrollX = ImGui.GetScrollX();
             scrollMaxX = ImGui.GetScrollMaxX();
 
-            ImGui.SameLine(5);
+            // ImGui.SameLine(5);
 
             foreach (var focusTarget in focusTargets)
             {
-                ImGui.Text(focusTarget.Name);
-
-                if (focusTarget.World != PlayerCharacter.World) {
-                    ImGui.SameLine(0, 0);
-                    ImGuiHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
-                    ImGui.SameLine(0, 0);
-                    ImGui.Text(focusTarget.World);
-                }
-
-                if (ImGui.BeginPopupContextItem("###" + focusTarget.Name+focusTarget.World + "ContextMenu"))
-                {
-                    if (ImGui.MenuItem("Create Watch Tab From Player"))
-                    {
-                        TabController.AddFocusTab(focusTarget);
-                        ImGui.CloseCurrentPopup();
-                    }
-
-                    if (ImGui.MenuItem("Remove Player From Group"))
-                    {
-                        focusTab.RemoveFocusTarget(focusTarget);
-                        ImGui.CloseCurrentPopup();
-                    }
-
-                    ImGui.EndPopup();
-                }
-
-                if (focusTarget != focusTargets.Last())
-                {
-                    ImGui.SameLine();
-                    ImGui.Text("|");
-                }
-
+                DrawTargetChip(focusTarget, focusTab);
                 ImGui.SameLine();
             }
 
             ImGui.EndChild();
         }
 
+        // Left and Right Scroll Buttons
         if (scrollMaxX > 0)
         {
             ImGui.SameLine();
-            ImGui.Button("<", new Vector2(20, 20));
+            ImGui.Button("<", new Vector2(20, 24));
             if (ImGui.IsItemActive())
             {
                 scrollXDelta = -ImGui.GetIO().DeltaTime * 1000.0f;
             }
 
             ImGui.SameLine();
-            ImGui.Button(">", new Vector2(20, 20));
+            ImGui.Button(">", new Vector2(20, 24));
             if (ImGui.IsItemActive())
             {
                 scrollXDelta = +ImGui.GetIO().DeltaTime * 1000.0f;
@@ -164,6 +92,8 @@ internal class FocusTabComponent(Plugin plugin)
             scrollButtonOffsets = 64;
         }
 
+        // Adding this as it's not very clear, but this portion is used to control
+        // the scrolling of the focus target bar through the buttons.
         if (scrollXDelta != 0.0f)
         {
             ImGui.BeginChild("###focusMemberScrollbar");
@@ -174,9 +104,57 @@ internal class FocusTabComponent(Plugin plugin)
         return scrollButtonOffsets;
     }
 
+    private void DrawTargetChip(PlayerIdentifier focusTarget, FocusTab focusTab)
+    {
+        var sameWorld = focusTarget.World == PlayerCharacter.World;
+
+        var spaceSize = ImGui.CalcTextSize(" ");
+        var width = ImGui.CalcTextSize(focusTarget.Name).X + 8 * 2;
+
+        if (!sameWorld)
+        {
+            width += ImGui.CalcTextSize(focusTarget.World).X + spaceSize.Y;
+        }
+
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(1, 1, 1, 0.1f));
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 4);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8, 4));
+        using (ImRaii.Child("###" + focusTarget.Name + focusTarget.World + "ContextMenu", new Vector2(width, 24), false, ImGuiWindowFlags.AlwaysUseWindowPadding))
+        {
+            ImGui.Text(focusTarget.Name);
+
+            if (!sameWorld)
+            {
+                ImGui.SameLine(0, 0);
+                ImGuiHelpers.DrawIcon(BitmapFontIcon.CrossWorld);
+                ImGui.SameLine(0, 0);
+                ImGui.Text(focusTarget.World);
+            }
+        }
+        ImGui.PopStyleVar(2);
+        ImGui.PopStyleColor();
+
+        if (ImGui.BeginPopupContextItem("###" + focusTarget.Name + focusTarget.World + "ContextMenu"))
+        {
+            if (ImGui.MenuItem("Create Watch Tab From Player"))
+            {
+                TabController.AddFocusTab(focusTarget);
+                ImGui.CloseCurrentPopup();
+            }
+
+            if (ImGui.MenuItem("Remove Player From Group"))
+            {
+                focusTab.RemoveFocusTarget(focusTarget);
+                ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.EndPopup();
+        }
+    }
+
     private void DrawAddPlayerButton(FocusTab focusTab)
     {
-        if (ImGui.Button("Add Player"))
+        if (ImGui.Button("Add Player", new Vector2(83, 24)))
         {
             ImGui.OpenPopup("###AddFocusTargetPopup");
         }
@@ -186,7 +164,7 @@ internal class FocusTabComponent(Plugin plugin)
         if (ImGui.BeginPopup("###AddFocusTargetPopup"))
         {
             var targets = focusTab.GetFocusTargets();
-            
+
             var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
             if (focusTarget != null)
             {

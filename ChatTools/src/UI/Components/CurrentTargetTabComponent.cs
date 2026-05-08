@@ -40,28 +40,25 @@ internal class FocusTargetTabComponent : IDisposable
     {
         var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
-        if (focusTarget == null) {
+        if (focusTarget == null)
+        {
             _currentFocusedTarget = null;
             _messages = [];
             return;
         }
 
         if (_currentFocusedTarget != null && focusTarget.Matches(_currentFocusedTarget)) return;
-        
+
         _currentFocusedTarget = focusTarget;
         _messages = _messageService.GetMessagesForPlayer(focusTarget);
     }
 
     internal void Draw()
     {
-        if (ImGui.BeginTabItem("Current Target"))
-        {
-            DrawContent();
-            ImGui.EndTabItem();
-        }
+        DrawContent();
     }
 
-    internal void DrawContent()
+    private void DrawContent()
     {
         if (_currentFocusedTarget == null)
         {

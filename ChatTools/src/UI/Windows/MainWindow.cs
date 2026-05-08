@@ -16,6 +16,7 @@ using ChatTools.Helpers;
 using ChatTools.IO;
 using ChatTools.Services;
 using ChatTools.UI.Components;
+using ChatTools.Models;
 
 namespace ChatTools.UI.Windows;
 
@@ -53,6 +54,12 @@ public class MainWindow : Window
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoDocking;
 
         _focusTabComponent = new(plugin);
+
+        if (Plugin.PluginInterface.IsDev)
+        {
+            var tabId = TabController.AddFocusTab(new PlayerIdentifier("Tessa Elran", "Mateus"));
+            _activeTabKey = tabId.ToString();
+        }
     }
 
     public override void PreDraw()
@@ -101,8 +108,9 @@ public class MainWindow : Window
     {
         ImGui.SetNextWindowSize(new Vector2(320, 0));
         using var popup = ImRaii.Popup("Alerts", ImGuiWindowFlags.NoResize);
-        
-        if (popup) {
+
+        if (popup)
+        {
             _watcherConfigurationComponent.Draw();
         }
     }
@@ -358,21 +366,20 @@ public class MainWindow : Window
     {
         if (_activeTabKey == "focus_target")
         {
-            _focusTargetTabComponent.DrawContent();
+            _focusTargetTabComponent.Draw();
             return;
         }
 
-        var tabs = TabController.GetFocusTabs();
-        var activeTab = tabs.Find(t => t.TabId.ToString() == _activeTabKey);
+        var activeTab = TabController.GetFocusTabs().Find(t => t.TabId.ToString() == _activeTabKey);
 
         if (activeTab == null)
         {
             _activeTabKey = "focus_target";
-            _focusTargetTabComponent.DrawContent();
+            _focusTargetTabComponent.Draw();
         }
         else
         {
-            _focusTabComponent.DrawContent(activeTab);
+            _focusTabComponent.Draw(activeTab);
         }
     }
 

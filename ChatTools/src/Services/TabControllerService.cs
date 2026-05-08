@@ -38,18 +38,18 @@ public class TabControllerService : IDisposable
         }
     }
 
-    internal void AddFocusTab(PlayerIdentifier? target = null)
+    internal Guid AddFocusTab(PlayerIdentifier? target = null)
     {
-        if (target == null)
-        {
-            this._tabs.Add(new FocusTab(_plugin));
-        }
-        else
-        {
-            string tabName = target.Name;
+        FocusTab newTab;
 
-            this._tabs.Add(new FocusTab(_plugin, target, tabName));
-        }
+        if (target == null)
+            newTab = new FocusTab(_plugin);
+        else
+            newTab = new FocusTab(_plugin, target, target.Name);
+
+        this._tabs.Add(newTab);
+
+        return newTab.TabId;
     }
 
     internal void PostDrawEvents()
