@@ -20,9 +20,9 @@ internal class WatcherConfigurationComponent(Plugin plugin)
         ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Spacing();
+
         ImGui.Text("Global Watchers");
         ImGuiComponents.HelpMarker("These watchers are always active on all characters.");
-
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if (ImGui.InputTextWithHint("###GlobalWatcherInput", "Example, watch example", ref globalWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
         {
@@ -32,6 +32,7 @@ internal class WatcherConfigurationComponent(Plugin plugin)
 
         ImGui.Text("Character Watchers");
         ImGuiComponents.HelpMarker("These watchers are only active on the current character.");
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
 
         if (ImGui.InputTextWithHint("###CharacterWatcherInput", "Example, watch example", ref characterWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
         {
@@ -41,7 +42,7 @@ internal class WatcherConfigurationComponent(Plugin plugin)
 
         ImGui.Text("Session Watchers");
         ImGuiComponents.HelpMarker("These watchers are only active until you log out.");
-
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if (ImGui.InputTextWithHint("###SessionWatcherInput", "Example, watch example", ref sessionWatchers, 24096, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             Configuration.UpdateSessionWatchers(sessionWatchers);
