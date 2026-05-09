@@ -155,6 +155,25 @@ public enum ColorCategory
     Say,
     Tell,
     Yell,
+    Shout,
+    Alliance,
+    FreeCompany,
+    LS1,
+    LS2,
+    LS3,
+    LS4,
+    LS5,
+    LS6,
+    LS7,
+    LS8,
+    CWLS1,
+    CWLS2,
+    CWLS3,
+    CWLS4,
+    CWLS5,
+    CWLS6,
+    CWLS7,
+    CWLS8,
 }
 
 /// <summary>
@@ -172,6 +191,25 @@ internal static class ColorConfigurations
         { ColorCategory.Party, new Vector4(0.937f, 0.478f, 0.051f, 1f) },
         { ColorCategory.Tell, new Vector4(0.937f, 0.478f, 0.051f, 1f) },
         { ColorCategory.Yell, new Vector4(1f, 1f, 1f, 1f) },
+        { ColorCategory.Shout, new Vector4(1f, 1f, 1f, 1f) },
+        { ColorCategory.Alliance, new Vector4(0.62f, 0.92f, 0.30f, 1f) },
+        { ColorCategory.FreeCompany, new Vector4(0.53f, 0.90f, 0.95f, 1f) },
+        { ColorCategory.LS1, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS2, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS3, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS4, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS5, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS6, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS7, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.LS8, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS1, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS2, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS3, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS4, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS5, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS6, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS7, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
+        { ColorCategory.CWLS8, new Vector4(0.86f, 0.98f, 0.74f, 1f) },
     };
 
     private static readonly Dictionary<ColorCategory, Vector4> Colors = new Dictionary<ColorCategory, Vector4>();
@@ -180,6 +218,7 @@ internal static class ColorConfigurations
     {
         foreach (var color in config.CustomChatColors)
         {
+            Plugin.Logger.Verbose($"Setting color for {color.Key} to {color.Value}");
             Colors[color.Key] = color.Value;
         }
 

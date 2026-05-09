@@ -11,20 +11,14 @@ using ChatTools.Services;
 
 namespace ChatTools.UI;
 
-public class MessagePanel
+public class MessagePanel(Plugin plugin)
 {
-    private readonly Plugin _plugin;
-
-    private Configuration Configuration => _plugin.Configuration;
-    private PluginStateService PluginState => _plugin.PluginState;
+    private Configuration Configuration => plugin.Configuration;
+    private PluginStateService PluginState => plugin.PluginState;
+    private StyleManager StyleManager => plugin.StyleManager;
 
     private float _spaceWidth => ImGui.CalcTextSize(" ").X;
     private float _widestTimestampWidth = ImGui.CalcTextSize("12:00 AM").X + ImGui.CalcTextSize(" ").X;
-
-    public MessagePanel(Plugin plugin)
-    {
-        _plugin = plugin;
-    }
 
     public void Draw(List<Message> messages)
     {
@@ -41,10 +35,10 @@ public class MessagePanel
         foreach (var chatEntry in messages)
         {
             DrawTimestamp(chatEntry.Timestamp);
-            SetMessageColor(chatEntry);
+            StyleManager.ApplyMessageStyles(chatEntry.ChatType);
             DrawSender(chatEntry);
             DrawMessage(chatEntry);
-            ImGui.PopStyleColor();
+            StyleManager.RemoveMessageStyles();
         }
 
         if (isChatAtBottom == true)
@@ -111,30 +105,6 @@ public class MessagePanel
             }
 
             messagePart.Draw();
-        }
-    }
-
-    private void SetMessageColor(Message message)
-    {
-        if (Configuration.DisableCustomChatColors)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Say));
-        }
-        else if (message.ChatType == XivChatType.CustomEmote || message.ChatType == XivChatType.StandardEmote)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Emote));
-        }
-        else if (message.ChatType == XivChatType.TellIncoming || message.ChatType == XivChatType.TellOutgoing)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Tell));
-        }
-        else if (message.ChatType == XivChatType.Party)
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Party));
-        }
-        else
-        {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorConfigurations.GetColor(ColorCategory.Say));
         }
     }
 }

@@ -43,6 +43,7 @@ public partial class Plugin : IDalamudPlugin
     internal TabControllerService TabController { get; private set; } = null!;
     internal Configuration Configuration { get; private set; } = null!;
     internal ChatToolsDatabase DbContext { get; private set; } = null!;
+    internal StyleManager StyleManager { get; private set; } = null!;
 
     public Plugin()
     {
@@ -59,6 +60,7 @@ public partial class Plugin : IDalamudPlugin
         KeywordWatcher = new KeywordWatcher(this);
         TabController = new TabControllerService(this);
         WindowManagerService = new WindowManagerService(this);
+        StyleManager = new StyleManager(this);
 
         ClientState.Login += OnLogin;
         ClientState.Logout += OnLogout;

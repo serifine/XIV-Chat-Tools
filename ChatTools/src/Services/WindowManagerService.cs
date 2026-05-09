@@ -13,6 +13,7 @@ public class WindowManagerService : IDisposable
     private readonly WindowSystem _windowSystem;
 
     private Configuration Configuration => _plugin.Configuration;
+    private StyleManager StyleManager => _plugin.StyleManager;
 
     public SearchWindow SearchWindow;
     public SettingsWindow SettingsWindow;
@@ -32,9 +33,6 @@ public class WindowManagerService : IDisposable
         _windowSystem.AddWindow(MainWindow);
 
         MainWindow.IsOpen = Plugin.ClientState.IsLoggedIn && Configuration.OpenOnLogin;
-
-        // REMOVE
-        SettingsWindow.IsOpen = true;
     }
 
     public void Draw()
@@ -51,7 +49,7 @@ public class WindowManagerService : IDisposable
     }
 
     public void Dispose()
-    {        
+    {
         _windowSystem.RemoveAllWindows();
     }
 }

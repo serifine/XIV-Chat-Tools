@@ -1,25 +1,27 @@
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 namespace ChatTools.UI;
 
-public class StyleManager
+public partial class StyleManager(Plugin plugin) : IDisposable
 {
-    private static bool _stylesApplied = false;
-    private static Dictionary<ImGuiStyleVar, float> StyleVarFloats { get; set; } = new()
+    private bool _stylesApplied = false;
+    private Configuration Configuration => plugin.Configuration;
+    private Dictionary<ImGuiStyleVar, float> StyleVarFloats { get; set; } = new()
     {
         { ImGuiStyleVar.PopupRounding,      4 },
         { ImGuiStyleVar.PopupBorderSize,  1.0f },
         { ImGuiStyleVar.WindowBorderSize, 1.0f },
     };
 
-    private static Dictionary<ImGuiStyleVar, Vector2> StyleVarVectors { get; set; } = new()
+    private Dictionary<ImGuiStyleVar, Vector2> StyleVarVectors { get; set; } = new()
     {
     };
 
-    private static Dictionary<ImGuiCol, Vector4> StyleColors { get; set; } = new()
+    private Dictionary<ImGuiCol, Vector4> StyleColors { get; set; } = new()
     {
         { ImGuiCol.Text,                    new Vector4(1.0f, 1.0f, 1.0f, 1.0f) },
         { ImGuiCol.TextDisabled,            new Vector4(0.5f, 0.5f, 0.5f, 1.0f) },
@@ -53,7 +55,7 @@ public class StyleManager
         { ImGuiCol.HeaderActive,            new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
     };
 
-    public static void ApplyStyles()
+    public void ApplyStyles()
     {
         if (_stylesApplied) return;
 
@@ -76,7 +78,7 @@ public class StyleManager
         _stylesApplied = true;
     }
 
-    public static void RemoveStyles()
+    public void RemoveStyles()
     {
         if (!_stylesApplied) return;
 
@@ -86,11 +88,16 @@ public class StyleManager
         _stylesApplied = false;
     }
 
-    public static void Dispose()
+    public void Dispose()
     {
         if (_stylesApplied)
         {
             RemoveStyles();
+        }
+
+        if (_messageColorPushed)
+        {
+            RemoveMessageStyles();
         }
     }
 }
