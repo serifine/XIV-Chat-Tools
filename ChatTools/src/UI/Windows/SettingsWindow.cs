@@ -29,7 +29,7 @@ public class SettingsWindow : Window
 
         Size = new Vector2(400, 350);
         SizeCondition = ImGuiCond.FirstUseEver;
-        Flags = ImGuiWindowFlags.NoDocking;
+        Flags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize;
 
         UpdateChannelsToLog();
 
@@ -170,97 +170,53 @@ public class SettingsWindow : Window
 
     private void DrawColorPanel()
     {
-        if (ImGui.Button("Reset###SayReset"))
+        if (ImGui.Button("Sync Colors With Game"))
         {
-            Configuration.CustomChatColors[ColorCategory.Say] = ColorConfigurations.DefaultColors[ColorCategory.Say];
+            Configuration.CustomChatColors[ColorCategory.Say] =
+                GetGameColorForCategory(UiConfigOption.ColorSay) ??
+                ColorConfigurations.DefaultColors[ColorCategory.Say];
+
+            Configuration.CustomChatColors[ColorCategory.Emote] =
+                GetGameColorForCategory(UiConfigOption.ColorEmote) ??
+                ColorConfigurations.DefaultColors[ColorCategory.Emote];
+
+            Configuration.CustomChatColors[ColorCategory.Tell] =
+                GetGameColorForCategory(UiConfigOption.ColorTell) ??
+                ColorConfigurations.DefaultColors[ColorCategory.Tell];
+
+            Configuration.CustomChatColors[ColorCategory.Party] =
+                GetGameColorForCategory(UiConfigOption.ColorParty) ??
+                ColorConfigurations.DefaultColors[ColorCategory.Party];
+
             Configuration.Save();
         }
-        ImGui.SameLine();
-        if (ImGui.Button("Sync With Game###SaySync"))
-        {
-            var color = GetGameColorForCategory(UiConfigOption.ColorSay);
-            if (color.HasValue) {
-                Configuration.CustomChatColors[ColorCategory.Say] = color.Value;
-                Configuration.Save();
-            }
-        }
-        ImGui.SameLine();
+
+        ImGui.Spacing();
+
         if (ImGui.ColorEdit4("Normal Message Color", ref SayColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Say] = SayColor;
             Configuration.Save();
         }
 
-        if (ImGui.Button("Reset###EmoteReset"))
-        {
-            Configuration.CustomChatColors[ColorCategory.Emote] = ColorConfigurations.DefaultColors[ColorCategory.Emote];
-            Configuration.Save();
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Sync With Game###EmoteSync"))
-        {
-            var color = GetGameColorForCategory(UiConfigOption.ColorEmote);
-            Plugin.Logger.Information($"Got color from game: {color}");
-            if (color.HasValue) {
-                Configuration.CustomChatColors[ColorCategory.Emote] = color.Value;
-                Configuration.Save();
-            }
-        }
-        ImGui.SameLine();
         if (ImGui.ColorEdit4("Emote Color", ref EmoteColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Emote] = EmoteColor;
             Configuration.Save();
         }
 
-        if (ImGui.Button("Reset###TellReset"))
-        {
-            Configuration.CustomChatColors[ColorCategory.Tell] = ColorConfigurations.DefaultColors[ColorCategory.Tell];
-            Configuration.Save();
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Sync With Game###TellSync"))
-        {
-            var color = GetGameColorForCategory(UiConfigOption.ColorTell);
-            if (color.HasValue) {
-                Configuration.CustomChatColors[ColorCategory.Tell] = color.Value;
-                Configuration.Save();
-            }
-        }
-        ImGui.SameLine();
         if (ImGui.ColorEdit4("Tell Color", ref TellColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Tell] = TellColor;
             Configuration.Save();
         }
 
-        if (ImGui.Button("Reset###PartyReset"))
-        {
-            Configuration.CustomChatColors[ColorCategory.Party] = ColorConfigurations.DefaultColors[ColorCategory.Party];
-            Configuration.Save();
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Sync With Game###PartySync"))
-        {
-            var color = GetGameColorForCategory(UiConfigOption.ColorParty);
-            if (color.HasValue) {
-                Configuration.CustomChatColors[ColorCategory.Party] = color.Value;
-                Configuration.Save();
-            }
-        }
-        ImGui.SameLine();
         if (ImGui.ColorEdit4("Party Chat Color", ref PartyColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Party] = PartyColor;
             Configuration.Save();
         }
 
-        if (ImGui.Button("Reset###WatchReset"))
-        {
-            Configuration.CustomChatColors[ColorCategory.Watch] = ColorConfigurations.DefaultColors[ColorCategory.Watch];
-            Configuration.Save();
-        }
-        ImGui.SameLine(0, 123);
         if (ImGui.ColorEdit4("Watch Alert Color", ref WatchColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Watch] = WatchColor;
