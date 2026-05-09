@@ -23,6 +23,8 @@ internal class FocusTargetTabComponent : IDisposable
         _messageService = plugin.MessageService;
         _configuration = plugin.Configuration;
         _messageService.MessageAdded += OnMessageAdded;
+
+        LoadAllMessages();
     }
 
     public void Dispose()
@@ -46,27 +48,21 @@ internal class FocusTargetTabComponent : IDisposable
     {
         var focusTarget = Helpers.FocusTarget.GetTargetedOrHoveredPlayer();
 
-        if (focusTarget == null)
+        if (focusTarget == null && _currentFocusedTarget != null)
         {
             _currentFocusedTarget = null;
 
-            if (_configuration.MessageLogShowAllMessagesInMainTab)
-            {
-                _messages = _messageService.GetAllMessages();
-            }
-            else
-            {
-                _messages = [];
-            }
+            LoadAllMessages();
 
             return;
         }
 
-        if (_currentFocusedTarget != null && focusTarget.Matches(_currentFocusedTarget)) return;
+        if ((_currentFocusedTarget == null && focusTarget != null) || (focusTarget != null && !focusTarget.Matches(_currentFocusedTarget)))
+        {
+            _currentFocusedTarget = focusTarget;
 
-        _currentFocusedTarget = focusTarget;
-
-        _messages = _messageService.GetMessagesForPlayer(focusTarget);
+            _messages = _messageService.GetMessagesForPlayer(focusTarget);
+        }
     }
 
     internal void Draw()
@@ -87,6 +83,20 @@ internal class FocusTargetTabComponent : IDisposable
         else
         {
             ImGui.Text("No messages to display.");
+        }
+    }
+
+    private void LoadAllMessages()
+    {
+        if (_configuration.MessageLogShowAllMessagesInMainTab)
+        {
+            Plugin.Logger.Verbose("No focus target, showing all messages in main tab");
+            _messages = _messageService.GetAllMessages();
+        }
+        else
+        {
+            Plugin.Logger.Verbose("No focus target, clearing messages");
+            _messages = [];
         }
     }
 }

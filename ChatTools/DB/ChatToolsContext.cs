@@ -51,7 +51,16 @@ internal class MessagePartsTypeHandler : SqlMapper.TypeHandler<List<IMessagePart
 
     public override List<IMessagePart> Parse(object value)
     {
-        return JsonConvert.DeserializeObject<List<IMessagePart>>((string)value, _jsonSettings) ?? [];
+        try
+        {
+            return JsonConvert.DeserializeObject<List<IMessagePart>>((string)value, _jsonSettings) ?? [];
+        }
+        catch (JsonException ex)
+        {
+            Plugin.Logger.Error($"Failed to deserialize message parts: {ex}");
+            Plugin.Logger.Error(value.ToString() ?? "null");
+            return [];
+        }
     }
 }
 
@@ -61,8 +70,9 @@ public class ChatToolsDatabase : IDisposable
 
     public ChatToolsDatabase(string filePath)
     {
+        Plugin.Logger.Verbose($"Initializing database at {Path.Combine(filePath, "ChatTools.db")}");
         string dbPath = Path.Combine(filePath, "ChatTools.db");
-        
+
         SqlMapper.AddTypeHandler(new MessagePartsTypeHandler());
 
         _connection = new SqliteConnection($"Data Source={dbPath}");

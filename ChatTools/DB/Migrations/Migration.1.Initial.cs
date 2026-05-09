@@ -44,7 +44,7 @@ internal class Migration_001_InitialSchema : IMigration
         foreach (var (id, text) in rows)
         {
             // Skip rows that are already JSON (produced by the new format)
-            if (text.TrimStart().StartsWith("["))
+            if (text.TrimStart().StartsWith("[{\"$type\""))
                 continue;
 
             var parts = new List<IMessagePart> { new MessagePart(text) };
