@@ -29,7 +29,7 @@ public class Configuration : IPluginConfiguration
     public string MessageLogGlobalWatchers = "";
     public List<CharacterWatcher> MessageLogCharacterWatchers = new List<CharacterWatcher>();
 
-    public bool MessageLogPreserveOnLogout = true;
+    public bool MessageLogShowAllMessagesInMainTab = false;
     public bool MessageLogDeleteOldMessages = true;
     public int MessageLogDaysToKeepOldMessages = 7;
 

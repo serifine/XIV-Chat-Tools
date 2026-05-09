@@ -12,6 +12,7 @@ internal class FocusTargetTabComponent : IDisposable
 {
     private readonly MessagePanel _messagePanel;
     private readonly MessageService _messageService;
+    private readonly Configuration _configuration;
 
     private PlayerIdentifier? _currentFocusedTarget;
     private List<Message> _messages = [];
@@ -20,6 +21,7 @@ internal class FocusTargetTabComponent : IDisposable
     {
         _messagePanel = new MessagePanel(plugin);
         _messageService = plugin.MessageService;
+        _configuration = plugin.Configuration;
         _messageService.MessageAdded += OnMessageAdded;
     }
 
@@ -47,13 +49,23 @@ internal class FocusTargetTabComponent : IDisposable
         if (focusTarget == null)
         {
             _currentFocusedTarget = null;
-            _messages = _messageService.GetAllMessages();
+
+            if (_configuration.MessageLogShowAllMessagesInMainTab)
+            {
+                _messages = _messageService.GetAllMessages();
+            }
+            else
+            {
+                _messages = [];
+            }
+
             return;
         }
 
         if (_currentFocusedTarget != null && focusTarget.Matches(_currentFocusedTarget)) return;
 
         _currentFocusedTarget = focusTarget;
+
         _messages = _messageService.GetMessagesForPlayer(focusTarget);
     }
 
@@ -74,7 +86,7 @@ internal class FocusTargetTabComponent : IDisposable
         }
         else
         {
-            ImGui.Text("No messages found.");
+            ImGui.Text("No messages to display.");
         }
     }
 }

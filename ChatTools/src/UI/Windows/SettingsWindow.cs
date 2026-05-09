@@ -90,7 +90,7 @@ public partial class SettingsWindow : Window
             this.Configuration.Save();
         }
 
-        if (ImGui.Checkbox("Preserve Message History on Logout", ref this.Configuration.MessageLogPreserveOnLogout))
+        if (ImGui.Checkbox("Show all messages in main tab when no one is selected", ref this.Configuration.MessageLogShowAllMessagesInMainTab))
         {
             this.Configuration.Save();
         }
@@ -108,7 +108,7 @@ public partial class SettingsWindow : Window
 
         ImGui.Spacing();
         ImGui.Spacing();
-        
+
         if (ImGui.ColorEdit4("Watched Highlight Color", ref WatchColor, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
         {
             Configuration.CustomChatColors[ColorCategory.Watch] = WatchColor;
@@ -171,11 +171,6 @@ public partial class SettingsWindow : Window
         ImGui.Text("Message Saving");
         ImGui.Spacing();
         ImGui.Spacing();
-
-        if (ImGui.Checkbox("Preserve Messages on Logout", ref this.Configuration.MessageLogPreserveOnLogout))
-        {
-            this.Configuration.Save();
-        }
 
         if (ImGui.Checkbox("Delete Old Messages", ref this.Configuration.MessageLogDeleteOldMessages))
         {
