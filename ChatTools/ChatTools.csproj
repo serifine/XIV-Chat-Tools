@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <AssemblyName>ChatTools</AssemblyName>
-        <Version>5.0.1</Version>
+        <Version>5.0.2</Version>
         <TargetFramework>net10.0-windows</TargetFramework>
         <Authors>serifine</Authors>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
@@ -13,8 +13,12 @@
 
     <ItemGroup>
       <Content Include="images\icon.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+
+      <None Update="ChatTools.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

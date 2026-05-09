@@ -57,7 +57,7 @@ internal class FocusTargetTabComponent : IDisposable
             return;
         }
 
-        if ((_currentFocusedTarget == null && focusTarget != null) || (focusTarget != null && !focusTarget.Matches(_currentFocusedTarget)))
+        if ((_currentFocusedTarget == null && focusTarget != null) || (focusTarget != null && _currentFocusedTarget != null && !focusTarget.Matches(_currentFocusedTarget)))
         {
             _currentFocusedTarget = focusTarget;
 

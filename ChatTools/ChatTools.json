@@ -1,0 +1,23 @@
+{
+  "Author": "serifine",
+  "Name": "Chat Tools",
+  "InternalName": "ChatTools",
+  "AssemblyVersion": "5.0.2.0",
+  "Description": "Chat Tools was developed to cut through the cluttered chat that can happen at large RP events, or in crowded environments.\n\nJust some of the things you can do with Chat Tools is:\n- Filter messages in crowded environments\n- Set up windows to watch specific characters of your choice\n- Set up windows to watch for messages from a group of characters\n- Quickly scan what your selected or hovered targets have said\n- Search through your message history\n- Preserve messages on logout",
+  "ApplicableVersion": "any",
+  "RepoUrl": "https://github.com/serifine/XIV-Chat-Tools",
+  "Tags": [
+    "Social",
+    "UI",
+    "Chat",
+    "RP"
+  ],
+  "DalamudApiLevel": 15,
+  "LoadRequiredState": 0,
+  "LoadSync": false,
+  "CanUnloadAsync": false,
+  "LoadPriority": 0,
+  "Punchline": "Filter messages in crowded environments, bringing some sanity back to RP.",
+  "AcceptsFeedback": true,
+  "IconUrl": "https://raw.githubusercontent.com/serifine/XIV-Chat-Tools/main/ChatTools/images/icon.png"
+}
