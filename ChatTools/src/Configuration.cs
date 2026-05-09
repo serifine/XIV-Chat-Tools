@@ -218,7 +218,6 @@ internal static class ColorConfigurations
     {
         foreach (var color in config.CustomChatColors)
         {
-            Plugin.Logger.Verbose($"Setting color for {color.Key} to {color.Value}");
             Colors[color.Key] = color.Value;
         }
 
