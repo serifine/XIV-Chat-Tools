@@ -15,7 +15,7 @@ using ChatTools.Services;
 
 namespace ChatTools;
 
-public partial class Plugin : IAsyncDalamudPlugin
+public partial class Plugin : IDalamudPlugin
 {
     public static string Name => "Chat Tools";
 
@@ -43,7 +43,7 @@ public partial class Plugin : IAsyncDalamudPlugin
     internal Configuration Configuration { get; private set; } = null!;
     internal ChatToolsDatabase DbContext { get; private set; } = null!;
 
-    public async Task LoadAsync(CancellationToken token)
+    public Plugin()
     {
         PrintStartupMessage();
 
@@ -70,7 +70,6 @@ public partial class Plugin : IAsyncDalamudPlugin
 
         SetupCommands();
 
-
         Logger.Verbose("Chat Tools Ready!");
     }
 
@@ -81,7 +80,7 @@ public partial class Plugin : IAsyncDalamudPlugin
         if (PluginInterface.IsDev)
         {
             title += " (Dev)";
-        }   
+        }
 
         if (PluginInterface.IsTesting)
         {
@@ -136,33 +135,24 @@ public partial class Plugin : IAsyncDalamudPlugin
 
     #endregion
 
-    public ValueTask DisposeAsync()
+    public void Dispose()
     {
-        try
-        {
-            ClientState.Login -= OnLogin;
-            ClientState.Logout -= OnLogout;
+        ClientState.Login -= OnLogin;
+        ClientState.Logout -= OnLogout;
 
-            PluginInterface.UiBuilder.Draw -= OnDrawUI;
-            PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
-            PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
-            ChatGui.ChatMessageUnhandled -= MessageService.HandleChatMessage;
+        PluginInterface.UiBuilder.Draw -= OnDrawUI;
+        PluginInterface.UiBuilder.OpenMainUi -= OnOpenMainUI;
+        PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUI;
+        ChatGui.ChatMessageUnhandled -= MessageService.HandleChatMessage;
 
-            PluginState.Dispose();
-            MessageService.Dispose();
-            WindowManagerService.Dispose();
-            TabController.Dispose();
+        PluginState.Dispose();
+        MessageService.Dispose();
+        WindowManagerService.Dispose();
+        TabController.Dispose();
 
-            DbContext.Dispose();
+        DbContext.Dispose();
 
-            DisposeCommands();
-
-            return ValueTask.CompletedTask;
-        }
-        catch (Exception exception)
-        {
-            return ValueTask.FromException(exception);
-        }
+        DisposeCommands();
     }
 
     private void PostDrawEvents()
