@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using ChatTools.DB;
 using ChatTools.Helpers;
 using ChatTools.Services;
+using ChatTools.UI;
 
 namespace ChatTools;
 
@@ -151,6 +152,8 @@ public partial class Plugin : IDalamudPlugin
         TabController.Dispose();
 
         DbContext.Dispose();
+
+        StyleManager.Dispose();
 
         DisposeCommands();
     }

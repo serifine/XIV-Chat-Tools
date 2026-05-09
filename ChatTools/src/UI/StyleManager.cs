@@ -5,21 +5,21 @@ using System.Numerics;
 
 namespace ChatTools.UI;
 
-public class StyleManager : IDisposable
+public class StyleManager
 {
-    private bool _stylesApplied = false;
-    private Dictionary<ImGuiStyleVar, float> StyleVarFloats { get; set; } = new()
+    private static bool _stylesApplied = false;
+    private static Dictionary<ImGuiStyleVar, float> StyleVarFloats { get; set; } = new()
     {
         { ImGuiStyleVar.PopupRounding,      4 },
         { ImGuiStyleVar.PopupBorderSize,  1.0f },
         { ImGuiStyleVar.WindowBorderSize, 1.0f },
     };
 
-    private Dictionary<ImGuiStyleVar, Vector2> StyleVarVectors { get; set; } = new()
+    private static Dictionary<ImGuiStyleVar, Vector2> StyleVarVectors { get; set; } = new()
     {
     };
 
-    private Dictionary<ImGuiCol, Vector4> StyleColors { get; set; } = new()
+    private static Dictionary<ImGuiCol, Vector4> StyleColors { get; set; } = new()
     {
         { ImGuiCol.Text,                    new Vector4(1.0f, 1.0f, 1.0f, 1.0f) },
         { ImGuiCol.TextDisabled,            new Vector4(0.5f, 0.5f, 0.5f, 1.0f) },
@@ -53,12 +53,7 @@ public class StyleManager : IDisposable
         { ImGuiCol.HeaderActive,            new Vector4(0.13f, 0.13f, 0.13f, 0.80f) },
     };
 
-    public StyleManager()
-    {
-        // Initialize styles here
-    }
-
-    public void ApplyStyles()
+    public static void ApplyStyles()
     {
         if (_stylesApplied) return;
 
@@ -81,7 +76,7 @@ public class StyleManager : IDisposable
         _stylesApplied = true;
     }
 
-    public void RemoveStyles()
+    public static void RemoveStyles()
     {
         if (!_stylesApplied) return;
 
@@ -91,7 +86,7 @@ public class StyleManager : IDisposable
         _stylesApplied = false;
     }
 
-    public void Dispose()
+    public static void Dispose()
     {
         if (_stylesApplied)
         {
